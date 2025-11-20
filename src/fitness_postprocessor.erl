@@ -299,8 +299,8 @@ find_dominance_relationships(AgentId, Fitness, AllAgents) ->
 %% @private Check if fitness A dominates fitness B.
 %%
 %% A dominates B if:
-%% - A >= B for all objectives (no worse)
-%% - A > B for at least one objective (strictly better)
+%% - A is greater than or equal to B for all objectives (no worse)
+%% - A is strictly greater than B for at least one objective (strictly better)
 -spec dominates([float()], [float()]) -> boolean().
 dominates(FitnessA, FitnessB) ->
     %% Check both conditions

@@ -18,7 +18,7 @@
 %%
 %% Species Assignment:
 %% - Compare agent fingerprint to species representatives
-%% - Assign to closest species if distance < threshold
+%% - Assign to closest species if distance less than threshold
 %% - Create new species if too different from all existing species
 %%
 %% == Benefits of Speciation ==

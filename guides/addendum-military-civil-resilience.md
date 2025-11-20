@@ -3,7 +3,9 @@
 **Date**: 2025-11-20
 **Version**: 0.8.7
 **Purpose**: Analyze military and civil resilience implications of distributed mega-brain systems
-**Related**: [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html)
+**Related Documents**:
+- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) (main document)
+- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.html) (specific defensive application)
 
 ---
 

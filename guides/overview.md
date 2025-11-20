@@ -32,6 +32,7 @@ See the [Architecture Guide](architecture.html) for details.
 - [Architecture Details](architecture.html) - Layer-by-layer system design
 - [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) - Planet-scale evolutionary intelligence on Macula mesh
 - [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.html) - Defense, security, and infrastructure implications
+- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.html) - Counter-swarm systems and autonomous threat mitigation
 
 ### Core Concepts
 See the module documentation for detailed API reference on:

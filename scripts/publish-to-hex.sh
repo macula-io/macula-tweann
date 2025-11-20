@@ -60,26 +60,19 @@ if ! rebar3 dialyzer; then
     exit 1
 fi
 
-# Compile
-echo "Compiling..."
-rebar3 compile
-
-# Generate documentation
-echo "Generating documentation..."
-rebar3 edoc
-
 # Build the package
 echo "Building hex package..."
+rebar3 hex build
+echo ""
+
 if [[ -n "$DRY_RUN" ]]; then
-    rebar3 hex build
-    echo ""
     echo "=== DRY RUN COMPLETE ==="
     echo "Package would be published as macula_tweann v$VERSION"
     echo "Run without --dry-run to actually publish"
 else
     # Publish to Hex.pm
     echo "Publishing to Hex.pm..."
-    rebar3 hex publish
+    rebar3 hex publish --yes
 
     echo ""
     echo "=== SUCCESS ==="

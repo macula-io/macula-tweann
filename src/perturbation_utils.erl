@@ -23,8 +23,7 @@
     sat/2
 ]).
 
-%% @doc Maximum weight value (saturation limit).
-%%
+%% Maximum weight value (saturation limit).
 %% Weights are clamped to [-SAT_LIMIT, SAT_LIMIT] to prevent
 %% numerical overflow and maintain network stability.
 -define(SAT_LIMIT, math:pi() * 10).

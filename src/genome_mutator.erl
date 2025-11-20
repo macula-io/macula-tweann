@@ -88,14 +88,12 @@
     calculate_mutation_count/1
 ]).
 
-%% @doc Delta multiplier for weight perturbation.
-%%
+%% Delta multiplier for weight perturbation.
 %% Using 2*pi (~6.28) as base perturbation range provides
 %% sufficient exploration while maintaining stability.
 -define(DELTA_MULTIPLIER, math:pi() * 2).
 
-%% @doc Search parameters mutation probability.
-%%
+%% Search parameters mutation probability.
 %% Probability of mutating evolutionary strategy parameters
 %% (tuning selection, annealing, etc.) during each mutation cycle.
 -define(SEARCH_PARAMETERS_MUTATION_PROBABILITY, 0).

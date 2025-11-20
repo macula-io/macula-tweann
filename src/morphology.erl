@@ -11,10 +11,9 @@
 %% Each morphology is implemented as a function clause that returns either
 %% sensors or actuators depending on the argument:
 %%
-%% <pre>
+%%
 %% morphology_name(sensors) -> [#sensor{...}];
 %% morphology_name(actuators) -> [#actuator{...}].
-%% </pre>
 %%
 %% == Adding New Morphologies ==
 %%

@@ -76,7 +76,7 @@
 %% @param Parent1Id first parent agent identifier
 %% @param Parent2Id second parent agent identifier
 %% @returns offspring agent identifier
--spec crossover(term(), term()) -> term().
+-spec crossover(term(), term()) -> {float(), agent}.
 crossover(Parent1Id, Parent2Id) ->
     %% Read parent agents
     Parent1 = genotype:read({agent, Parent1Id}),
@@ -201,7 +201,7 @@ weight_crossover(Weights1, Weights2, CrossoverRate) ->
 %% ============================================================================
 
 %% @private Perform full crossover between two parents.
--spec perform_crossover(term(), term(), #agent{}, #agent{}) -> term().
+-spec perform_crossover(term(), term(), #agent{}, #agent{}) -> {float(), agent}.
 perform_crossover(Parent1Id, Parent2Id, Parent1, Parent2) ->
     %% Determine which parent is fitter (for tie-breaking)
     FitterParentId = case Parent1#agent.fitness >= Parent2#agent.fitness of
@@ -222,7 +222,7 @@ perform_crossover(Parent1Id, Parent2Id, Parent1, Parent2) ->
     OffspringId.
 
 %% @private Crossover neurons between parents.
--spec crossover_neurons(term(), #cortex{}, #cortex{}) -> ok.
+-spec crossover_neurons({float(), agent}, #cortex{neuron_ids :: [term()]}, #cortex{neuron_ids :: [term()]}) -> ok.
 crossover_neurons(OffspringId, Cortex1, Cortex2) ->
     %% Get offspring cortex
     Offspring = genotype:read({agent, OffspringId}),

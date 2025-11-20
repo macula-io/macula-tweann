@@ -10,8 +10,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-QPNJX265.woff2
-dist/search_data-9889594C.js
-dist/sidebar_items-EF443807.js
+dist/search_data-699DD739.js
+dist/sidebar_items-B1A50F7B.js
 exoself.html
 functions.html
 genome_mutator.html
@@ -20,6 +20,7 @@ index.html
 morphology.html
 neuron.html
 perturbation_utils.html
+population_monitor.html
 readme.html
 search.html
 selection_utils.html

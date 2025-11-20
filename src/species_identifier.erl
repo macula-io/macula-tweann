@@ -218,7 +218,7 @@ find_closest_species(Fingerprint, Threshold, Species) ->
     end.
 
 %% @private Generate unique species identifier.
--spec generate_specie_id() -> term().
+-spec generate_specie_id() -> {float(), specie}.
 generate_specie_id() ->
     {rand:uniform() * 1000000.0, specie}.
 

@@ -22,9 +22,15 @@ size_proportional_empty_test() ->
     Result = fitness_postprocessor:size_proportional([], 0.1),
     ?assertEqual([], Result).
 
+%% Helper to setup each test
+setup_test() ->
+    application:ensure_all_started(macula_tweann),
+    test_helper:register_all_example_morphologies(),
+    genotype:init_db().
+
 size_proportional_applies_penalty_test() ->
     %% Need to setup Mnesia and create test agents
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         AgentId = {genotype:generate_UniqueId(), agent},
@@ -60,7 +66,7 @@ size_proportional_applies_penalty_test() ->
     end.
 
 size_proportional_multi_objective_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         AgentId = {genotype:generate_UniqueId(), agent},
@@ -281,7 +287,7 @@ pareto_equal_fitness_test() ->
 %% ============================================================================
 
 combined_postprocessing_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         Constraint = #constraint{morphology = xor_mimic},

@@ -8,6 +8,12 @@
 %% =============================================================================
 
 setup() ->
+    %% Ensure application started (for morphology registry)
+    application:ensure_all_started(macula_tweann),
+
+    %% Register example morphologies
+    test_helper:register_all_example_morphologies(),
+
     %% Stop Mnesia if running and delete any existing schema
     application:stop(mnesia),
     mnesia:delete_schema([node()]),

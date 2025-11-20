@@ -21,8 +21,14 @@ genome_mutator_exports_test() ->
 %% Integration Tests with Mnesia
 %% ============================================================================
 
+%% Helper to setup each test
+setup_test() ->
+    application:ensure_all_started(macula_tweann),
+    test_helper:register_all_example_morphologies(),
+    genotype:init_db().
+
 calculate_mutation_count_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -37,7 +43,7 @@ calculate_mutation_count_test() ->
     end.
 
 select_random_neuron_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -55,7 +61,7 @@ select_random_neuron_test() ->
     end.
 
 add_bias_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -74,7 +80,7 @@ add_bias_test() ->
     end.
 
 mutate_weights_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -89,7 +95,7 @@ mutate_weights_test() ->
     end.
 
 mutate_af_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -108,7 +114,7 @@ mutate_af_test() ->
     end.
 
 mutate_tuning_selection_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -126,7 +132,7 @@ mutate_tuning_selection_test() ->
     end.
 
 add_outlink_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -145,7 +151,7 @@ add_outlink_test() ->
     end.
 
 add_inlink_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -164,7 +170,7 @@ add_inlink_test() ->
     end.
 
 add_neuron_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -190,7 +196,7 @@ add_neuron_test() ->
     end.
 
 mutate_single_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),
@@ -205,7 +211,7 @@ mutate_single_test() ->
     end.
 
 mutate_multiple_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = test_specie,
         AgentId = genotype:generate_id(agent),

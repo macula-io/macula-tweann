@@ -169,8 +169,14 @@ create_fingerprint_unknown_agent_test() ->
     Fingerprint = species_identifier:create_fingerprint(unknown_agent),
     ?assertEqual([0.0], Fingerprint).
 
+%% Helper to setup each test
+setup_test() ->
+    application:ensure_all_started(macula_tweann),
+    test_helper:register_all_example_morphologies(),
+    genotype:init_db().
+
 create_fingerprint_xor_agent_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         AgentId = {genotype:generate_UniqueId(), agent},

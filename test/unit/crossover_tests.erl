@@ -139,8 +139,14 @@ neuron_crossover_aggregation_function_test() ->
 %% Full Crossover Tests
 %% ============================================================================
 
+%% Helper to setup each test
+setup_test() ->
+    application:ensure_all_started(macula_tweann),
+    test_helper:register_all_example_morphologies(),
+    genotype:init_db().
+
 crossover_missing_parent_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         AgentId = {genotype:generate_UniqueId(), agent},
@@ -163,7 +169,7 @@ crossover_missing_parent_test() ->
     end.
 
 crossover_both_parents_exist_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         Constraint = #constraint{morphology = xor_mimic},
@@ -194,7 +200,7 @@ crossover_both_parents_exist_test() ->
     end.
 
 crossover_preserves_morphology_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         Constraint = #constraint{morphology = xor_mimic},
@@ -219,7 +225,7 @@ crossover_preserves_morphology_test() ->
     end.
 
 crossover_creates_valid_network_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         Constraint = #constraint{morphology = xor_mimic},
@@ -251,7 +257,7 @@ crossover_creates_valid_network_test() ->
 %% ============================================================================
 
 multiple_crossovers_test() ->
-    genotype:init_db(),
+    setup_test(),
     try
         SpecieId = {genotype:generate_UniqueId(), specie},
         Constraint = #constraint{morphology = xor_mimic},

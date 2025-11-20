@@ -9,6 +9,8 @@
 %% ============================================================================
 
 setup() ->
+    application:ensure_all_started(macula_tweann),
+    test_helper:register_all_example_morphologies(),
     genotype:init_db(),
     ok.
 

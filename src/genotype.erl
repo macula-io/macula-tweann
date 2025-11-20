@@ -47,7 +47,8 @@
     link_Neuron/4,
     link_FromElementToElement/3,
     clone_Agent/1,
-    random_element/1
+    random_element/1,
+    generate_id/1
 ]}).
 
 -export([
@@ -68,6 +69,7 @@
 
     %% Utility
     generate_UniqueId/0,
+    generate_id/1,
     random_element/1,
     update_fingerprint/1
 ]).
@@ -455,6 +457,29 @@ delete_Agent(Agent_Id) ->
 -spec generate_UniqueId() -> float().
 generate_UniqueId() ->
     rand:uniform().
+
+%% @doc Generate an ID for a specific element type.
+%%
+%% Creates a properly formatted ID tuple based on the element type:
+%% - sensor: {{-1, UniqueFloat}, sensor}
+%% - neuron: {{0, UniqueFloat}, neuron} (hidden layer)
+%% - actuator: {{1, UniqueFloat}, actuator}
+%% - cortex: {{origin, UniqueFloat}, cortex}
+%% - agent: {UniqueFloat, agent}
+%%
+%% @param Type the element type atom
+%% @returns properly formatted ID tuple
+-spec generate_id(atom()) -> term().
+generate_id(sensor) ->
+    {{-1, generate_UniqueId()}, sensor};
+generate_id(neuron) ->
+    {{0, generate_UniqueId()}, neuron};
+generate_id(actuator) ->
+    {{1, generate_UniqueId()}, actuator};
+generate_id(cortex) ->
+    {{origin, generate_UniqueId()}, cortex};
+generate_id(agent) ->
+    {generate_UniqueId(), agent}.
 
 %% @doc Select a random element from a list.
 -spec random_element([T]) -> T when T :: term().

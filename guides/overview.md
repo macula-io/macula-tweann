@@ -10,7 +10,7 @@ Based on DXNN2 by Gene Sher (from "Handbook of Neuroevolution Through Erlang"), 
 
 ## Architecture
 
-![Module Dependencies](../doc/diagrams/module-dependencies.svg)
+![Module Dependencies](assets/module-dependencies.svg)
 
 The library follows a layered architecture:
 - **Core**: Genotype storage and morphology definitions

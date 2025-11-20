@@ -4,7 +4,7 @@
 
 Macula TWEANN uses a layered architecture with clear separation of concerns:
 
-![Module Dependencies](../doc/diagrams/module-dependencies.svg)
+![Module Dependencies](assets/module-dependencies.svg)
 
 ## Layers
 
@@ -46,7 +46,7 @@ Helper functions for logging, activation functions, signal processing, weight pe
 
 ## Process Hierarchy
 
-![Supervision Tree](../doc/diagrams/supervision-tree.svg)
+![Supervision Tree](assets/supervision-tree.svg)
 
 The process tree uses `spawn_link` for crash propagation:
 
@@ -57,7 +57,7 @@ The process tree uses `spawn_link` for crash propagation:
 
 ## Evaluation Flow
 
-![Evaluation Cycle](../doc/diagrams/evaluation-cycle-sequence.svg)
+![Evaluation Cycle](assets/evaluation-cycle-sequence.svg)
 
 The sense-think-act cycle:
 

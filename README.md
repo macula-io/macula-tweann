@@ -12,7 +12,7 @@ Evolutionary neural networks that evolve both topology and weights. Based on DXN
 
 ```erlang
 %% Add to rebar.config
-{deps, [{macula_tweann, "~> 0.8.1"}]}.
+{deps, [{macula_tweann, "~> 0.8.3"}]}.
 
 %% Create and evolve
 genotype:init_db(),

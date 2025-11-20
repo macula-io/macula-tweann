@@ -77,8 +77,10 @@
     absolute/1,
     linear/1,
     quadratic/1,
+    cubic/1,
     sqrt/1,
     log/1,
+    relu/1,
 
     %% Utility functions
     saturation/1,
@@ -273,6 +275,17 @@ linear(Val) ->
 quadratic(Val) ->
     sgn(Val) * Val * Val.
 
+%% @doc Cubic activation function
+%%
+%% Signed cube: x^3
+%% Preserves sign while strongly amplifying magnitude.
+%%
+%% @param Val the input signal value
+%% @returns cube of input
+-spec cubic(float()) -> float().
+cubic(Val) ->
+    Val * Val * Val.
+
 %% @doc Square root activation function
 %%
 %% Signed square root: sgn(x) * sqrt(|x|)
@@ -295,6 +308,17 @@ sqrt(Val) ->
 log(0) -> 0.0;
 log(+0.0) -> 0.0;
 log(Val) -> sgn(Val) * math:log(abs(Val)).
+
+%% @doc Rectified Linear Unit (ReLU) activation function
+%%
+%% Returns max(0, x).
+%% Popular in deep learning for its simplicity and effectiveness.
+%%
+%% @param Val the input signal value
+%% @returns max(0, Val)
+-spec relu(float()) -> float().
+relu(Val) when Val > 0 -> Val;
+relu(_Val) -> 0.0.
 
 %%==============================================================================
 %% Utility Functions

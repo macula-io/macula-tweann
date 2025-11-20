@@ -92,7 +92,15 @@ loop(State) ->
             loop(NewState);
 
         {cortex, terminate} ->
-            ok
+            ok;
+
+        {link, fanin_pids, FaninPids} ->
+            %% Dynamic linking from constructor
+            NewState = State#state{
+                fanin_pids = FaninPids,
+                expected_inputs = length(FaninPids)
+            },
+            loop(NewState)
     end.
 
 handle_forward(FromPid, Signal, State) ->

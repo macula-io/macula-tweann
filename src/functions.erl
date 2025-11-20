@@ -4,6 +4,8 @@
 %% aggregated input signals into output signals, plus utility functions
 %% for saturation and scaling.
 %%
+%% Based on DXNN2 by Gene Sher ("Handbook of Neuroevolution through Erlang").
+%%
 %% == Activation Functions ==
 %%
 %% Monotonic:
@@ -45,6 +47,12 @@
 %% - `sqrt' - Signed square root
 %%
 %% - `log' - Signed logarithm
+%%
+%% == Extensions (not in original DXNN2) ==
+%%
+%% - `cubic' - Cube function x^3
+%%
+%% - `relu' - Rectified Linear Unit max(0, x)
 %%
 %% == Utility Functions ==
 %%

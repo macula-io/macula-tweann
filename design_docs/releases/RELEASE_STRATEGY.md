@@ -21,42 +21,49 @@ All versions before 1.0.0 are considered development releases:
 
 ## Release Timeline
 
-**Total Duration**: 15-18 weeks to v1.0.0
+**Total Duration**: 16-19 weeks to v1.0.0
 
 ```
 Week 1-2:   v0.1.0 - Project Bootstrap
 Week 2-3:   v0.2.0 - Core Primitives
 Week 3-5:   v0.3.0 - Neural Core       } Foundation Phase
+Week 5-6:   v0.3.1 - Architectural Alignment (Mnesia, records, morphology)
 ------------------------------------------------
-Week 5-7:   v0.4.0 - Network Lifecycle
-Week 7-9:   v0.5.0 - Evolution Engine  } Structural Phase
-Week 9-11:  v0.6.0 - Population Management
+Week 6-8:   v0.4.0 - Network Lifecycle
+Week 8-10:  v0.5.0 - Evolution Engine  } Structural Phase
+Week 10-12: v0.6.0 - Population Management
 ------------------------------------------------
-Week 11-13: v0.7.0 - Hardened Core
-Week 13-15: v0.8.0 - Process Safety    } Robustness Phase
+Week 12-14: v0.7.0 - Hardened Core
+Week 14-16: v0.8.0 - Process Safety    } Robustness Phase
 ------------------------------------------------
-Week 15-17: v0.9.0 - Optimized
-Week 17-18: v1.0.0 - Production Ready  } Performance Phase
+Week 16-18: v0.9.0 - Optimized
+Week 18-19: v1.0.0 - Production Ready  } Performance Phase
 ```
 
 ## Phase Overview
 
-### Phase 1: Foundation (v0.1.0 - v0.3.0)
+### Phase 1: Foundation (v0.1.0 - v0.3.1)
 
-**Duration**: 5 weeks
-**Focus**: Establish test infrastructure, refactor pure functions, document core modules
+**Duration**: 6 weeks
+**Focus**: Establish test infrastructure, implement core neural processes, align with DXNN2 architecture
 
 **Objectives**:
 - Create comprehensive test infrastructure
 - Refactor pure mathematical functions with TDD
+- Implement core neural network processes (sensor, neuron, actuator, cortex)
 - Establish type specifications and documentation standards
 - Enable dialyzer static analysis
+- Align genotype/constructor with DXNN2 patterns (Mnesia, records, morphology)
 
 **Key Deliverables**:
 - Test directory structure with unit/integration layout
-- Refactored `signal_aggregator.erl`, `functions.erl`, `plasticity.erl`
+- Refactored `signal_aggregator.erl`, `functions.erl`
+- Core neural processes: `neuron.erl`, `cortex.erl`, `sensor.erl`, `actuator.erl`
 - Type specifications for all core data types
 - Module-level documentation for neural components
+- DXNN2-compatible `genotype.erl` with Mnesia and records
+- `morphology.erl` for sensor/actuator specifications
+- Integration with `genome_mutator` for element linking
 
 ### Phase 2: Structural (v0.4.0 - v0.6.0)
 
@@ -290,6 +297,7 @@ Each version has detailed planning documentation:
 | 0.1.0 | [v0.1.0-project-bootstrap.md](v0.1.0-project-bootstrap.md) | Foundation | 1-2 weeks |
 | 0.2.0 | [v0.2.0-core-primitives.md](v0.2.0-core-primitives.md) | Foundation | 1 week |
 | 0.3.0 | [v0.3.0-neural-core.md](v0.3.0-neural-core.md) | Foundation | 2 weeks |
+| 0.3.1 | [v0.3.1-architectural-alignment.md](v0.3.1-architectural-alignment.md) | Foundation | 1 week |
 | 0.4.0 | [v0.4.0-network-lifecycle.md](v0.4.0-network-lifecycle.md) | Structural | 2 weeks |
 | 0.5.0 | [v0.5.0-evolution-engine.md](v0.5.0-evolution-engine.md) | Structural | 2 weeks |
 | 0.6.0 | [v0.6.0-population-management.md](v0.6.0-population-management.md) | Structural | 2 weeks |

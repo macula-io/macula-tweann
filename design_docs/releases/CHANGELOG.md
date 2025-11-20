@@ -181,28 +181,61 @@ Network lifecycle release. Refactored cortex and exoself with state records.
 
 ---
 
+## [0.3.1] - TBD
+
+### Summary
+Architectural alignment release. Align with DXNN2's core architecture patterns.
+
+### Changed
+- **genotype.erl**:
+  - Switch from ETS to Mnesia for persistence
+  - Use records from records.hrl instead of maps
+  - Integrate with genome_mutator for element linking
+  - Support constraint-based agent construction
+
+- **constructor.erl**:
+  - Update to work with Mnesia and records
+  - Synchronous linking (remove async link messages)
+
+### Added
+- **morphology.erl**: Sensor/actuator specifications per morphology
+- Mnesia schema initialization
+- Support for specie_id and constraints in agent construction
+
+### Fixed
+- Removed process dictionary usage in topology construction
+- Proper separation of concerns in genotype module
+
+### Notes
+- Single-node Mnesia initially (distribution can be added later)
+- This release ensures compatibility with DXNN2's genome_mutator and evolution engine
+
+---
+
 ## [0.3.0] - TBD
 
 ### Summary
-Neural core release. Refactored plasticity and neuron modules.
-
-### Changed
-- **plasticity.erl**:
-  - Consolidated Hebbian variants into parametric function
-  - Documented all learning rules with formulas
-  - Reduced nesting in weight update functions
-
-- **neuron.erl**:
-  - Renamed all cryptic state fields
-  - "si_pidps_bl" renamed to "weighted_inputs_baseline"
-  - Removed ?RO_SIGNAL macro
-  - Extracted weight perturbation to function
-  - Documented saturation limits
+Neural core release. Implemented core neural network processes.
 
 ### Added
-- Mathematical documentation for all plasticity rules
-- Weight management lifecycle documentation
-- Heredity type (Darwinian/Lamarckian) documentation
+- **neuron.erl**: Neural processing unit with activation/aggregation
+- **cortex.erl**: Network coordinator for sync cycles
+- **sensor.erl**: Input interface with built-in sensors (rng, ones, zeros, counter)
+- **actuator.erl**: Output interface with built-in actuators (pts, identity, threshold, softmax, argmax)
+- **genotype.erl**: Initial genotype representation (ETS-based, to be refactored in v0.3.1)
+- **constructor.erl**: Phenotype spawner (to be refactored in v0.3.1)
+- **functions.erl extensions**: Added relu and cubic (not in original DXNN2)
+
+### Changed
+- Added dynamic linking support to sensor, neuron, actuator via `{link, ...}` messages
+
+### Test Results
+- 214 tests passing
+- Dialyzer clean
+
+### Notes
+- genotype.erl marked for architectural review - needs alignment with DXNN2 patterns
+- constructor.erl async linking needs synchronization mechanism
 
 ---
 

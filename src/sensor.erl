@@ -93,7 +93,11 @@ loop(State) ->
         {scape, Signal} ->
             %% Scape provides the signal directly
             handle_scape_signal(Signal, State),
-            loop(State)
+            loop(State);
+
+        {link, fanout_pids, FanoutPids} ->
+            %% Dynamic linking from constructor
+            loop(State#state{fanout_pids = FanoutPids})
     end.
 
 handle_sync(State) ->

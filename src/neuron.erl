@@ -131,7 +131,24 @@ loop(State) ->
                 input_weights = NewWeights,
                 bias = NewBias
             },
-            loop(NewState)
+            loop(NewState);
+
+        %% Dynamic linking from constructor
+        {link, input_pids, InputPids} ->
+            NewState = State#state{
+                input_pids = InputPids,
+                expected_inputs = length(InputPids)
+            },
+            loop(NewState);
+
+        {link, output_pids, OutputPids} ->
+            loop(State#state{output_pids = OutputPids});
+
+        {link, ro_pids, RoPids} ->
+            loop(State#state{ro_pids = RoPids});
+
+        {link, input_weights, InputWeights} ->
+            loop(State#state{input_weights = InputWeights})
     end.
 
 handle_forward(FromPid, Signal, State) ->

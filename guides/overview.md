@@ -26,7 +26,10 @@ See the [Architecture Guide](architecture.html) for details.
 - [TWEANN Basics](tweann-basics.html) - What is TWEANN and how does it work?
 - [Installation](installation.html) - Add to your project
 - [Quick Start](quickstart.html) - Basic usage examples
-- [Architecture](architecture.html) - System design and module organization
+
+### Architecture
+- [C4 Architecture Model](c4-architecture.html) - Multi-level architectural views (Context, Container, Component, Code)
+- [Architecture Details](architecture.html) - Layer-by-layer system design
 
 ### Core Concepts
 See the module documentation for detailed API reference on:

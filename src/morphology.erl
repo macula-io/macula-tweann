@@ -122,7 +122,7 @@ get_Actuators(Morphology) ->
 %% The sensor receives 2 inputs (the XOR inputs).
 %% The actuator outputs 1 value (the XOR result).
 %%
-%% @param Type Either `sensors` or `actuators`
+%% @param Type Either sensors or actuators
 %% @returns List of sensor or actuator records
 -spec xor_mimic(sensors | actuators) -> [#sensor{}] | [#actuator{}].
 xor_mimic(sensors) ->
@@ -149,7 +149,7 @@ xor_mimic(actuators) ->
 %% Classic reinforcement learning benchmark where the agent balances
 %% one or more poles on a cart.
 %%
-%% @param Type Either `sensors` or `actuators`
+%% @param Type Either sensors or actuators
 %% @returns List of sensor or actuator records
 -spec pole_balancing(sensors | actuators) -> [#sensor{}] | [#actuator{}].
 pole_balancing(sensors) ->
@@ -177,7 +177,7 @@ pole_balancing(actuators) ->
 %%
 %% Navigation task where agent must learn to navigate a T-shaped maze.
 %%
-%% @param Type Either `sensors` or `actuators`
+%% @param Type Either sensors or actuators
 %% @returns List of sensor or actuator records
 -spec discrete_tmaze(sensors | actuators) -> [#sensor{}] | [#actuator{}].
 discrete_tmaze(sensors) ->
@@ -205,7 +205,7 @@ discrete_tmaze(actuators) ->
 %%
 %% Flatland agent that can sense distance and move with two wheels.
 %%
-%% @param Type Either `sensors` or `actuators`
+%% @param Type Either sensors or actuators
 %% @returns List of sensor or actuator records
 -spec prey(sensors | actuators) -> [#sensor{}] | [#actuator{}].
 prey(sensors) ->
@@ -239,7 +239,7 @@ prey(actuators) ->
 %%
 %% Same as prey morphology (predator and prey have same I/O interface).
 %%
-%% @param Type Either `sensors` or `actuators`
+%% @param Type Either sensors or actuators
 %% @returns List of sensor or actuator records
 -spec predator(sensors | actuators) -> [#sensor{}] | [#actuator{}].
 predator(sensors) ->
@@ -251,7 +251,7 @@ predator(actuators) ->
 %%
 %% Financial trading agent that reads price indicators and makes trades.
 %%
-%% @param Type Either `sensors` or `actuators`
+%% @param Type Either sensors or actuators
 %% @returns List of sensor or actuator records
 -spec forex_trader(sensors | actuators) -> [#sensor{}] | [#actuator{}].
 forex_trader(sensors) ->

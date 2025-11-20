@@ -1,3 +1,0 @@
-%% encoding: UTF-8
-{application,macula_tweann}.
-{modules,[functions,signal_aggregator]}.

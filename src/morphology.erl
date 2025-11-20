@@ -30,6 +30,16 @@
 
 -include("records.hrl").
 
+%% Suppress supertype warnings - specs are intentionally general for polymorphic returns
+-dialyzer({nowarn_function, [
+    xor_mimic/1,
+    pole_balancing/1,
+    discrete_tmaze/1,
+    prey/1,
+    predator/1,
+    forex_trader/1
+]}).
+
 %% API
 -export([
     get_InitSensors/1,

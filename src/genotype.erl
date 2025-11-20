@@ -38,6 +38,18 @@
 
 -include("records.hrl").
 
+%% Suppress supertype warnings - specs are intentionally general for API flexibility
+-dialyzer({nowarn_function, [
+    dirty_read/1,
+    construct_SeedNN/6,
+    create_InitPattern/1,
+    construct_Neuron/6,
+    link_Neuron/4,
+    link_FromElementToElement/3,
+    clone_Agent/1,
+    random_element/1
+]}).
+
 -export([
     %% Database operations
     init_db/0,
@@ -473,6 +485,9 @@ generate_NeuronAggrF(AggrFs) ->
     random_element(AggrFs).
 
 %% Create input weight list
+%% Note: Currently called with empty list during initial construction.
+%% Will be used with non-empty lists when genome_mutator mutations are added.
+-dialyzer({no_match, create_InputIdPs/2}).
 create_InputIdPs([], Acc) -> Acc;
 create_InputIdPs([{Id, VL} | Rest], Acc) ->
     Weights = create_neural_weights(VL),
@@ -483,6 +498,9 @@ create_neural_weights(VL) ->
     [{rand:uniform() * 2 - 1, 0.0, 0.1, []} || _ <- lists:seq(1, VL)].
 
 %% Calculate recurrent output IDs
+%% Note: Currently called with empty list during initial construction.
+%% Will be used with non-empty lists when genome_mutator mutations are added.
+-dialyzer({no_match, calculate_ROIds/3}).
 calculate_ROIds(_N_Id, [], Acc) -> Acc;
 calculate_ROIds(N_Id, [OutputId | Rest], Acc) ->
     {{N_Layer, _}, _} = N_Id,

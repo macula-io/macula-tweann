@@ -307,7 +307,7 @@ create_test_network(simple) ->
         actuators => [Actuator]
     };
 
-create_test_network(xor) ->
+create_test_network(xor_gate) ->
     CortexId = {{0.0, generate_unique_id()}, cortex},
     AgentId = {generate_unique_id(), agent},
 

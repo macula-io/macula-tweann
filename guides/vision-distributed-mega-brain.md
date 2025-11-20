@@ -36,7 +36,7 @@
 
 ## The Vision
 
-![Mega-Brain Architecture](../doc/diagrams/mega-brain-architecture.svg)
+![Mega-Brain Architecture](assets/mega-brain-architecture.svg)
 
 ### What is a "Mega-Brain"?
 
@@ -136,7 +136,7 @@ We can build **4 different distribution models**, each with different trade-offs
 
 ### Model 1: Distributed Evolution (Simplest)
 
-![Distributed Evolution Model](../doc/diagrams/distributed-evolution-model.svg)
+![Distributed Evolution Model](assets/distributed-evolution-model.svg)
 
 **Concept**: Each node runs local evolution, shares best genotypes
 
@@ -169,7 +169,7 @@ macula_peer:subscribe(<<"tweann.genotypes.species_X">>,
 
 ### Model 2: Federated Populations (Moderate)
 
-![Federated Populations Model](../doc/diagrams/federated-populations-model.svg)
+![Federated Populations Model](assets/federated-populations-model.svg)
 
 **Concept**: Divide population across nodes, coordinate selection
 
@@ -203,7 +203,7 @@ end, Survivors).
 
 ### Model 3: Swarm Evolution (Advanced)
 
-![Swarm Evolution Model](../doc/diagrams/swarm-evolution-model.svg)
+![Swarm Evolution Model](assets/swarm-evolution-model.svg)
 
 **Concept**: Networks migrate between nodes based on fitness
 

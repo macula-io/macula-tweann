@@ -112,6 +112,7 @@
 -spec mutate(term()) -> ok.
 mutate(AgentId) ->
     MutationCount = calculate_mutation_count(AgentId),
+    tweann_logger:debug("Starting mutation: agent=~p mutations=~p", [AgentId, MutationCount]),
     mutate(AgentId, MutationCount).
 
 %% @doc Apply a specific number of mutations to an agent.
@@ -158,21 +159,36 @@ calculate_count(_Default, _NeuronCount, _Param) ->
 
 %% @private Apply a specific mutation operator
 -spec apply_mutation(term(), atom()) -> ok | {error, term()}.
-apply_mutation(AgentId, add_bias) -> add_bias(AgentId);
-apply_mutation(AgentId, add_outlink) -> add_outlink(AgentId);
-apply_mutation(AgentId, add_inlink) -> add_inlink(AgentId);
-apply_mutation(AgentId, add_neuron) -> add_neuron(AgentId);
-apply_mutation(AgentId, outsplice) -> outsplice(AgentId);
-apply_mutation(AgentId, add_sensorlink) -> add_sensorlink(AgentId);
-apply_mutation(AgentId, add_actuatorlink) -> add_actuatorlink(AgentId);
-apply_mutation(AgentId, add_sensor) -> add_sensor(AgentId);
-apply_mutation(AgentId, add_actuator) -> add_actuator(AgentId);
-apply_mutation(AgentId, mutate_weights) -> mutate_weights(AgentId);
-apply_mutation(AgentId, mutate_af) -> mutate_af(AgentId);
-apply_mutation(AgentId, mutate_aggr_f) -> mutate_aggr_f(AgentId);
-apply_mutation(_AgentId, add_cpp) -> ok; % Substrate - not implemented
-apply_mutation(_AgentId, add_cep) -> ok; % Substrate - not implemented
-apply_mutation(_AgentId, _Unknown) -> ok.
+apply_mutation(AgentId, Operator) ->
+    tweann_logger:debug("Applying mutation: agent=~p operator=~p", [AgentId, Operator]),
+    Result = case Operator of
+        add_bias -> add_bias(AgentId);
+        add_outlink -> add_outlink(AgentId);
+        add_inlink -> add_inlink(AgentId);
+        add_neuron -> add_neuron(AgentId);
+        outsplice -> outsplice(AgentId);
+        add_sensorlink -> add_sensorlink(AgentId);
+        add_actuatorlink -> add_actuatorlink(AgentId);
+        add_sensor -> add_sensor(AgentId);
+        add_actuator -> add_actuator(AgentId);
+        mutate_weights -> mutate_weights(AgentId);
+        mutate_af -> mutate_af(AgentId);
+        mutate_aggr_f -> mutate_aggr_f(AgentId);
+        add_cpp -> ok; % Substrate - not implemented
+        add_cep -> ok; % Substrate - not implemented
+        _ ->
+            tweann_logger:warning("Unknown mutation operator: ~p", [Operator]),
+            ok
+    end,
+    case Result of
+        {error, Reason} ->
+            tweann_logger:warning("Mutation failed: agent=~p operator=~p reason=~p",
+                                [AgentId, Operator, Reason]),
+            Result;
+        ok ->
+            tweann_logger:debug("Mutation succeeded: agent=~p operator=~p", [AgentId, Operator]),
+            Result
+    end.
 
 %% ============================================================================
 %% Parametric Mutations (Evolutionary Strategy)

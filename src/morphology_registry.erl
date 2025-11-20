@@ -172,7 +172,8 @@ code_change(_OldVsn, State, _Extra) ->
 %%
 %% @param Module The module to verify
 %% @returns ok | {error, Reason}
--spec verify_morphology_module(module()) -> ok | {error, term()}.
+-spec verify_morphology_module(module()) ->
+    ok | {error, {missing_callback, get_sensors | get_actuators, 1}}.
 verify_morphology_module(Module) ->
     Exports = Module:module_info(exports),
     HasGetSensors = lists:member({get_sensors, 1}, Exports),

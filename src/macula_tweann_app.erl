@@ -20,7 +20,7 @@
 %% Starts the morphology registry supervisor.
 -spec start(StartType :: normal | {takeover, node()} | {failover, node()},
             StartArgs :: term()) ->
-    {ok, pid()} | {ok, pid(), State :: term()} | {error, Reason :: term()}.
+    {ok, pid()} | {error, Reason :: term()}.
 start(_StartType, _StartArgs) ->
     macula_tweann_sup:start_link().
 

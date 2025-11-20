@@ -3,27 +3,25 @@
 %% This module provides the interface for accessing morphologies (problem domains).
 %% Morphologies are now registered at runtime via morphology_registry.
 %%
-%% == Using Morphologies ==
+%% Using Morphologies:
 %%
 %% 1. Register a morphology (typically at application startup):
-%% ```
+%%
 %% morphology_registry:register(xor_mimic, morphology_xor).
-%% ```
 %%
 %% 2. Use the morphology in agent construction:
-%% ```
+%%
 %% Constraint = #constraint{morphology = xor_mimic},
 %% {ok, AgentId} = genotype:construct_agent(Constraint).
-%% ```
 %%
-%% == Custom Morphologies ==
+%% Custom Morphologies:
 %%
 %% To create a custom morphology:
 %% 1. Implement morphology_behaviour in your module
 %% 2. Register it at runtime
 %% 3. Use it in constraints
 %%
-%% See guides/custom-morphology.md for detailed instructions.
+%% See guides/CUSTOM_MORPHOLOGIES.md for detailed instructions.
 %% See examples/ directory for reference implementations.
 %%
 %% Based on DXNN2 by Gene Sher ("Handbook of Neuroevolution through Erlang").

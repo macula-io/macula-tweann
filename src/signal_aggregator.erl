@@ -70,12 +70,11 @@
 %% @returns Aggregated scalar value
 %%
 %% Example:
-%% ```
+%%
 %% Inputs = [{sensor1, [1.0, 0.5]}],
 %% Weights = [{sensor1, [{0.3, 0.0, 0.1, []}, {0.7, 0.0, 0.1, []}]}],
 %% Result = dot_product(Inputs, Weights).
-%% % Result = 1.0*0.3 + 0.5*0.7 = 0.65
-%% '''
+%% Result = 1.0*0.3 + 0.5*0.7 = 0.65
 -spec dot_product(input_signals(), weighted_inputs()) -> float().
 dot_product(InputSignals, WeightedInputs) ->
     dot_product(InputSignals, WeightedInputs, 0.0).
@@ -103,12 +102,11 @@ dot_product([], [], Acc) ->
 %% @returns Aggregated scalar value
 %%
 %% Example:
-%% ```
+%%
 %% Inputs = [{sensor1, [0.5, 0.4]}],
 %% Weights = [{sensor1, [{2.0, 0.0, 0.1, []}, {3.0, 0.0, 0.1, []}]}],
 %% Result = mult_product(Inputs, Weights).
-%% % Result = (0.5*2.0) * (0.4*3.0) = 1.2
-%% '''
+%% Result = (0.5*2.0) * (0.4*3.0) = 1.2
 -spec mult_product(input_signals(), weighted_inputs()) -> float().
 mult_product(InputSignals, WeightedInputs) ->
     mult_product(InputSignals, WeightedInputs, 1.0).

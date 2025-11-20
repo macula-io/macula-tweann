@@ -4,9 +4,8 @@
 %% Applications implement this behaviour to create custom morphologies without modifying
 %% the macula-tweann library.
 %%
-%% == Example Implementation ==
+%% Example Implementation:
 %%
-%% ```
 %% -module(my_morphology).
 %% -behaviour(morphology_behaviour).
 %%
@@ -22,12 +21,10 @@
 %%     [#actuator{name = my_actuator, vl = 2, ...}];
 %% get_actuators(_) ->
 %%     error(invalid_morphology).
-%% ```
 %%
 %% Then register at runtime:
-%% ```
+%%
 %% morphology_registry:register(my_problem, my_morphology).
-%% ```
 %%
 %% @author Macula.io
 %% @copyright 2025 Macula.io, Apache-2.0

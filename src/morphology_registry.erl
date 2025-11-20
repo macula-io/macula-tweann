@@ -3,21 +3,19 @@
 %% Provides runtime registration of morphology implementations. Applications
 %% can register custom morphologies without modifying the macula-tweann library.
 %%
-%% == Usage ==
+%% Usage:
 %%
-%% ```
-%% % Start registry (done automatically by application)
+%% Start registry (done automatically by application):
 %% morphology_registry:start_link().
 %%
-%% % Register a morphology
+%% Register a morphology:
 %% ok = morphology_registry:register(my_problem, my_morphology_module).
 %%
-%% % Get registered module
+%% Get registered module:
 %% {ok, my_morphology_module} = morphology_registry:get(my_problem).
 %%
-%% % List all registered
+%% List all registered:
 %% [my_problem, xor_mimic] = morphology_registry:list_all().
-%% ```
 %%
 %% @author Macula.io
 %% @copyright 2025 Macula.io, Apache-2.0
@@ -63,9 +61,8 @@ start_link() ->
 %% Verifies that the module implements morphology_behaviour before registering.
 %%
 %% Example:
-%% ```
+%%
 %% ok = morphology_registry:register(xor_mimic, morphology_xor).
-%% ```
 %%
 %% @param MorphologyName Atom identifying the morphology (e.g., xor_mimic)
 %% @param Module Module implementing morphology_behaviour

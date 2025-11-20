@@ -45,24 +45,11 @@ The distributed mega-brain architecture has **profound implications for both mil
 
 ## Military Applications and Implications
 
+![Military Swarm Coordination](assets/military-swarm-coordination.svg)
+
 ### 1. Autonomous Swarm Systems
 
 #### Scenario: Distributed Drone Coordination
-
-**Traditional Approach** (Centralized):
-```
-Ground Control Station → Commands → Individual Drones
-    ↓ (destroyed)
-All drones lose coordination
-```
-
-**Mega-Brain Approach** (Distributed):
-```
-Drone 1 ↔ Drone 2 ↔ Drone 3 ↔ ... ↔ Drone N
-    ↓         ↓         ↓             ↓
-Each evolves tactics, shares via mesh
-Loss of any drone doesn't halt swarm
-```
 
 **Capabilities**:
 - **Real-time adaptation**: Swarm evolves counter-tactics to enemy defenses
@@ -220,26 +207,13 @@ macula_bridge:publish_genotype(OptimalWaveform, ew_realm).
 
 ## Civil Infrastructure Resilience
 
+![Civil Infrastructure Resilience](assets/civil-infrastructure-resilience.svg)
+
 ### 1. Power Grid Resilience
 
 #### Distributed Energy Management
 
 **Scenario**: National power grid under attack (cyber or kinetic)
-
-**Traditional Grid**:
-```
-Central SCADA → Regional Control → Substations → Consumers
-    ↓ (cyber attack)
-Grid goes down (cascading failure)
-```
-
-**Mega-Brain Grid**:
-```
-Solar + Wind + Battery (Node 1) ↔ Mesh ↔ (Node 2) ↔ ... ↔ (Node N)
-    ↓                                        ↓              ↓
-Each evolves load balancing             Share strategies    Adapt to failures
-Island mode if attacked                                     Reconnect when safe
-```
 
 **Capabilities**:
 - **Black start**: Grid restores itself without central command
@@ -540,6 +514,8 @@ Week 3: 1000 hospitals using evolved protocol → 15% better outcomes
 ---
 
 ### 2. International Treaty Frameworks
+
+![Treaty Governance Framework](assets/treaty-governance-framework.svg)
 
 **Proposed: "Treaty on the Non-Militarization of Distributed AI Systems"**
 

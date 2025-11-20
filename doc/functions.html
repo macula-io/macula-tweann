@@ -1,0 +1,411 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Module functions</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+</head>
+<body bgcolor="white">
+<div class="navbar"><a name="#navbar_top"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<hr>
+
+<h1>Module functions</h1>
+<ul class="index"><li><a href="#description">Description</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>Activation and utility functions for neural computation.
+<p>Copyright © 2025 Macula.io, Apache-2.0</p>
+
+<p><b>Authors:</b> Macula.io.</p>
+
+<h2><a name="description">Description</a></h2><p>Activation and utility functions for neural computation.</p>
+ 
+  <p>This module provides activation functions used by neurons to transform  
+aggregated input signals into output signals, plus utility functions  
+for saturation and scaling.</p>
+ 
+  <h3><a name="Activation_Functions">Activation Functions</a></h3>
+ 
+  <p>Monotonic:</p>
+ 
+  <p>- <code>tanh</code> - Hyperbolic tangent, smooth, range [-1, 1]</p>
+ 
+  <p>- <code>sigmoid</code> - Logistic function, range [0, 1]</p>
+ 
+  <p>- <code>sigmoid1</code> - Alternative sigmoid, range [-1, 1]</p>
+ 
+  <p>- <code>linear</code> - Identity function (no transformation)</p>
+ 
+  <p>Periodic:</p>
+ 
+  <p>- <code>sin</code> - Sine function</p>
+ 
+  <p>- <code>cos</code> - Cosine function</p>
+ 
+  <p>Radial Basis:</p>
+ 
+  <p>- <code>gaussian</code> - Bell curve, peaks at 0</p>
+ 
+  <p>- <code>multiquadric</code> - sqrt(x^2 + c)</p>
+ 
+  <p>Threshold:</p>
+ 
+  <p>- <code>sgn</code> - Sign function {-1, 0, 1}</p>
+ 
+  <p>- <code>bin</code> - Binary threshold {0, 1}</p>
+ 
+  <p>- <code>trinary</code> - Three-level output {-1, 0, 1}</p>
+ 
+  <p>Other:</p>
+ 
+  <p>- <code>absolute</code> - Absolute value</p>
+ 
+  <p>- <code>quadratic</code> - Signed square</p>
+ 
+  <p>- <code>sqrt</code> - Signed square root</p>
+ 
+  <p>- <code>log</code> - Signed logarithm</p>
+ 
+  <h3><a name="Utility_Functions">Utility Functions</a></h3>
+ 
+  <p>- <code>saturation/1,2</code> - Clamp values to prevent overflow</p>
+ 
+  <p>- <code>sat/3</code> - Clamp to [min, max] range</p>
+ 
+  <p>- <code>sat_dzone/5</code> - Saturation with dead zone</p>
+ 
+  - <code>scale/3,5</code> - Scale values between ranges
+ 
+<h2><a name="index">Function Index</a></h2>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#absolute-1">absolute/1</a></td><td>Absolute value activation function.</td></tr>
+<tr><td valign="top"><a href="#avg-1">avg/1</a></td><td>Calculate average of a list.</td></tr>
+<tr><td valign="top"><a href="#bin-1">bin/1</a></td><td>Binary threshold function.</td></tr>
+<tr><td valign="top"><a href="#cos-1">cos/1</a></td><td>Cosine activation function.</td></tr>
+<tr><td valign="top"><a href="#gaussian-1">gaussian/1</a></td><td>Gaussian (radial basis) activation function.</td></tr>
+<tr><td valign="top"><a href="#gaussian-2">gaussian/2</a></td><td>Gaussian with custom base.</td></tr>
+<tr><td valign="top"><a href="#linear-1">linear/1</a></td><td>Linear (identity) activation function.</td></tr>
+<tr><td valign="top"><a href="#log-1">log/1</a></td><td>Logarithm activation function.</td></tr>
+<tr><td valign="top"><a href="#multiquadric-1">multiquadric/1</a></td><td>Multiquadric activation function.</td></tr>
+<tr><td valign="top"><a href="#quadratic-1">quadratic/1</a></td><td>Quadratic activation function.</td></tr>
+<tr><td valign="top"><a href="#sat-3">sat/3</a></td><td>Clamp value to range [Min, Max].</td></tr>
+<tr><td valign="top"><a href="#sat_dzone-5">sat_dzone/5</a></td><td>Clamp value with dead zone.</td></tr>
+<tr><td valign="top"><a href="#saturation-1">saturation/1</a></td><td>Clamp value to default range [-1000, 1000].</td></tr>
+<tr><td valign="top"><a href="#saturation-2">saturation/2</a></td><td>Clamp value to symmetric range [-Spread, Spread].</td></tr>
+<tr><td valign="top"><a href="#scale-3">scale/3</a></td><td>Scale list or value from one range to [-1, 1].</td></tr>
+<tr><td valign="top"><a href="#scale-5">scale/5</a></td><td>Scale value from one range to another.</td></tr>
+<tr><td valign="top"><a href="#sgn-1">sgn/1</a></td><td>Sign function.</td></tr>
+<tr><td valign="top"><a href="#sigmoid-1">sigmoid/1</a></td><td>Sigmoid (logistic) activation function.</td></tr>
+<tr><td valign="top"><a href="#sigmoid1-1">sigmoid1/1</a></td><td>Alternative sigmoid activation function.</td></tr>
+<tr><td valign="top"><a href="#sin-1">sin/1</a></td><td>Sine activation function.</td></tr>
+<tr><td valign="top"><a href="#sqrt-1">sqrt/1</a></td><td>Square root activation function.</td></tr>
+<tr><td valign="top"><a href="#std-1">std/1</a></td><td>Calculate standard deviation of a list.</td></tr>
+<tr><td valign="top"><a href="#tanh-1">tanh/1</a></td><td>Hyperbolic tangent activation function.</td></tr>
+<tr><td valign="top"><a href="#trinary-1">trinary/1</a></td><td>Trinary threshold function.</td></tr>
+</table>
+
+<h2><a name="functions">Function Details</a></h2>
+
+<h3 class="function"><a name="absolute-1">absolute/1</a></h3>
+<div class="spec">
+<p><code>absolute(Val::number()) -&gt; number()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: |Val|</p>
+</div><p>Absolute value activation function
+ </p>
+
+<h3 class="function"><a name="avg-1">avg/1</a></h3>
+<div class="spec">
+<p><code>avg(List::[number()]) -&gt; float()</code><br></p>
+<p><code>List</code>: list of numbers<br>
+</p>
+<p>returns: arithmetic mean</p>
+</div><p>Calculate average of a list
+ </p>
+
+<h3 class="function"><a name="bin-1">bin/1</a></h3>
+<div class="spec">
+<p><code>bin(Val::number()) -&gt; 0 | 1</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: 0 or 1</p>
+</div><p><p>Binary threshold function</p>
+ 
+  Returns 1 for positive input, 0 otherwise.
+ </p>
+
+<h3 class="function"><a name="cos-1">cos/1</a></h3>
+<div class="spec">
+<p><code>cos(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output in range [-1, 1]</p>
+</div><p><p>Cosine activation function</p>
+ 
+  Periodic function with range [-1, 1].
+  cos(0) = 1, phase-shifted from sine.
+ </p>
+
+<h3 class="function"><a name="gaussian-1">gaussian/1</a></h3>
+<div class="spec">
+<p><code>gaussian(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output in range (0, 1]</p>
+</div><p><p>Gaussian (radial basis) activation function</p>
+ 
+  <p>Bell curve centered at 0, peaks at 1.0, decays towards 0.  
+Mathematical definition: e^(-x^2)</p>
+ 
+  <p>Input is clamped to [-10, 10] to prevent underflow.</p>
+ 
+  Properties:
+  - Output range: (0, 1]
+  - gaussian(0) = 1
+  - Radially symmetric
+ </p>
+
+<h3 class="function"><a name="gaussian-2">gaussian/2</a></h3>
+<div class="spec">
+<p><code>gaussian(Base::float(), Val::float()) -&gt; float()</code><br></p>
+<p><code>Base</code>: the exponential base (typically e = 2.71828183)<br>
+<code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output value</p>
+</div><p>Gaussian with custom base
+ </p>
+
+<h3 class="function"><a name="linear-1">linear/1</a></h3>
+<div class="spec">
+<p><code>linear(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: Val unchanged</p>
+</div><p><p>Linear (identity) activation function</p>
+ 
+  No transformation - output equals input.
+  Used for output neurons when raw values are needed.
+ </p>
+
+<h3 class="function"><a name="log-1">log/1</a></h3>
+<div class="spec">
+<p><code>log(Val::number()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: signed natural logarithm</p>
+</div><p><p>Logarithm activation function</p>
+ 
+  Signed logarithm: sgn(x) * ln(|x|)
+  Handles zero input specially.
+ </p>
+
+<h3 class="function"><a name="multiquadric-1">multiquadric/1</a></h3>
+<div class="spec">
+<p><code>multiquadric(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output value &gt;= 0.1</p>
+</div><p><p>Multiquadric activation function</p>
+ 
+  Mathematical definition: sqrt(x^2 + 0.01)
+  Always positive, smooth at origin.
+ </p>
+
+<h3 class="function"><a name="quadratic-1">quadratic/1</a></h3>
+<div class="spec">
+<p><code>quadratic(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: signed square of input</p>
+</div><p><p>Quadratic activation function</p>
+ 
+  Signed square: sgn(x) * x^2
+  Preserves sign while amplifying magnitude.
+ </p>
+
+<h3 class="function"><a name="sat-3">sat/3</a></h3>
+<div class="spec">
+<p><code>sat(Val::number(), Max::number(), Min::number()) -&gt; number()</code><br></p>
+<p><code>Val</code>: the input value<br>
+<code>Max</code>: the maximum allowed value<br>
+<code>Min</code>: the minimum allowed value<br>
+</p>
+<p>returns: clamped value</p>
+</div><p>Clamp value to range [Min, Max]
+ </p>
+
+<h3 class="function"><a name="sat_dzone-5">sat_dzone/5</a></h3>
+<div class="spec">
+<p><code>sat_dzone(Val::number(), Max::number(), Min::number(), DZMax::number(), DZMin::number()) -&gt; number()</code><br></p>
+<p><code>Val</code>: the input value<br>
+<code>Max</code>: the maximum allowed value<br>
+<code>Min</code>: the minimum allowed value<br>
+<code>DZMax</code>: the dead zone upper bound<br>
+<code>DZMin</code>: the dead zone lower bound<br>
+</p>
+<p>returns: processed value</p>
+</div><p><p>Clamp value with dead zone</p>
+ 
+  Values within the dead zone [DZMin, DZMax] are set to 0.
+  Values outside are clamped to [Min, Max].
+ </p>
+
+<h3 class="function"><a name="saturation-1">saturation/1</a></h3>
+<div class="spec">
+<p><code>saturation(Val::number()) -&gt; number()</code><br></p>
+<p><code>Val</code>: the input value<br>
+</p>
+<p>returns: clamped value</p>
+</div><p><p>Clamp value to default range [-1000, 1000]</p>
+ 
+  Prevents numerical overflow in subsequent calculations.
+ </p>
+
+<h3 class="function"><a name="saturation-2">saturation/2</a></h3>
+<div class="spec">
+<p><code>saturation(Val::number(), Spread::number()) -&gt; number()</code><br></p>
+<p><code>Val</code>: the input value<br>
+<code>Spread</code>: the maximum absolute value<br>
+</p>
+<p>returns: clamped value</p>
+</div><p>Clamp value to symmetric range [-Spread, Spread]
+ </p>
+
+<h3 class="function"><a name="scale-3">scale/3</a></h3>
+<div class="spec">
+<p><code>scale(T::[number()] | number(), Max::number(), Min::number()) -&gt; [float()] | float()</code><br></p>
+<p><code>Max</code>: the maximum of the input range<br>
+<code>Min</code>: the minimum of the input range<br>
+</p>
+<p>returns: scaled value(s) in range [-1, 1]</p>
+</div><p><p>Scale list or value from one range to [-1, 1]</p>
+ 
+  Normalizes values using: (Val*2 - (Max + Min)) / (Max - Min)
+ </p>
+
+<h3 class="function"><a name="scale-5">scale/5</a></h3>
+<div class="spec">
+<p><code>scale(Val::number(), FromMin::number(), FromMax::number(), ToMin::number(), ToMax::number()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input value<br>
+<code>FromMin</code>: minimum of input range<br>
+<code>FromMax</code>: maximum of input range<br>
+<code>ToMin</code>: minimum of output range<br>
+<code>ToMax</code>: maximum of output range<br>
+</p>
+<p>returns: scaled value</p>
+</div><p><p>Scale value from one range to another</p>
+ 
+  Linear interpolation from [FromMin, FromMax] to [ToMin, ToMax].
+ </p>
+
+<h3 class="function"><a name="sgn-1">sgn/1</a></h3>
+<div class="spec">
+<p><code>sgn(Val::number()) -&gt; -1 | 0 | 1</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: -1, 0, or 1</p>
+</div><p><p>Sign function</p>
+ 
+  Returns the sign of the input value.
+ </p>
+
+<h3 class="function"><a name="sigmoid-1">sigmoid/1</a></h3>
+<div class="spec">
+<p><code>sigmoid(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output in range (0, 1)</p>
+</div><p><p>Sigmoid (logistic) activation function</p>
+ 
+  <p>S-shaped curve mapping to range [0, 1].  
+Mathematical definition: 1 / (1 + e^-x)</p>
+ 
+  <p>Input is clamped to [-10, 10] to prevent overflow.</p>
+ 
+  Properties:
+  - Output range: (0, 1)
+  - sigmoid(0) = 0.5
+  - Derivative: y * (1 - y)
+ </p>
+
+<h3 class="function"><a name="sigmoid1-1">sigmoid1/1</a></h3>
+<div class="spec">
+<p><code>sigmoid1(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output in range (-1, 1)</p>
+</div><p><p>Alternative sigmoid activation function</p>
+ 
+  <p>Maps to range [-1, 1] using: x / (1 + |x|)</p>
+ 
+  Properties:
+  - Output range: (-1, 1)
+  - sigmoid1(0) = 0
+  - Faster to compute than standard sigmoid
+  - Derivative: 1 / (1 + |x|)^2
+ </p>
+
+<h3 class="function"><a name="sin-1">sin/1</a></h3>
+<div class="spec">
+<p><code>sin(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output in range [-1, 1]</p>
+</div><p><p>Sine activation function</p>
+ 
+  Periodic function with range [-1, 1].
+  Useful for oscillatory patterns and fourier-like representations.
+ </p>
+
+<h3 class="function"><a name="sqrt-1">sqrt/1</a></h3>
+<div class="spec">
+<p><code>sqrt(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: signed square root</p>
+</div><p><p>Square root activation function</p>
+ 
+  Signed square root: sgn(x) * sqrt(|x|)
+  Compresses magnitude while preserving sign.
+ </p>
+
+<h3 class="function"><a name="std-1">std/1</a></h3>
+<div class="spec">
+<p><code>std(List::[number()]) -&gt; float()</code><br></p>
+<p><code>List</code>: list of numbers<br>
+</p>
+<p>returns: standard deviation</p>
+</div><p>Calculate standard deviation of a list
+ </p>
+
+<h3 class="function"><a name="tanh-1">tanh/1</a></h3>
+<div class="spec">
+<p><code>tanh(Val::float()) -&gt; float()</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: output in range [-1, 1]</p>
+</div><p><p>Hyperbolic tangent activation function</p>
+ 
+  <p>Maps input to range [-1, 1] with smooth gradient.  
+Mathematical definition: tanh(x) = (e^x - e^-x) / (e^x + e^-x)</p>
+ 
+  Properties:
+  - Output range: [-1, 1]
+  - tanh(0) = 0
+  - Smooth derivative (good for learning)
+  - Most commonly used activation in neuroevolution
+ </p>
+
+<h3 class="function"><a name="trinary-1">trinary/1</a></h3>
+<div class="spec">
+<p><code>trinary(Val::float()) -&gt; -1 | 0 | 1</code><br></p>
+<p><code>Val</code>: the input signal value<br>
+</p>
+<p>returns: -1, 0, or 1</p>
+</div><p><p>Trinary threshold function</p>
+ 
+  Returns -1, 0, or 1 based on threshold of 0.33.
+ </p>
+<hr>
+
+<div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<p><i>Generated by EDoc</i></p>
+</body>
+</html>

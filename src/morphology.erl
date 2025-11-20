@@ -19,8 +19,8 @@
 %% == Adding New Morphologies ==
 %%
 %% 1. Add export for the new morphology function
-%% 2. Implement `morphology_name(sensors)` returning sensor list
-%% 3. Implement `morphology_name(actuators)` returning actuator list
+%% 2. Implement morphology_name(sensors) returning sensor list
+%% 3. Implement morphology_name(actuators) returning actuator list
 %% 4. Sensors need: name, type, scape, vl (vector length)
 %% 5. Actuators need: name, type, scape, vl
 %%

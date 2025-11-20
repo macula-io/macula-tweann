@@ -36,6 +36,8 @@
 
 ## The Vision
 
+![Mega-Brain Architecture](../doc/diagrams/mega-brain-architecture.svg)
+
 ### What is a "Mega-Brain"?
 
 A **distributed mega-brain** is a massively parallel evolutionary neural network system where:
@@ -134,18 +136,9 @@ We can build **4 different distribution models**, each with different trade-offs
 
 ### Model 1: Distributed Evolution (Simplest)
 
-**Concept**: Each node runs local evolution, shares best genotypes
+![Distributed Evolution Model](../doc/diagrams/distributed-evolution-model.svg)
 
-**Architecture**:
-```
-Node A (Population Monitor)        Node B (Population Monitor)
-    ↓                                    ↓
-Local evolution                      Local evolution
-    ↓                                    ↓
-Publish best genotype ──────DHT────→ Subscribe to genotypes
-    ↓                                    ↓
-Incorporate into population ←────────────
-```
+**Concept**: Each node runs local evolution, shares best genotypes
 
 **Macula Integration**:
 ```erlang
@@ -176,24 +169,9 @@ macula_peer:subscribe(<<"tweann.genotypes.species_X">>,
 
 ### Model 2: Federated Populations (Moderate)
 
-**Concept**: Divide population across nodes, coordinate selection
+![Federated Populations Model](../doc/diagrams/federated-populations-model.svg)
 
-**Architecture**:
-```
-Coordinator Node (Realm Gateway)
-    ↓
-  DHT (Kademlia)
-    ↓
-┌───────────┬───────────┬───────────┐
-│ Node A    │ Node B    │ Node C    │
-│ Agents    │ Agents    │ Agents    │
-│ 1-100     │ 101-200   │ 201-300   │
-└───────────┴───────────┴───────────┘
-         ↓         ↓          ↓
-    Fitness reports aggregated by coordinator
-         ↓
-    Global selection, distribute survivors
-```
+**Concept**: Divide population across nodes, coordinate selection
 
 **Macula Integration**:
 ```erlang
@@ -225,20 +203,9 @@ end, Survivors).
 
 ### Model 3: Swarm Evolution (Advanced)
 
-**Concept**: Networks migrate between nodes based on fitness
+![Swarm Evolution Model](../doc/diagrams/swarm-evolution-model.svg)
 
-**Architecture**:
-```
-Problem Node A ──fitness──→ High fitness
-                              ↓
-                         Genotype migrates
-                              ↓
-Problem Node B ──fitness──→ Low fitness ←──┘
-                              ↓
-                      Genotype improves locally
-                              ↓
-                      Migrates to Node C...
-```
+**Concept**: Networks migrate between nodes based on fitness
 
 **Macula Integration**:
 ```erlang

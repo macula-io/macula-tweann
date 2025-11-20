@@ -36,8 +36,9 @@ Week 10-12: v0.6.0 - Population Management
 Week 12-14: v0.7.0 - Hardened Core
 Week 14-16: v0.8.0 - Process Safety    } Robustness Phase
 ------------------------------------------------
-Week 16-18: v0.9.0 - Optimized
-Week 18-19: v1.0.0 - Production Ready  } Performance Phase
+Week 16-18: v0.9.0 - Library Refactoring  } Refactoring Phase
+Week 18-20: v0.10.0 - Optimized
+Week 20-21: v1.0.0 - Production Ready    } Performance Phase
 ```
 
 ## Phase Overview
@@ -99,7 +100,26 @@ Week 18-19: v1.0.0 - Production Ready  } Performance Phase
 - Comprehensive error handling
 - Crash recovery mechanisms
 
-### Phase 4: Performance (v0.9.0 - v1.0.0)
+### Phase 4: Refactoring (v0.9.0)
+
+**Duration**: 2 weeks
+**Focus**: Transform into true library, extract domain-specific code
+
+**Objectives**:
+- Extract morphologies from library core
+- Create morphology behavior/callback interface
+- Add morphology registration system
+- Reorganize: library code vs examples
+- Prepare for application integration (macula-arcade)
+
+**Key Deliverables**:
+- morphology_behaviour.erl (generic interface)
+- morphology_registry.erl (runtime registration)
+- examples/ directory with 4 reference morphologies
+- Custom morphology guide
+- Snake game integration example
+
+### Phase 5: Performance (v0.10.0 - v1.0.0)
 
 **Duration**: 3 weeks
 **Focus**: Optimize hot paths, clean up dead code, prepare for production

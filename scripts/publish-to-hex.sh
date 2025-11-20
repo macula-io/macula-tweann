@@ -66,7 +66,7 @@ rebar3 compile
 
 # Generate documentation
 echo "Generating documentation..."
-rebar3 ex_doc
+rebar3 edoc
 
 # Build the package
 echo "Building hex package..."

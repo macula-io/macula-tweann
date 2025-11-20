@@ -1,35 +1,33 @@
-%% @module signal_aggregator
-%% @doc Signal aggregation functions for neural computation
+%% @doc Signal aggregation functions for neural computation.
 %%
 %% This module provides functions that aggregate weighted inputs from multiple
 %% sources into a single scalar value for activation function processing.
 %%
 %% == Aggregation Methods ==
-%% - dot_product: Standard weighted sum (most common)
-%% - mult_product: Multiplicative aggregation
-%% - diff_product: Differentiation-based aggregation (uses process dictionary)
+%%
+%% - `dot_product' - Standard weighted sum (most common)
+%%
+%% - `mult_product' - Multiplicative aggregation
+%%
+%% - `diff_product' - Differentiation-based aggregation (uses process dictionary)
 %%
 %% == Weight Tuple Format ==
-%% Weights are provided as tuples: {Weight, DeltaWeight, LearningRate, ParamList}
-%% where:
-%%   - Weight: The actual weight value used for computation
-%%   - DeltaWeight: Momentum term (ignored here, used by plasticity)
-%%   - LearningRate: Learning parameter (ignored here)
-%%   - ParamList: Additional parameters for plasticity rules (ignored here)
+%%
+%% Weights are provided as tuples: `{Weight, DeltaWeight, LearningRate, ParamList}'
+%%
+%% - Weight: The actual weight value used for computation
+%%
+%% - DeltaWeight: Momentum term (ignored here, used by plasticity)
+%%
+%% - LearningRate: Learning parameter (ignored here)
+%%
+%% - ParamList: Additional parameters for plasticity rules (ignored here)
 %%
 %% Only the Weight value is used for aggregation. The other fields support
 %% the plasticity system for weight updates during learning.
 %%
-%% == Usage Example ==
-%% ```
-%% Inputs = [{sensor1, [0.5, 0.3]}],
-%% Weights = [{sensor1, [{0.2, 0.0, 0.1, []}, {0.4, 0.0, 0.1, []}]}],
-%% Result = signal_aggregator:dot_product(Inputs, Weights).
-%% % Result = 0.5*0.2 + 0.3*0.4 = 0.22
-%% ```
-%%
-%% @copyright 2025 Macula.io
-%% @license Apache-2.0
+%% @author Macula.io
+%% @copyright 2025 Macula.io, Apache-2.0
 
 -module(signal_aggregator).
 
@@ -77,7 +75,7 @@
 %% Weights = [{sensor1, [{0.3, 0.0, 0.1, []}, {0.7, 0.0, 0.1, []}]}],
 %% Result = dot_product(Inputs, Weights).
 %% % Result = 1.0*0.3 + 0.5*0.7 = 0.65
-%% ```
+%% '''
 -spec dot_product(input_signals(), weighted_inputs()) -> float().
 dot_product(InputSignals, WeightedInputs) ->
     dot_product(InputSignals, WeightedInputs, 0.0).
@@ -110,7 +108,7 @@ dot_product([], [], Acc) ->
 %% Weights = [{sensor1, [{2.0, 0.0, 0.1, []}, {3.0, 0.0, 0.1, []}]}],
 %% Result = mult_product(Inputs, Weights).
 %% % Result = (0.5*2.0) * (0.4*3.0) = 1.2
-%% ```
+%% '''
 -spec mult_product(input_signals(), weighted_inputs()) -> float().
 mult_product(InputSignals, WeightedInputs) ->
     mult_product(InputSignals, WeightedInputs, 1.0).

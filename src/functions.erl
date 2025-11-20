@@ -1,44 +1,63 @@
-%% @module functions
-%% @doc Activation and utility functions for neural computation
+%% @doc Activation and utility functions for neural computation.
 %%
 %% This module provides activation functions used by neurons to transform
 %% aggregated input signals into output signals, plus utility functions
 %% for saturation and scaling.
 %%
 %% == Activation Functions ==
+%%
 %% Monotonic:
-%% - tanh: Hyperbolic tangent, smooth, range [-1, 1]
-%% - sigmoid: Logistic function, range [0, 1]
-%% - sigmoid1: Alternative sigmoid, range [-1, 1]
-%% - linear: Identity function (no transformation)
+%%
+%% - `tanh' - Hyperbolic tangent, smooth, range [-1, 1]
+%%
+%% - `sigmoid' - Logistic function, range [0, 1]
+%%
+%% - `sigmoid1' - Alternative sigmoid, range [-1, 1]
+%%
+%% - `linear' - Identity function (no transformation)
 %%
 %% Periodic:
-%% - sin: Sine function
-%% - cos: Cosine function
+%%
+%% - `sin' - Sine function
+%%
+%% - `cos' - Cosine function
 %%
 %% Radial Basis:
-%% - gaussian: Bell curve, peaks at 0
-%% - multiquadric: sqrt(x^2 + c)
+%%
+%% - `gaussian' - Bell curve, peaks at 0
+%%
+%% - `multiquadric' - sqrt(x^2 + c)
 %%
 %% Threshold:
-%% - sgn: Sign function {-1, 0, 1}
-%% - bin: Binary threshold {0, 1}
-%% - trinary: Three-level output {-1, 0, 1}
+%%
+%% - `sgn' - Sign function {-1, 0, 1}
+%%
+%% - `bin' - Binary threshold {0, 1}
+%%
+%% - `trinary' - Three-level output {-1, 0, 1}
 %%
 %% Other:
-%% - absolute: Absolute value
-%% - quadratic: Signed square
-%% - sqrt: Signed square root
-%% - log: Signed logarithm
+%%
+%% - `absolute' - Absolute value
+%%
+%% - `quadratic' - Signed square
+%%
+%% - `sqrt' - Signed square root
+%%
+%% - `log' - Signed logarithm
 %%
 %% == Utility Functions ==
-%% - saturation/1,2: Clamp values to prevent overflow
-%% - sat/3: Clamp to [min, max] range
-%% - sat_dzone/5: Saturation with dead zone
-%% - scale/3,5: Scale values between ranges
 %%
-%% @copyright 2025 Macula.io
-%% @license Apache-2.0
+%% - `saturation/1,2' - Clamp values to prevent overflow
+%%
+%% - `sat/3' - Clamp to [min, max] range
+%%
+%% - `sat_dzone/5' - Saturation with dead zone
+%%
+%% - `scale/3,5' - Scale values between ranges
+%%
+%% @author Macula.io
+%% @copyright 2025 Macula.io, Apache-2.0
 
 -module(functions).
 

@@ -11,10 +11,10 @@
 %% Each morphology is implemented as a function clause that returns either
 %% sensors or actuators depending on the argument:
 %%
-%% ```
+%% ```erlang
 %% morphology_name(sensors) -> [#sensor{...}];
 %% morphology_name(actuators) -> [#actuator{...}].
-%% ```
+%% '''
 %%
 %% == Adding New Morphologies ==
 %%

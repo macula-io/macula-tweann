@@ -43,8 +43,12 @@
     cycle_acc :: [float()],
     expected_actuators :: non_neg_integer(),
     cycle_count :: non_neg_integer(),
-    max_cycles :: non_neg_integer() | infinity
+    max_cycles :: non_neg_integer() | infinity,
+    sync_timeout :: pos_integer()
 }).
+
+%% Default timeout for waiting on actuator outputs (30 seconds)
+-define(DEFAULT_SYNC_TIMEOUT, 30000).
 
 %% @doc Start a cortex process.
 %%
@@ -69,6 +73,7 @@ init(Opts) ->
     NeuronPids = maps:get(neuron_pids, Opts, []),
     ActuatorPids = maps:get(actuator_pids, Opts, []),
     MaxCycles = maps:get(max_cycles, Opts, infinity),
+    SyncTimeout = maps:get(sync_timeout, Opts, ?DEFAULT_SYNC_TIMEOUT),
 
     State = #state{
         id = Id,
@@ -79,7 +84,8 @@ init(Opts) ->
         cycle_acc = [],
         expected_actuators = length(ActuatorPids),
         cycle_count = 0,
-        max_cycles = MaxCycles
+        max_cycles = MaxCycles,
+        sync_timeout = SyncTimeout
     },
 
     loop(State).
@@ -110,6 +116,7 @@ terminate(CortexPid) ->
 %% Internal functions
 
 loop(State) ->
+    Timeout = State#state.sync_timeout,
     receive
         sync ->
             NewState = handle_sync(State),
@@ -133,6 +140,20 @@ loop(State) ->
 
         {exoself, stop} ->
             handle_terminate(State),
+            ok
+    after Timeout ->
+        handle_timeout(State)
+    end.
+
+%% @private Handle receive timeout
+handle_timeout(State) ->
+    tweann_logger:warning("Cortex ~p sync timeout after ~pms",
+                         [State#state.id, State#state.sync_timeout]),
+    case State#state.exoself_pid of
+        undefined ->
+            ok;
+        ExoselfPid ->
+            _ = ExoselfPid ! {cortex, State#state.id, evaluation_timeout},
             ok
     end.
 

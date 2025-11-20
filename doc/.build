@@ -11,8 +11,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-QPNJX265.woff2
-dist/search_data-CD30C52E.js
-dist/sidebar_items-66F1B67A.js
+dist/search_data-02B84C35.js
+dist/sidebar_items-5089C84A.js
 exoself.html
 fitness_postprocessor.html
 functions.html
@@ -30,3 +30,4 @@ selection_utils.html
 sensor.html
 signal_aggregator.html
 species_identifier.html
+tweann_logger.html

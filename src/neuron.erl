@@ -46,8 +46,12 @@
     input_weights :: #{pid() => [{float(), float(), float(), list()}]},
     bias :: float(),
     acc_input :: #{pid() => [float()]},
-    expected_inputs :: non_neg_integer()
+    expected_inputs :: non_neg_integer(),
+    input_timeout :: pos_integer()
 }).
+
+%% Default timeout for waiting on neuron inputs (10 seconds)
+-define(DEFAULT_INPUT_TIMEOUT, 10000).
 
 %% @doc Start a neuron process.
 %%
@@ -78,6 +82,7 @@ init(Opts) ->
     RoPids = maps:get(ro_pids, Opts, []),
     InputWeights = maps:get(input_weights, Opts, #{}),
     Bias = maps:get(bias, Opts, 0.0),
+    InputTimeout = maps:get(input_timeout, Opts, ?DEFAULT_INPUT_TIMEOUT),
 
     State = #state{
         id = Id,
@@ -90,7 +95,8 @@ init(Opts) ->
         input_weights = InputWeights,
         bias = Bias,
         acc_input = #{},
-        expected_inputs = length(InputPids)
+        expected_inputs = length(InputPids),
+        input_timeout = InputTimeout
     },
 
     loop(State).
@@ -114,6 +120,7 @@ backup(NeuronPid) ->
 %% Internal functions
 
 loop(State) ->
+    Timeout = State#state.input_timeout,
     receive
         {forward, FromPid, Signal} ->
             NewState = handle_forward(FromPid, Signal, State),
@@ -149,7 +156,17 @@ loop(State) ->
 
         {link, input_weights, InputWeights} ->
             loop(State#state{input_weights = InputWeights})
+    after Timeout ->
+        handle_input_timeout(State)
     end.
+
+%% @private Handle input timeout
+handle_input_timeout(State) ->
+    MissingInputs = State#state.expected_inputs - maps:size(State#state.acc_input),
+    tweann_logger:warning("Neuron ~p input timeout after ~pms, missing ~p inputs",
+                         [State#state.id, State#state.input_timeout, MissingInputs]),
+    %% Continue waiting - neuron stays alive but logs the issue
+    loop(State).
 
 handle_forward(FromPid, Signal, State) ->
     #state{

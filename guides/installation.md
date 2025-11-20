@@ -6,7 +6,7 @@ Add `macula_tweann` to your `rebar.config`:
 
 ```erlang
 {deps, [
-    {macula_tweann, "~> 0.8.3"}
+    {macula_tweann, "~> 0.8.4"}
 ]}.
 ```
 
@@ -23,7 +23,7 @@ Add to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:macula_tweann, "~> 0.8.3"}
+    {:macula_tweann, "~> 0.8.4"}
   ]
 end
 ```

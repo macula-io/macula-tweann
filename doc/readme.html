@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.38.2">
-    <meta name="project" content="macula_tweann v0.8.3">
+    <meta name="project" content="macula_tweann v0.8.4">
 
 
-    <title>README — macula_tweann v0.8.3</title>
+    <title>README — macula_tweann v0.8.4</title>
 
     <link rel="stylesheet" href="dist/html-erlang-DQDXQC7W.css" />
 
@@ -37,7 +37,7 @@
 macula_tweann
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v0.8.3
+          v0.8.4
         </div>
       </div>
     </div>
@@ -77,7 +77,7 @@ macula_tweann
     <h1>macula-tweann</h1>
 
 
-      <a href="https://github.com/macula-io/macula-tweann/blob/0.8.3/README.md#L1" title="View Source" class="icon-action" rel="help">
+      <a href="https://github.com/macula-io/macula-tweann/blob/0.8.4/README.md#L1" title="View Source" class="icon-action" rel="help">
         <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         <span class="sr-only">View Source</span>
       </a>
@@ -88,13 +88,13 @@ macula_tweann
 <p><strong>Topology and Weight Evolving Artificial Neural Networks for Erlang</strong></p><p><a href="https://hex.pm/packages/macula_tweann"><img src="https://img.shields.io/hexpm/v/macula_tweann.svg" alt="Hex.pm"/></a>
 <a href="https://hexdocs.pm/macula_tweann/"><img src="https://img.shields.io/badge/docs-hexdocs-blue.svg" alt="Documentation"/></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License"/></a></p><p>Evolutionary neural networks that evolve both topology and weights. Based on DXNN2 by Gene Sher.</p><h2 id="quick-start" class="section-heading"><a href="#quick-start" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Quick Start</span></h2><pre><code class="makeup erlang" translate="no"><span class="c1">%% Add to rebar.config</span><span class="w">
-</span><span class="p" data-group-id="0663314078-1">{</span><span class="ss">deps</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="0663314078-2">[</span><span class="p" data-group-id="0663314078-3">{</span><span class="ss">macula_tweann</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;~&gt; 0.8.3&quot;</span><span class="p" data-group-id="0663314078-3">}</span><span class="p" data-group-id="0663314078-2">]</span><span class="p" data-group-id="0663314078-1">}</span><span class="p">.</span><span class="w">
+</span><span class="p" data-group-id="2909563995-1">{</span><span class="ss">deps</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="2909563995-2">[</span><span class="p" data-group-id="2909563995-3">{</span><span class="ss">macula_tweann</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;~&gt; 0.8.4&quot;</span><span class="p" data-group-id="2909563995-3">}</span><span class="p" data-group-id="2909563995-2">]</span><span class="p" data-group-id="2909563995-1">}</span><span class="p">.</span><span class="w">
 
 </span><span class="c1">%% Create and evolve</span><span class="w">
-</span><span class="nc">genotype</span><span class="p">:</span><span class="nf">init_db</span><span class="p" data-group-id="0663314078-4">(</span><span class="p" data-group-id="0663314078-4">)</span><span class="p">,</span><span class="w">
-</span><span class="n">Constraint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">#</span><span class="ss">constraint</span><span class="p" data-group-id="0663314078-5">{</span><span class="ss">morphology</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">xor_mimic</span><span class="p" data-group-id="0663314078-5">}</span><span class="p">,</span><span class="w">
-</span><span class="p" data-group-id="0663314078-6">{</span><span class="ss">ok</span><span class="p">,</span><span class="w"> </span><span class="n">AgentId</span><span class="p" data-group-id="0663314078-6">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">genotype</span><span class="p">:</span><span class="nf">construct_agent</span><span class="p" data-group-id="0663314078-7">(</span><span class="n">Constraint</span><span class="p" data-group-id="0663314078-7">)</span><span class="p">,</span><span class="w">
-</span><span class="nc">genome_mutator</span><span class="p">:</span><span class="nf">mutate</span><span class="p" data-group-id="0663314078-8">(</span><span class="n">AgentId</span><span class="p" data-group-id="0663314078-8">)</span><span class="p">.</span></code></pre><h2 id="documentation" class="section-heading"><a href="#documentation" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Documentation</span></h2><ul><li><strong><a href="guides/installation.html">Installation</a></strong> - Add to your project</li><li><strong><a href="guides/quickstart.html">Quick Start</a></strong> - Basic usage</li><li><strong><a href="guides/architecture.html">Architecture</a></strong> - System design</li><li><strong><a href="api-reference.html">API Reference</a></strong> - Module documentation</li></ul><h2 id="features" class="section-heading"><a href="#features" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Features</span></h2><ul><li><strong>Topology Evolution</strong>: Networks add/remove neurons and connections</li><li><strong>Weight Evolution</strong>: Synaptic weights optimized through selection</li><li><strong>Speciation</strong>: Behavioral diversity preservation</li><li><strong>Multi-objective</strong>: Pareto dominance optimization</li><li><strong>Process Safety</strong>: Timeouts and crash handling</li><li><strong>Production Ready</strong>: Comprehensive logging and error handling</li></ul><h2 id="architecture" class="section-heading"><a href="#architecture" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Architecture</span></h2><p><img src="doc/diagrams/module-dependencies.svg" alt="Module Dependencies"/></p><p>Process-based neural networks with evolutionary operators. See <a href="guides/architecture.html">Architecture Guide</a> for details.</p><h2 id="testing" class="section-heading"><a href="#testing" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Testing</span></h2><pre><code class="makeup bash" translate="no"><span class="">rebar3 eunit          # Unit tests
+</span><span class="nc">genotype</span><span class="p">:</span><span class="nf">init_db</span><span class="p" data-group-id="2909563995-4">(</span><span class="p" data-group-id="2909563995-4">)</span><span class="p">,</span><span class="w">
+</span><span class="n">Constraint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">#</span><span class="ss">constraint</span><span class="p" data-group-id="2909563995-5">{</span><span class="ss">morphology</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">xor_mimic</span><span class="p" data-group-id="2909563995-5">}</span><span class="p">,</span><span class="w">
+</span><span class="p" data-group-id="2909563995-6">{</span><span class="ss">ok</span><span class="p">,</span><span class="w"> </span><span class="n">AgentId</span><span class="p" data-group-id="2909563995-6">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">genotype</span><span class="p">:</span><span class="nf">construct_agent</span><span class="p" data-group-id="2909563995-7">(</span><span class="n">Constraint</span><span class="p" data-group-id="2909563995-7">)</span><span class="p">,</span><span class="w">
+</span><span class="nc">genome_mutator</span><span class="p">:</span><span class="nf">mutate</span><span class="p" data-group-id="2909563995-8">(</span><span class="n">AgentId</span><span class="p" data-group-id="2909563995-8">)</span><span class="p">.</span></code></pre><h2 id="documentation" class="section-heading"><a href="#documentation" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Documentation</span></h2><ul><li><strong><a href="guides/installation.html">Installation</a></strong> - Add to your project</li><li><strong><a href="guides/quickstart.html">Quick Start</a></strong> - Basic usage</li><li><strong><a href="guides/architecture.html">Architecture</a></strong> - System design</li><li><strong><a href="api-reference.html">API Reference</a></strong> - Module documentation</li></ul><h2 id="features" class="section-heading"><a href="#features" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Features</span></h2><ul><li><strong>Topology Evolution</strong>: Networks add/remove neurons and connections</li><li><strong>Weight Evolution</strong>: Synaptic weights optimized through selection</li><li><strong>Speciation</strong>: Behavioral diversity preservation</li><li><strong>Multi-objective</strong>: Pareto dominance optimization</li><li><strong>Process Safety</strong>: Timeouts and crash handling</li><li><strong>Production Ready</strong>: Comprehensive logging and error handling</li></ul><h2 id="architecture" class="section-heading"><a href="#architecture" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Architecture</span></h2><p><img src="doc/diagrams/module-dependencies.svg" alt="Module Dependencies"/></p><p>Process-based neural networks with evolutionary operators. See <a href="guides/architecture.html">Architecture Guide</a> for details.</p><h2 id="testing" class="section-heading"><a href="#testing" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Testing</span></h2><pre><code class="makeup bash" translate="no"><span class="">rebar3 eunit          # Unit tests
 </span><span class="">rebar3 dialyzer       # Static analysis
 </span></code></pre><h2 id="license" class="section-heading"><a href="#license" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">License</span></h2><p>Apache License 2.0 - See <a href="LICENSE">LICENSE</a></p><h2 id="credits" class="section-heading"><a href="#credits" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Credits</span></h2><p>Based on DXNN2 by Gene Sher. Adapted by <a href="https://macula.io">Macula.io</a>.</p><h3 id="references" class="section-heading"><a href="#references" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">References</span></h3><ul><li>Sher, G.I. <em>Handbook of Neuroevolution Through Erlang</em> (2013)</li><li>Stanley, K.O., Miikkulainen, R. <em>Evolving Neural Networks Through Augmenting Topologies</em> (2002)</li></ul>
 
@@ -121,11 +121,11 @@ Architecture
       <p>
 
           <span class="line">
-            <a href="https://hex.pm/packages/macula_tweann/0.8.3" class="footer-hex-package">Hex Package</a>
+            <a href="https://hex.pm/packages/macula_tweann/0.8.4" class="footer-hex-package">Hex Package</a>
 
-            <a href="https://preview.hex.pm/preview/macula_tweann/0.8.3">Hex Preview</a>
+            <a href="https://preview.hex.pm/preview/macula_tweann/0.8.4">Hex Preview</a>
 
-              (<a href="https://preview.hex.pm/preview/macula_tweann/0.8.3/show/README.md">current file</a>)
+              (<a href="https://preview.hex.pm/preview/macula_tweann/0.8.4/show/README.md">current file</a>)
 
           </span>
 

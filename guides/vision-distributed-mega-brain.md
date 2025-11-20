@@ -1,7 +1,7 @@
 # Vision: Distributed Mega-Brain on Macula Mesh
 
 **Date**: 2025-11-20
-**Version**: 0.8.7
+**Version**: 0.8.8
 **Purpose**: Explore feasibility of massively distributed evolutionary neural networks on Macula HTTP/3 mesh
 **Related Documents**:
 - [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.html)

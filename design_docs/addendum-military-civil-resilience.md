@@ -1,7 +1,7 @@
 # Addendum: Military and Civil Resilience Implications
 
 **Date**: 2025-11-20
-**Version**: 0.8.7
+**Version**: 0.8.8
 **Purpose**: Analyze military and civil resilience implications of distributed mega-brain systems
 **Related**: [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html)
 

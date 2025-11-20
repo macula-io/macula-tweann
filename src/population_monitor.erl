@@ -314,44 +314,25 @@ spawn_agent(AgentId, State) ->
 
 %% @doc Select survivors based on fitness.
 %%
-%% Implements simple top-X selection where best performing agents survive.
+%% Delegates to the selection_algorithm module for configurable selection.
+%% Uses the algorithm specified in the population state.
 %%
 %% @param AgentFitnesses list of {AgentId, Fitness} tuples
 %% @param SurvivalRate fraction of population to keep (0.0-1.0)
 %% @returns list of surviving AgentIds
 -spec select_survivors([{term(), [float()]}], float()) -> [term()].
-select_survivors([], _SurvivalRate) ->
-    [];
 select_survivors(AgentFitnesses, SurvivalRate) ->
-    %% Sort by fitness (descending)
-    Sorted = lists:sort(
-        fun({_, F1}, {_, F2}) -> compare_fitness(F1, F2) end,
-        AgentFitnesses
-    ),
-
-    %% Calculate number of survivors
-    NumSurvivors = max(1, round(length(AgentFitnesses) * SurvivalRate)),
-
-    %% Take top N agents
-    Survivors = lists:sublist(Sorted, NumSurvivors),
-    [AgentId || {AgentId, _Fitness} <- Survivors].
-
-%% @private Compare two fitness vectors (higher is better)
--spec compare_fitness([float()], [float()]) -> boolean().
-compare_fitness(F1, F2) ->
-    sum_fitness(F1) >= sum_fitness(F2).
-
-%% @private Sum fitness vector
--spec sum_fitness([float()]) -> float().
-sum_fitness(Fitness) ->
-    lists:sum(Fitness).
+    %% Delegate to selection_algorithm module
+    %% Currently using competition selection (top-X)
+    %% Could be made configurable via population state in future
+    selection_algorithm:competition(AgentFitnesses, SurvivalRate).
 
 %% @private Find best fitness in a list of fitness vectors
 -spec find_best_fitness([[float()]]) -> [float()].
 find_best_fitness([First | Rest]) ->
     lists:foldl(
         fun(F, BestSoFar) ->
-            case compare_fitness(F, BestSoFar) of
+            case lists:sum(F) >= lists:sum(BestSoFar) of
                 true -> F;
                 false -> BestSoFar
             end
@@ -363,7 +344,7 @@ find_best_fitness([First | Rest]) ->
 %% @private Check if fitness improved
 -spec fitness_improved([float()], [float()]) -> boolean().
 fitness_improved(NewFitness, OldFitness) ->
-    compare_fitness(NewFitness, OldFitness) andalso NewFitness =/= OldFitness.
+    (lists:sum(NewFitness) >= lists:sum(OldFitness)) andalso NewFitness =/= OldFitness.
 
 %% @private Reproduce population from survivors
 -spec reproduce_population([term()], pos_integer()) -> [term()].
@@ -411,7 +392,7 @@ goal_reached(State) ->
         undefined -> false;
         BestFitness ->
             GoalFitness = State#population_state.fitness_goal,
-            compare_fitness(BestFitness, GoalFitness)
+            lists:sum(BestFitness) >= lists:sum(GoalFitness)
     end.
 
 %% @private Check if max generations reached

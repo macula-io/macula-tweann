@@ -31,6 +31,7 @@ See the [Architecture Guide](architecture.html) for details.
 - [C4 Architecture Model](c4-architecture.html) - Multi-level architectural views (Context, Container, Component, Code)
 - [Architecture Details](architecture.html) - Layer-by-layer system design
 - [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) - Planet-scale evolutionary intelligence on Macula mesh
+- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.html) - Defense, security, and infrastructure implications
 
 ### Core Concepts
 See the module documentation for detailed API reference on:

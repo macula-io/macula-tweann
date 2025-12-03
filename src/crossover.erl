@@ -97,13 +97,14 @@ crossover(Parent1Id, Parent2Id) ->
 %% @doc Perform neuron-level crossover.
 %%
 %% Combines properties from matching neurons in both parents.
-%% Can mix activation function, weights, etc.
+%% Can mix activation function, weights, LTC parameters, etc.
 %%
 %% Strategy:
 %% - Activation function: random choice from parents
 %% - Input weights: weight-level crossover
 %% - Aggregation function: random choice
 %% - Output connections: union of both parents
+%% - LTC parameters: random choice with averaging for continuous values
 %%
 %% Example:
 %%   Neuron1 = #neuron{af = tanh, ...}
@@ -141,12 +142,23 @@ neuron_crossover(Neuron1, Neuron2, CrossoverRate) ->
         Neuron1#neuron.output_ids ++ Neuron2#neuron.output_ids
     ),
 
+    %% Crossover LTC parameters
+    {NeuronType, Tau, Bound, BackboneW, HeadW} = crossover_ltc_params(
+        Neuron1, Neuron2, CrossoverRate
+    ),
+
     %% Build crossed neuron
     Neuron1#neuron{
         af = AF,
         aggr_f = AggrF,
         input_idps = InputWeights,
-        output_ids = Outputs
+        output_ids = Outputs,
+        neuron_type = NeuronType,
+        time_constant = Tau,
+        state_bound = Bound,
+        ltc_backbone_weights = BackboneW,
+        ltc_head_weights = HeadW,
+        internal_state = 0.0  %% Reset state for offspring
     }.
 
 %% @doc Perform weight-level crossover.
@@ -353,3 +365,139 @@ crossover_weight_vectors(W1, W2, CrossoverRate) ->
     end,
 
     Combined ++ Remaining.
+
+%% ============================================================================
+%% Internal Functions - LTC Parameter Crossover
+%% ============================================================================
+
+%% @private Crossover LTC (Liquid Time-Constant) parameters between neurons.
+%%
+%% Strategy for LTC parameters:
+%% - neuron_type: Select from parent with matching type, or random choice
+%% - time_constant: Average if both LTC, otherwise from LTC parent or default
+%% - state_bound: Average if both LTC, otherwise from LTC parent or default
+%% - backbone/head weights: Crossover weight vectors if both have them
+%%
+%% @param Neuron1 first parent neuron
+%% @param Neuron2 second parent neuron
+%% @param CrossoverRate probability of taking from parent 1
+%% @returns {NeuronType, Tau, Bound, BackboneWeights, HeadWeights}
+-spec crossover_ltc_params(#neuron{}, #neuron{}, float()) ->
+    {atom(), float(), float(), [float()], [float()]}.
+crossover_ltc_params(Neuron1, Neuron2, CrossoverRate) ->
+    Type1 = Neuron1#neuron.neuron_type,
+    Type2 = Neuron2#neuron.neuron_type,
+
+    %% Determine offspring neuron type
+    NeuronType = crossover_neuron_type(Type1, Type2, CrossoverRate),
+
+    %% Crossover time constant (tau)
+    Tau = crossover_continuous_param(
+        Neuron1#neuron.time_constant,
+        Neuron2#neuron.time_constant,
+        Type1, Type2,
+        1.0  %% default tau
+    ),
+
+    %% Crossover state bound (A)
+    Bound = crossover_continuous_param(
+        Neuron1#neuron.state_bound,
+        Neuron2#neuron.state_bound,
+        Type1, Type2,
+        1.0  %% default bound
+    ),
+
+    %% Crossover backbone weights
+    BackboneW = crossover_ltc_weights(
+        Neuron1#neuron.ltc_backbone_weights,
+        Neuron2#neuron.ltc_backbone_weights,
+        CrossoverRate
+    ),
+
+    %% Crossover head weights
+    HeadW = crossover_ltc_weights(
+        Neuron1#neuron.ltc_head_weights,
+        Neuron2#neuron.ltc_head_weights,
+        CrossoverRate
+    ),
+
+    {NeuronType, Tau, Bound, BackboneW, HeadW}.
+
+%% @private Crossover neuron types.
+%% If both parents have same type, inherit it.
+%% If one is LTC/CfC and other is standard, probabilistic choice.
+-spec crossover_neuron_type(atom(), atom(), float()) -> atom().
+crossover_neuron_type(Type1, Type1, _Rate) ->
+    %% Same type, inherit it
+    Type1;
+crossover_neuron_type(Type1, Type2, CrossoverRate) ->
+    %% Different types, choose based on crossover rate
+    case rand:uniform() < CrossoverRate of
+        true -> Type1;
+        false -> Type2
+    end.
+
+%% @private Crossover continuous LTC parameter (tau or bound).
+%% Averages values if both parents are LTC/CfC neurons.
+-spec crossover_continuous_param(float(), float(), atom(), atom(), float()) -> float().
+crossover_continuous_param(Val1, Val2, Type1, Type2, Default) ->
+    IsLtc1 = is_ltc_type(Type1),
+    IsLtc2 = is_ltc_type(Type2),
+    crossover_continuous_impl(Val1, Val2, IsLtc1, IsLtc2, Default).
+
+crossover_continuous_impl(Val1, Val2, true, true, _Default) ->
+    %% Both LTC: average
+    (Val1 + Val2) / 2.0;
+crossover_continuous_impl(Val1, _Val2, true, false, _Default) ->
+    %% Only parent1 is LTC
+    Val1;
+crossover_continuous_impl(_Val1, Val2, false, true, _Default) ->
+    %% Only parent2 is LTC
+    Val2;
+crossover_continuous_impl(_Val1, _Val2, false, false, Default) ->
+    %% Neither is LTC, use default
+    Default.
+
+%% @private Check if neuron type is LTC or CfC.
+-spec is_ltc_type(atom()) -> boolean().
+is_ltc_type(ltc) -> true;
+is_ltc_type(cfc) -> true;
+is_ltc_type(_) -> false.
+
+%% @private Crossover LTC weight vectors.
+%% Uses weight-level crossover for matching indices.
+-spec crossover_ltc_weights([float()], [float()], float()) -> [float()].
+crossover_ltc_weights([], W2, _Rate) -> W2;
+crossover_ltc_weights(W1, [], _Rate) -> W1;
+crossover_ltc_weights(W1, W2, CrossoverRate) ->
+    NumWeights = min(length(W1), length(W2)),
+
+    %% Crossover matching weights
+    Combined = lists:zipwith(
+        fun(Weight1, Weight2) ->
+            case rand:uniform() < CrossoverRate of
+                true -> Weight1;
+                false -> Weight2
+            end
+        end,
+        lists:sublist(W1, NumWeights),
+        lists:sublist(W2, NumWeights)
+    ),
+
+    %% Add remaining weights from longer list
+    Remaining = get_remaining_weights(W1, W2, NumWeights),
+    Combined ++ Remaining.
+
+%% @private Get remaining weights from the longer list.
+-spec get_remaining_weights([float()], [float()], non_neg_integer()) -> [float()].
+get_remaining_weights(W1, W2, NumWeights) ->
+    Len1 = length(W1),
+    Len2 = length(W2),
+    get_remaining_impl(W1, W2, Len1, Len2, NumWeights).
+
+get_remaining_impl(W1, _W2, Len1, _Len2, NumWeights) when Len1 > NumWeights ->
+    lists:nthtail(NumWeights, W1);
+get_remaining_impl(_W1, W2, _Len1, Len2, NumWeights) when Len2 > NumWeights ->
+    lists:nthtail(NumWeights, W2);
+get_remaining_impl(_W1, _W2, _Len1, _Len2, _NumWeights) ->
+    [].

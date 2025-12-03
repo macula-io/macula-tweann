@@ -41,10 +41,21 @@
 
 -include("records.hrl").
 
+%% Dialyzer suppressions for supertype warnings on map() return types.
+%% We use map() for API flexibility; dialyzer infers more specific types.
+-dialyzer({nowarn_function, [extract_ltc_signature/1,
+                             extract_ltc_signature_from_neurons/1,
+                             extract_neuron_ltc_data/1,
+                             default_ltc_signature/0]}).
+
 -export([
     identify_species/3,
     calculate_distance/2,
-    create_fingerprint/1
+    create_fingerprint/1,
+    %% LTC-aware distance functions
+    calculate_ltc_distance/2,
+    calculate_combined_distance/4,
+    extract_ltc_signature/1
 ]).
 
 %% ============================================================================
@@ -317,3 +328,207 @@ generate_random_inputs(AgentId, NumSamples) ->
                     end
             end
     end.
+
+%% ============================================================================
+%% LTC-Aware Distance Functions
+%% ============================================================================
+
+%% @doc Calculate distance based on LTC parameters between two agents.
+%%
+%% Compares LTC signatures (neuron types, time constants, state bounds)
+%% between agents. Agents with similar LTC configurations will have
+%% lower distance, enabling speciation by temporal dynamics.
+%%
+%% LTC Signature Components:
+%% - Proportion of LTC/CfC neurons vs standard neurons
+%% - Average time constant (tau) of LTC neurons
+%% - Average state bound (A) of LTC neurons
+%% - Standard deviation of tau values (diversity measure)
+%%
+%% @param Signature1 LTC signature from agent 1 (from extract_ltc_signature/1)
+%% @param Signature2 LTC signature from agent 2
+%% @returns Euclidean distance between LTC signatures
+-spec calculate_ltc_distance(map(), map()) -> float().
+calculate_ltc_distance(Signature1, Signature2) ->
+    %% Extract components from signatures
+    LtcRatio1 = maps:get(ltc_ratio, Signature1, 0.0),
+    LtcRatio2 = maps:get(ltc_ratio, Signature2, 0.0),
+
+    AvgTau1 = maps:get(avg_tau, Signature1, 1.0),
+    AvgTau2 = maps:get(avg_tau, Signature2, 1.0),
+
+    AvgBound1 = maps:get(avg_bound, Signature1, 1.0),
+    AvgBound2 = maps:get(avg_bound, Signature2, 1.0),
+
+    TauStd1 = maps:get(tau_std, Signature1, 0.0),
+    TauStd2 = maps:get(tau_std, Signature2, 0.0),
+
+    %% Compute weighted Euclidean distance
+    %% Higher weight on ltc_ratio (fundamental difference in neuron types)
+    RatioDiff = (LtcRatio1 - LtcRatio2) * 2.0,  %% Weight 2x
+    TauDiff = (AvgTau1 - AvgTau2) / 10.0,       %% Normalize (tau can be large)
+    BoundDiff = AvgBound1 - AvgBound2,
+    StdDiff = TauStd1 - TauStd2,
+
+    math:sqrt(RatioDiff * RatioDiff +
+              TauDiff * TauDiff +
+              BoundDiff * BoundDiff +
+              StdDiff * StdDiff).
+
+%% @doc Calculate combined distance using both behavior and LTC parameters.
+%%
+%% Combines behavioral fingerprint distance with LTC parameter distance
+%% to create a comprehensive compatibility metric. This enables speciation
+%% that considers both what agents do (behavior) and how they do it
+%% (temporal dynamics).
+%%
+%% Formula: (BehaviorWeight * BehaviorDist) + (LtcWeight * LtcDist)
+%%
+%% @param BehaviorFingerprint1 Behavioral fingerprint of agent 1
+%% @param BehaviorFingerprint2 Behavioral fingerprint of agent 2
+%% @param LtcSignature1 LTC signature of agent 1
+%% @param LtcSignature2 LTC signature of agent 2
+%% @returns Combined weighted distance
+-spec calculate_combined_distance([float()], [float()], map(), map()) -> float().
+calculate_combined_distance(BehaviorFingerprint1, BehaviorFingerprint2,
+                            LtcSignature1, LtcSignature2) ->
+    %% Weights for combining distances
+    BehaviorWeight = 0.7,   %% Behavior is primary
+    LtcWeight = 0.3,        %% LTC params are secondary
+
+    %% Calculate component distances
+    BehaviorDist = calculate_distance(BehaviorFingerprint1, BehaviorFingerprint2),
+    LtcDist = calculate_ltc_distance(LtcSignature1, LtcSignature2),
+
+    %% Combine with weights
+    BehaviorWeight * BehaviorDist + LtcWeight * LtcDist.
+
+%% @doc Extract LTC signature from an agent's genome.
+%%
+%% Analyzes all neurons in the agent's network and extracts statistics
+%% about LTC parameter usage. This creates a compact representation
+%% of the agent's temporal dynamics characteristics.
+%%
+%% Signature Components:
+%% - ltc_ratio: Proportion of LTC/CfC neurons (0.0 to 1.0)
+%% - avg_tau: Average time constant of LTC neurons
+%% - avg_bound: Average state bound of LTC neurons
+%% - tau_std: Standard deviation of tau values
+%% - ltc_count: Number of LTC/CfC neurons
+%% - total_count: Total number of neurons
+%%
+%% @param AgentId Agent identifier
+%% @returns Map containing LTC signature components
+-spec extract_ltc_signature(term()) -> map().
+extract_ltc_signature(AgentId) ->
+    case genotype:read({agent, AgentId}) of
+        undefined ->
+            %% Agent not found, return default signature
+            default_ltc_signature();
+        Agent ->
+            %% Get all neurons for this agent
+            NeuronIds = get_all_neuron_ids(Agent),
+            extract_ltc_signature_from_neurons(NeuronIds)
+    end.
+
+%% ============================================================================
+%% Internal Functions - LTC Signature Extraction
+%% ============================================================================
+
+%% @private Get all neuron IDs for an agent.
+-spec get_all_neuron_ids(#agent{}) -> [term()].
+get_all_neuron_ids(Agent) ->
+    CortexId = Agent#agent.cx_id,
+    case genotype:read({cortex, CortexId}) of
+        undefined -> [];
+        Cortex -> Cortex#cortex.neuron_ids
+    end.
+
+%% @private Extract LTC signature from a list of neurons.
+-spec extract_ltc_signature_from_neurons([term()]) -> map().
+extract_ltc_signature_from_neurons([]) ->
+    default_ltc_signature();
+extract_ltc_signature_from_neurons(NeuronIds) ->
+    %% Read all neurons and collect LTC data
+    NeuronData = lists:filtermap(
+        fun(NeuronId) ->
+            case genotype:read({neuron, NeuronId}) of
+                undefined -> false;
+                Neuron -> {true, extract_neuron_ltc_data(Neuron)}
+            end
+        end,
+        NeuronIds
+    ),
+
+    %% Separate LTC and standard neurons
+    {LtcNeurons, _StandardNeurons} = lists:partition(
+        fun(#{is_ltc := IsLtc}) -> IsLtc end,
+        NeuronData
+    ),
+
+    TotalCount = length(NeuronData),
+    LtcCount = length(LtcNeurons),
+
+    case LtcCount of
+        0 ->
+            %% No LTC neurons
+            #{
+                ltc_ratio => 0.0,
+                avg_tau => 1.0,
+                avg_bound => 1.0,
+                tau_std => 0.0,
+                ltc_count => 0,
+                total_count => TotalCount
+            };
+        _ ->
+            %% Extract tau and bound values
+            TauValues = [maps:get(tau, N) || N <- LtcNeurons],
+            BoundValues = [maps:get(bound, N) || N <- LtcNeurons],
+
+            AvgTau = lists:sum(TauValues) / LtcCount,
+            AvgBound = lists:sum(BoundValues) / LtcCount,
+            TauStd = calculate_std(TauValues, AvgTau),
+
+            #{
+                ltc_ratio => LtcCount / TotalCount,
+                avg_tau => AvgTau,
+                avg_bound => AvgBound,
+                tau_std => TauStd,
+                ltc_count => LtcCount,
+                total_count => TotalCount
+            }
+    end.
+
+%% @private Extract LTC data from a single neuron.
+-spec extract_neuron_ltc_data(#neuron{}) -> map().
+extract_neuron_ltc_data(Neuron) ->
+    NeuronType = Neuron#neuron.neuron_type,
+    IsLtc = (NeuronType =:= ltc) orelse (NeuronType =:= cfc),
+
+    #{
+        is_ltc => IsLtc,
+        neuron_type => NeuronType,
+        tau => Neuron#neuron.time_constant,
+        bound => Neuron#neuron.state_bound
+    }.
+
+%% @private Return default LTC signature (all standard neurons).
+-spec default_ltc_signature() -> map().
+default_ltc_signature() ->
+    #{
+        ltc_ratio => 0.0,
+        avg_tau => 1.0,
+        avg_bound => 1.0,
+        tau_std => 0.0,
+        ltc_count => 0,
+        total_count => 0
+    }.
+
+%% @private Calculate standard deviation.
+-spec calculate_std([float()], float()) -> float().
+calculate_std([], _Mean) -> 0.0;
+calculate_std([_], _Mean) -> 0.0;
+calculate_std(Values, Mean) ->
+    SquaredDiffs = [(V - Mean) * (V - Mean) || V <- Values],
+    Variance = lists:sum(SquaredDiffs) / length(Values),
+    math:sqrt(Variance).

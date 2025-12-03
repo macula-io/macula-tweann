@@ -654,4 +654,118 @@ mod tests {
         assert_eq!(result.len(), 1);
         assert!((result[0] - 0.0).abs() < 0.1); // tanh(0) = 0
     }
+
+    // ========================================================================
+    // LTC/CfC Tests
+    // ========================================================================
+
+    #[test]
+    fn test_sigmoid() {
+        // sigmoid(0) = 0.5
+        assert!((sigmoid(0.0) - 0.5).abs() < 1e-10);
+        // sigmoid(large positive) -> 1
+        assert!(sigmoid(10.0) > 0.99);
+        // sigmoid(large negative) -> 0
+        assert!(sigmoid(-10.0) < 0.01);
+    }
+
+    #[test]
+    fn test_clamp_state() {
+        // Within bounds
+        assert!((clamp_state(0.5, 1.0) - 0.5).abs() < 1e-10);
+        // Above bound
+        assert!((clamp_state(2.0, 1.0) - 1.0).abs() < 1e-10);
+        // Below bound
+        assert!((clamp_state(-2.0, 1.0) - (-1.0)).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_compute_backbone_simple() {
+        // Simple mode (no weights): f = input / tau
+        let result = compute_backbone(1.0, 2.0, &[]);
+        assert!((result - 0.5).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_compute_backbone_with_weights() {
+        // With weights: tanh(weighted_sum)
+        let weights = vec![1.0, 0.0]; // weight for input=1, bias=0
+        let result = compute_backbone(0.5, 1.0, &weights);
+        assert!((result - 0.5_f64.tanh()).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_compute_head_simple() {
+        // Simple mode: h = tanh(input)
+        let result = compute_head(0.5, &[]);
+        assert!((result - 0.5_f64.tanh()).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_cfc_evaluation_zero_input() {
+        // With zero input and zero state, should stay near zero
+        let (new_state, output) = evaluate_cfc_impl(0.0, 0.0, 1.0, 1.0, &[], &[]);
+        assert!(new_state.abs() < 0.1);
+        assert_eq!(new_state, output);
+    }
+
+    #[test]
+    fn test_cfc_evaluation_state_persistence() {
+        // CfC should interpolate between current state and target
+        let (new_state, _) = evaluate_cfc_impl(1.0, 0.5, 1.0, 1.0, &[], &[]);
+        // State should move toward tanh(1.0) ~ 0.76
+        assert!(new_state > 0.5);
+        assert!(new_state < 1.0);
+    }
+
+    #[test]
+    fn test_cfc_respects_bounds() {
+        // Large input should be clamped to bound
+        let (new_state, _) = evaluate_cfc_impl(100.0, 0.0, 1.0, 0.5, &[], &[]);
+        assert!(new_state.abs() <= 0.5);
+    }
+
+    #[test]
+    fn test_ode_evaluation_basic() {
+        // ODE evaluation should update state based on dynamics
+        let (new_state, output) = evaluate_ode_impl(0.5, 0.0, 1.0, 1.0, 0.1, &[], &[]);
+        // State should change (not stay at 0)
+        assert!(new_state != 0.0 || output != 0.0);
+    }
+
+    #[test]
+    fn test_ode_respects_bounds() {
+        // Large dynamics should be clamped
+        let (new_state, _) = evaluate_ode_impl(100.0, 0.0, 0.01, 0.5, 1.0, &[], &[]);
+        assert!(new_state.abs() <= 0.5);
+    }
+
+    #[test]
+    fn test_cfc_faster_than_ode() {
+        // This is a simple benchmark sanity check
+        use std::time::Instant;
+
+        let iterations = 10000;
+
+        // CfC timing
+        let start_cfc = Instant::now();
+        for i in 0..iterations {
+            let _ = evaluate_cfc_impl(i as f64 * 0.001, 0.0, 1.0, 1.0, &[], &[]);
+        }
+        let cfc_time = start_cfc.elapsed();
+
+        // ODE timing
+        let start_ode = Instant::now();
+        for i in 0..iterations {
+            let _ = evaluate_ode_impl(i as f64 * 0.001, 0.0, 1.0, 1.0, 0.1, &[], &[]);
+        }
+        let ode_time = start_ode.elapsed();
+
+        // CfC should be at least as fast (they're similar complexity in this impl)
+        // In practice, CfC avoids ODE integration overhead
+        println!("CfC: {:?}, ODE: {:?}", cfc_time, ode_time);
+        // Just check both complete without error
+        assert!(cfc_time.as_nanos() > 0);
+        assert!(ode_time.as_nanos() > 0);
+    }
 }

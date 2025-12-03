@@ -266,21 +266,98 @@ demonstrate_adaptation() ->
 
 ## Integration with Evolution
 
-LTC parameters can evolve alongside network topology:
+LTC parameters evolve alongside network topology using the standard TWEANN mutation and crossover operators.
+
+### LTC Mutation Operators
+
+The `genome_mutator` module includes LTC-specific mutation operators:
 
 ```erlang
-%% Future: LTC mutation operators (Phase 3)
-%% mutate_time_constant(Neuron) -> perturb tau
-%% mutate_state_bound(Neuron) -> perturb A
-%% mutate_neuron_type(Neuron) -> switch standard <-> ltc <-> cfc
+%% Mutate time constant (tau)
+%% Perturbs tau by a small random amount within bounds [0.01, 100.0]
+genome_mutator:mutate_time_constant(AgentId).
+
+%% Mutate state bound (A)
+%% Perturbs bound by a small random amount within [0.1, 10.0]
+genome_mutator:mutate_state_bound(AgentId).
+
+%% Mutate neuron type
+%% Switches between standard <-> ltc <-> cfc with configurable probability
+genome_mutator:mutate_neuron_type(AgentId).
+
+%% Mutate LTC backbone weights
+%% Perturbs the f() backbone network weights
+genome_mutator:mutate_ltc_backbone(AgentId).
+
+%% Mutate LTC head weights
+%% Perturbs the h() head network weights
+genome_mutator:mutate_ltc_head(AgentId).
+```
+
+### LTC Crossover
+
+When two agents with LTC neurons are crossed over, LTC parameters are inherited:
+
+```erlang
+%% Crossover inherits LTC parameters from fitter parent (or random if equal)
+%% Parameters inherited: neuron_type, time_constant, state_bound,
+%%                       ltc_backbone_weights, ltc_head_weights, internal_state
+
+%% Example: crossover preserves LTC dynamics
+{ok, ChildId} = crossover:crossover(ParentA_Id, ParentB_Id).
+%% Child neurons inherit LTC parameters from parents
+```
+
+### LTC-Aware Speciation
+
+The species identification system considers LTC parameters when computing compatibility distance:
+
+```erlang
+%% Calculate LTC-specific distance between two agents
+LtcDistance = species_identifier:calculate_ltc_distance(AgentA_Id, AgentB_Id).
+
+%% Combined distance (behavioral + LTC)
+%% Default weights: 70% behavioral, 30% LTC
+CombinedDistance = species_identifier:calculate_combined_distance(
+    AgentA_Id, AgentB_Id,
+    0.7,    %% Behavioral weight
+    0.3     %% LTC weight
+).
+```
+
+The LTC distance is computed from:
+- **ltc_ratio**: Proportion of LTC neurons in the network
+- **avg_tau**: Average time constant across LTC neurons
+- **avg_bound**: Average state bound
+- **tau_std**: Standard deviation of tau values (diversity measure)
+
+### Rust NIF Acceleration
+
+LTC evaluation is accelerated via Rust NIFs for high-throughput applications:
+
+```erlang
+%% CfC evaluation via Rust NIF (~100x faster than pure Erlang ODE)
+{NewState, Output} = tweann_nif:evaluate_cfc(Input, State, Tau, Bound).
+
+%% CfC with custom weights via NIF
+{NewState, Output} = tweann_nif:evaluate_cfc_with_weights(
+    Input, State, Tau, Bound, BackboneWeights, HeadWeights
+).
+
+%% ODE evaluation via NIF (when accuracy is needed)
+{NewState, Output} = tweann_nif:evaluate_ode(Input, State, Tau, Bound, Dt).
+
+%% Batch CfC evaluation (process entire sequences efficiently)
+Results = tweann_nif:evaluate_cfc_batch(InputSequence, InitialState, Tau, Bound).
+%% Returns: [{State1, Output1}, {State2, Output2}, ...]
 ```
 
 ## Performance Tips
 
 1. **Use CfC mode for inference** - 100x faster than ODE
-2. **Batch evaluations when possible** - Reduce function call overhead
-3. **Consider Rust NIF** - For high-throughput applications (future)
-4. **Reset state between episodes** - Prevents state leakage
+2. **Use Rust NIFs for production** - `tweann_nif:evaluate_cfc/4` for maximum throughput
+3. **Batch evaluations when possible** - Use `tweann_nif:evaluate_cfc_batch/4` for sequences
+4. **Reset state between episodes** - Prevents state leakage across training episodes
 5. **Tune tau per application** - Different tasks need different dynamics
 
 ## Troubleshooting

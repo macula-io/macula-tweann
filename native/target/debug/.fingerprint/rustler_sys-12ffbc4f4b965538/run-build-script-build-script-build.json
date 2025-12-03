@@ -1,0 +1,1 @@
+{"rustc":16285725380928457773,"features":"","declared_features":"","target":0,"profile":0,"path":0,"deps":[[15639121639795688970,"build_script_build",false,8365578262373192888]],"local":[{"RerunIfChanged":{"output":"debug/build/rustler_sys-12ffbc4f4b965538/output","paths":["build.rs"]}}],"rustflags":[],"config":0,"compile_kind":0}

@@ -39,7 +39,10 @@
 %%
 %% @param AgentId The agent identifier
 %% @returns {ok, NetworkRef} | {error, Reason}
--spec compile(AgentId :: term()) -> {ok, reference()} | {error, term()}.
+-spec compile(AgentId :: term()) ->
+    {ok, reference()} |
+    {error, {mnesia_error, term()}} |
+    {error, {compilation_failed, term(), [{atom(), atom(), non_neg_integer(), term()}]}}.
 compile(AgentId) ->
     case load_genotype(AgentId) of
         {ok, Cortex, Neurons, Sensors, Actuators} ->

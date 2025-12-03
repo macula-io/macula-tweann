@@ -242,6 +242,67 @@
 -type selection_function() :: competition | top3 | hof_competition.
 
 %%==============================================================================
+%% LTC (Liquid Time-Constant) Types
+%%==============================================================================
+
+%% @doc Neuron dynamics type
+%%
+%% Determines how the neuron processes signals:
+%%   - standard: Traditional activation-based processing (instantaneous)
+%%   - ltc: Liquid Time-Constant with ODE integration (accurate, slower)
+%%   - cfc: Closed-form Continuous-time approximation (fast, ~100x faster than ODE)
+%%
+%% LTC neurons have input-dependent time constants, enabling adaptive temporal
+%% processing for time-series data and real-time control tasks.
+%%
+%% References:
+%%   [1] Hasani, R., Lechner, M., et al. (2021). "Liquid Time-constant Networks."
+%%   [2] Hasani, R., Lechner, M., et al. (2022). "Closed-form Continuous-time
+%%       Neural Networks." Nature Machine Intelligence.
+-type neuron_type() :: standard | ltc | cfc.
+
+%% @doc Time constant (tau) for LTC neurons
+%% Controls how quickly the neuron responds to input changes.
+%% Must be positive. Typical range: 0.1 to 10.0
+%% Lower values = faster response, higher values = smoother integration.
+-type time_constant() :: float().
+
+%% @doc State bound (A) for LTC neurons
+%% The internal state x(t) is clamped to [-A, A] for numerical stability.
+%% Prevents state explosion during long-running simulations.
+%% Must be positive. Typical range: 0.5 to 2.0
+-type state_bound() :: float().
+
+%% @doc Internal state for LTC neurons
+%% Represents x(t) in the LTC ODE. Persistent across evaluations.
+%% Range: [-state_bound, state_bound]
+-type internal_state() :: float().
+
+%% @doc Time step for ODE integration (dt)
+%% Only used with neuron_type = ltc (ODE mode).
+%% Smaller values = more accurate, larger = faster.
+%% Typical range: 0.01 to 0.1
+-type time_step() :: float().
+
+%% @doc LTC backbone weights
+%% Weights for the backbone network f() that modulates the time constant.
+%% Can be empty for simple mode (input-based modulation without learning).
+-type ltc_backbone_weights() :: [float()].
+
+%% @doc LTC head weights
+%% Weights for the head network h() that computes the target state.
+%% Can be empty for simple mode (tanh of input as target).
+-type ltc_head_weights() :: [float()].
+
+%% @doc LTC parameters map for evaluate functions
+%% Optional configuration passed to ltc_dynamics:evaluate_* functions
+-type ltc_params() :: #{
+    backbone_weights => ltc_backbone_weights(),
+    head_weights => ltc_head_weights(),
+    liquid_weights => [float()]  %% For ODE-based liquid tau computation
+}.
+
+%%==============================================================================
 %% Substrate Types (for HyperNEAT)
 %%==============================================================================
 

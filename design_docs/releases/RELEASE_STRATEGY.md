@@ -323,14 +323,14 @@ Each version has detailed planning documentation:
 | 0.6.0 | [v0.6.0-population-management.md](v0.6.0-population-management.md) | Structural | 2 weeks |
 | 0.7.0 | [v0.7.0-hardened-core.md](v0.7.0-hardened-core.md) | Robustness | 2 weeks |
 | 0.8.0 | [v0.8.0-process-safety.md](v0.8.0-process-safety.md) | Robustness | 2 weeks |
-| 0.9.0 | [v0.9.0-optimized.md](v0.9.0-optimized.md) | Performance | 2 weeks |
+| 0.9.0 | [v0.9.0-library-refactoring.md](v0.9.0-library-refactoring.md) | Performance | 2 weeks |
 | 1.0.0 | [v1.0.0-production-ready.md](v1.0.0-production-ready.md) | Performance | 1 week |
 
 ## References
 
-- [DXNN2_CODEBASE_ANALYSIS.md](../DXNN2_CODEBASE_ANALYSIS.md) - Detailed codebase analysis
-- [README.md](../README.md) - Refactoring principles and standards
-- [ANALYSIS_SUMMARY.txt](../ANALYSIS_SUMMARY.txt) - Executive summary
+- `design_docs/DXNN2_CODEBASE_ANALYSIS.md` - Detailed codebase analysis (internal)
+- `design_docs/README.md` - Refactoring principles and standards (internal)
+- `design_docs/ANALYSIS_SUMMARY.txt` - Executive summary (internal)
 - [CHANGELOG.md](CHANGELOG.md) - Version history
 
 ---

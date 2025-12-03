@@ -119,6 +119,8 @@
 %% function, and forward the output. They can also apply plasticity
 %% rules to modify their weights during operation.
 %%
+%% == Standard Neuron Fields ==
+%%
 %% Field Documentation:
 %%   id                    - Unique identifier: {{LayerCoord, UniqueFloat}, neuron}
 %%                           LayerCoord is between 0.0 and 1.0 for hidden layers
@@ -142,6 +144,40 @@
 %%   output_ids            - List of neuron/actuator IDs to send output to
 %%   ro_ids                - Recurrent output IDs (feedback connections)
 %%                           (Old name, should be recurrent_output_ids)
+%%
+%% == LTC (Liquid Time-Constant) Extension Fields ==
+%%
+%% These fields enable Liquid Time-Constant neuron dynamics, providing
+%% input-dependent time constants for adaptive temporal processing.
+%%
+%% LTC neurons are governed by the ODE:
+%%   dx(t)/dt = -[1/tau + f(x,I,theta)] * x(t) + f(x,I,theta) * A
+%%
+%% CfC (Closed-form Continuous-time) uses a fast closed-form approximation:
+%%   x(t+dt) = sigma(-f) * x(t) + (1 - sigma(-f)) * h
+%%
+%% Field Documentation (LTC Extension):
+%%   neuron_type       - Neuron dynamics type: standard | ltc | cfc
+%%                       standard = traditional activation-based neuron
+%%                       ltc = Liquid Time-Constant with ODE integration
+%%                       cfc = Closed-form Continuous-time (fast LTC approximation)
+%%   time_constant     - Base time constant tau (evolvable, > 0)
+%%                       Controls how quickly the neuron responds to inputs
+%%                       Lower values = faster response, higher = smoother integration
+%%   state_bound       - State bound A (prevents state explosion)
+%%                       The internal state x(t) is clamped to [-A, A]
+%%   ltc_backbone_weights - Weights for backbone network f()
+%%                          Controls time-constant modulation based on input
+%%   ltc_head_weights  - Weights for head network h()
+%%                       Computes the target state for CfC approximation
+%%   internal_state    - Current internal state x(t)
+%%                       Persistent across evaluations, updated by LTC dynamics
+%%
+%% References:
+%%   [1] Hasani, R., Lechner, M., et al. (2021). "Liquid Time-constant Networks."
+%%   [2] Hasani, R., Lechner, M., et al. (2022). "Closed-form Continuous-time
+%%       Neural Networks." Nature Machine Intelligence.
+%%
 -record(neuron, {
     id,
     generation,
@@ -155,7 +191,15 @@
     input_idps = [],            %% weighted_inputs
     input_idps_modulation = [], %% weighted_inputs_modulation
     output_ids = [],
-    ro_ids = []                 %% recurrent_output_ids
+    ro_ids = [],                %% recurrent_output_ids
+
+    %% LTC Extension Fields (Liquid Time-Constant Dynamics)
+    neuron_type = standard,     %% standard | ltc | cfc
+    time_constant = 1.0,        %% tau (base time constant, evolvable)
+    state_bound = 1.0,          %% A (bounds for stable dynamics)
+    ltc_backbone_weights = [],  %% weights for f() backbone network
+    ltc_head_weights = [],      %% weights for h() head network
+    internal_state = 0.0        %% x(t) persistent state
 }).
 
 %% @doc Cortex record - Network coordinator

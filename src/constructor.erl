@@ -160,6 +160,7 @@ spawn_sensors(SensorIds, ScapePid) ->
     {Pids, IdMap}.
 
 %% Spawn neuron processes (without connections)
+%% Supports both standard neurons and LTC neurons based on neuron_type field
 spawn_neurons(NeuronIds) ->
     {Pids, IdMap} = lists:foldl(
         fun(NeuronId, {AccPids, AccMap}) ->
@@ -168,29 +169,8 @@ spawn_neurons(NeuronIds) ->
             %% Get input_idps from record
             InputIdps = Neuron#neuron.input_idps,
 
-            %% Get activation function with default
-            AF = case Neuron#neuron.af of
-                undefined -> tanh;
-                Val -> Val
-            end,
-
-            %% Get aggregation function with default
-            AggrF = case Neuron#neuron.aggr_f of
-                undefined -> dot_product;
-                Val2 -> Val2
-            end,
-
-            {ok, Pid} = neuron:start_link(#{
-                id => NeuronId,
-                cortex_pid => undefined,  % Will be set by cortex
-                activation_function => AF,
-                aggregation_function => AggrF,
-                input_pids => [],  % Linked later
-                output_pids => [],  % Linked later
-                ro_pids => [],  % Linked later
-                input_weights => #{},  % Linked later
-                bias => 0.0  % Bias is part of input_idps in DXNN2
-            }),
+            %% Spawn appropriate neuron type
+            {ok, Pid} = spawn_neuron_by_type(Neuron, NeuronId),
 
             %% Store genotype input weights for later linking
             put({neuron_idps, NeuronId}, InputIdps),
@@ -201,6 +181,75 @@ spawn_neurons(NeuronIds) ->
         NeuronIds
     ),
     {Pids, IdMap}.
+
+%% @private Spawn a neuron based on its type (standard, ltc, or cfc)
+spawn_neuron_by_type(Neuron, NeuronId) ->
+    NeuronType = Neuron#neuron.neuron_type,
+
+    case NeuronType of
+        ltc ->
+            spawn_ltc_neuron(Neuron, NeuronId, ltc);
+        cfc ->
+            spawn_ltc_neuron(Neuron, NeuronId, cfc);
+        _ ->
+            %% Standard neuron (default)
+            spawn_standard_neuron(Neuron, NeuronId)
+    end.
+
+%% @private Spawn a standard neuron
+spawn_standard_neuron(Neuron, NeuronId) ->
+    %% Get activation function with default
+    AF = case Neuron#neuron.af of
+        undefined -> tanh;
+        Val -> Val
+    end,
+
+    %% Get aggregation function with default
+    AggrF = case Neuron#neuron.aggr_f of
+        undefined -> dot_product;
+        Val2 -> Val2
+    end,
+
+    neuron:start_link(#{
+        id => NeuronId,
+        cortex_pid => undefined,  % Will be set by cortex
+        activation_function => AF,
+        aggregation_function => AggrF,
+        input_pids => [],  % Linked later
+        output_pids => [],  % Linked later
+        ro_pids => [],  % Linked later
+        input_weights => #{},  % Linked later
+        bias => 0.0  % Bias is part of input_idps in DXNN2
+    }).
+
+%% @private Spawn an LTC (Liquid Time-Constant) neuron
+%%
+%% LTC neurons have input-dependent time constants for adaptive temporal
+%% processing. They can use either ODE-based evaluation (ltc) or the fast
+%% closed-form approximation (cfc).
+spawn_ltc_neuron(Neuron, NeuronId, Type) ->
+    %% Get LTC-specific parameters from the neuron record
+    TimeConstant = Neuron#neuron.time_constant,
+    StateBound = Neuron#neuron.state_bound,
+    BackboneWeights = Neuron#neuron.ltc_backbone_weights,
+    HeadWeights = Neuron#neuron.ltc_head_weights,
+    InternalState = Neuron#neuron.internal_state,
+
+    neuron_ltc:start_link(#{
+        id => NeuronId,
+        cortex_pid => undefined,  % Will be set by cortex
+        neuron_type => Type,
+        time_constant => TimeConstant,
+        state_bound => StateBound,
+        ltc_backbone_weights => BackboneWeights,
+        ltc_head_weights => HeadWeights,
+        internal_state => InternalState,
+        input_pids => [],  % Linked later
+        output_pids => [],  % Linked later
+        ro_pids => [],  % Linked later
+        input_weights => #{},  % Linked later
+        bias => 0.0  % Bias is part of input_idps in DXNN2
+    }).
 
 %% Spawn actuator processes (without fanin connections)
 spawn_actuators(ActuatorIds, ScapePid) ->

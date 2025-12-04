@@ -30,7 +30,6 @@
 %% Nodes MUST be in topological order (inputs first, then hidden, then outputs).
 %%
 %% @copyright 2025 Macula.io
-%% @license Apache-2.0
 -module(tweann_nif).
 
 -export([

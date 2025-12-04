@@ -21,7 +21,6 @@
 %%   {ok, Network} = network_compiler:compile_from_records(Cortex, Neurons, Sensors, Actuators)
 %%
 %% @copyright 2025 Macula.io
-%% @license Apache-2.0
 -module(network_compiler).
 
 -include("records.hrl").

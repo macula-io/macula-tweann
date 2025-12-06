@@ -337,6 +337,6 @@ encode_packed_field(FieldNum, varint, Values) ->
 
 %% @private Encode a varint (variable-length integer)
 encode_varint(N) when N < 128 ->
-    <<N>>;
+    [<<N>>];
 encode_varint(N) ->
     [<<1:1, (N band 127):7>> | encode_varint(N bsr 7)].

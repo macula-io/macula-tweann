@@ -145,8 +145,8 @@ start_link(Name, Opts) ->
 %% @doc Stop a brain system.
 -spec stop(brain_system()) -> ok.
 stop(#brain_system{sup_pid = SupPid}) ->
-    supervisor:terminate_child(SupPid, brain_learner),
-    supervisor:terminate_child(SupPid, brain),
+    _ = supervisor:terminate_child(SupPid, brain_learner),
+    _ = supervisor:terminate_child(SupPid, brain),
     exit(SupPid, shutdown),
     ok.
 

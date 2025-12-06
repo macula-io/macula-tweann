@@ -18,21 +18,21 @@ The library follows a layered architecture:
 - **Evolution**: Mutation operators, crossover, and selection algorithms
 - **Population**: Multi-agent evolution with speciation
 
-See the [Architecture Guide](architecture.html) for details.
+See the [Architecture Guide](architecture.md) for details.
 
 ## Documentation
 
 ### Getting Started
-- [TWEANN Basics](tweann-basics.html) - What is TWEANN and how does it work?
-- [Installation](installation.html) - Add to your project
-- [Quick Start](quickstart.html) - Basic usage examples
+- [TWEANN Basics](tweann-basics.md) - What is TWEANN and how does it work?
+- [Installation](installation.md) - Add to your project
+- [Quick Start](quickstart.md) - Basic usage examples
 
 ### Architecture
-- [C4 Architecture Model](c4-architecture.html) - Multi-level architectural views (Context, Container, Component, Code)
-- [Architecture Details](architecture.html) - Layer-by-layer system design
-- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) - Planet-scale evolutionary intelligence on Macula mesh
-- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.html) - Defense, security, and infrastructure implications
-- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.html) - Counter-swarm systems and autonomous threat mitigation
+- [C4 Architecture Model](c4-architecture.md) - Multi-level architectural views (Context, Container, Component, Code)
+- [Architecture Details](architecture.md) - Layer-by-layer system design
+- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.md) - Planet-scale evolutionary intelligence on Macula mesh
+- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.md) - Defense, security, and infrastructure implications
+- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.md) - Counter-swarm systems and autonomous threat mitigation
 
 ### Core Concepts
 See the module documentation for detailed API reference on:
@@ -45,7 +45,7 @@ See the module documentation for detailed API reference on:
 - **Process Safety** - Timeouts and crash handling (cortex, neuron modules)
 
 ### API Reference
-- [Module Index](api-reference.html) - Complete API documentation
+- See the module documentation in the sidebar for complete API reference
 
 ## Acknowledgements
 

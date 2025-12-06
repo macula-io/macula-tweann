@@ -99,4 +99,4 @@ New Genotypes
 ## Next Steps
 
 - See module documentation for detailed API reference
-- Check [Quick Start](quickstart.html) for usage examples
+- Check [Quick Start](quickstart.md) for usage examples

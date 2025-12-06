@@ -112,5 +112,5 @@ genotype:reset_db().
 
 ## Next Steps
 
-- [Architecture](architecture.html) - Understand the system design
+- [Architecture](architecture.md) - Understand the system design
 - See module documentation for detailed API reference

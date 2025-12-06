@@ -65,4 +65,4 @@ If you see `ok`, the installation is successful!
 
 ## Next Steps
 
-See the [Quick Start](quickstart.html) guide to create your first evolving neural network.
+See the [Quick Start](quickstart.md) guide to create your first evolving neural network.

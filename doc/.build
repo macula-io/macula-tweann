@@ -41,11 +41,12 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-QPNJX265.woff2
-dist/search_data-FB191A19.js
-dist/sidebar_items-14AA4B52.js
+dist/search_data-38F18240.js
+dist/sidebar_items-1613B683.js
 exoself.html
 fitness_postprocessor.html
 functions.html
+future_optimization.html
 genome_mutator.html
 genotype.html
 index.html
@@ -87,7 +88,7 @@ tweann-basics.html
 tweann_logger.html
 tweann_nif.html
 v0-1-0-project-bootstrap.html
-v0-10-0-optimized.html
+v0-10-0-ltc-neurons.html
 v0-2-0-core-primitives.html
 v0-3-0-neural-core.html
 v0-3-1-architectural-alignment.html

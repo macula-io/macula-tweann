@@ -4,8 +4,8 @@
 **Version**: 0.8.8
 **Purpose**: Explore feasibility of massively distributed evolutionary neural networks on Macula HTTP/3 mesh
 **Related Documents**:
-- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.html)
-- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.html)
+- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.md)
+- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.md)
 
 ---
 

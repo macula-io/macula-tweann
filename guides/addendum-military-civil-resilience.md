@@ -4,8 +4,8 @@
 **Version**: 0.8.8
 **Purpose**: Analyze military and civil resilience implications of distributed mega-brain systems
 **Related Documents**:
-- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) (main document)
-- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.html) (specific defensive application)
+- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.md) (main document)
+- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.md) (specific defensive application)
 
 ---
 
@@ -989,6 +989,6 @@ The distributed mega-brain is a **transformative dual-use technology** with prof
 - RAND Corporation. *"Distributed Denial of Service Attacks"* (2020)
 
 ### Related Macula TWEANN Documentation
-- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) - Main vision document
-- [Architecture Details](architecture.html) - Technical implementation
-- [C4 Architecture](c4-architecture.html) - System design overview
+- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.md) - Main vision document
+- [Architecture Details](architecture.md) - Technical implementation
+- [C4 Architecture](c4-architecture.md) - System design overview

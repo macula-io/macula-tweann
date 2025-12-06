@@ -181,6 +181,6 @@ Built-in protection mechanisms:
 
 ## Next Steps
 
-- [Architecture Overview](architecture.html) - Detailed layer descriptions
-- [Quick Start](quickstart.html) - Hands-on code examples
-- [TWEANN Basics](tweann-basics.html) - Conceptual introduction
+- [Architecture Overview](architecture.md) - Detailed layer descriptions
+- [Quick Start](quickstart.md) - Hands-on code examples
+- [TWEANN Basics](tweann-basics.md) - Conceptual introduction

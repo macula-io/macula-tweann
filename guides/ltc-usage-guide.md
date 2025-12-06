@@ -385,6 +385,6 @@ If you see NaN or Inf:
 
 ## Next Steps
 
-- Read [LTC Neurons Concepts](ltc-neurons.html) for theory
-- See [Custom Morphologies](custom_morphologies.html) to create LTC-based morphologies
-- Check [API Reference](ltc_dynamics.html) for complete function documentation
+- Read [LTC Neurons Concepts](ltc-neurons.md) for theory
+- See [Custom Morphologies](custom-morphologies.md) to create LTC-based morphologies
+- Check the `ltc_dynamics` module documentation for complete function reference

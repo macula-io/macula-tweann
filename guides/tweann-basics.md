@@ -198,8 +198,8 @@ The population monitor handles the full evolutionary cycle automatically.
 
 ## Next Steps
 
-- [Quick Start](quickstart.html) - Hands-on code examples
-- [Architecture](architecture.html) - Deep dive into system design
+- [Quick Start](quickstart.md) - Hands-on code examples
+- [Architecture](architecture.md) - Deep dive into system design
 - See module documentation for detailed API reference
 
 ## Further Reading

@@ -1,6 +1,6 @@
 {application, macula_tweann,
  [{description, "Macula TWEANN - Topology and Weight Evolving Artificial Neural Networks"},
-  {vsn, "0.11.1"},
+  {vsn, "0.11.2"},
   {registered, [macula_tweann_sup, morphology_registry]},
   {mod, {macula_tweann_app, []}},
   {applications,

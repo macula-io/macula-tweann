@@ -4,8 +4,8 @@
 **Version**: 0.8.8
 **Purpose**: Analyze mega-brain applications for defending against autonomous drone threats
 **Related Documents**:
-- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) (main document)
-- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.html) (broader context)
+- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.md) (main document)
+- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.md) (broader context)
 
 ---
 
@@ -828,6 +828,6 @@ Counter-drone defense via distributed mega-brain is:
 - UN. *"Responsible Military Use of AI and Autonomy"* Report (2023)
 
 ### Related Macula TWEANN Documentation
-- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.html) - Main vision
-- [Military & Civil Resilience](addendum-military-civil-resilience.html) - Military applications
-- [Architecture Details](architecture.html) - Technical implementation
+- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.md) - Main vision
+- [Military & Civil Resilience](addendum-military-civil-resilience.md) - Military applications
+- [Architecture Details](architecture.md) - Technical implementation

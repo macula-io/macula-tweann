@@ -57,7 +57,7 @@ See the [LTC Neurons Guide](https://hexdocs.pm/macula_tweann/ltc-neurons.html) f
 - **[LTC Neurons](https://hexdocs.pm/macula_tweann/ltc-neurons.html)** - Temporal dynamics
 - **[LTC Usage Guide](https://hexdocs.pm/macula_tweann/ltc-usage-guide.html)** - Practical examples
 - **[Architecture](https://hexdocs.pm/macula_tweann/architecture.html)** - System design
-- **[API Reference](https://hexdocs.pm/macula_tweann/api-reference.html)** - Module documentation
+- **[Full Documentation](https://hexdocs.pm/macula_tweann/)** - All guides and module docs
 
 ## Features
 

@@ -212,6 +212,6 @@ The LTC implementation in macula-tweann is based on peer-reviewed research:
 
 ## Next Steps
 
-- See the [LTC Usage Guide](ltc-usage-guide.html) for practical examples
-- Explore [Custom Morphologies](custom_morphologies.html) to create LTC-based morphologies
-- Check the [API Reference](ltc_dynamics.html) for detailed function documentation
+- See the [LTC Usage Guide](ltc-usage-guide.md) for practical examples
+- Explore [Custom Morphologies](custom-morphologies.md) to create LTC-based morphologies
+- Check the `ltc_dynamics` module documentation for detailed function reference

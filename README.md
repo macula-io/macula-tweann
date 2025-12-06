@@ -35,7 +35,7 @@ genome_mutator:mutate(AgentId).
 
 Liquid Time-Constant neurons enable **adaptive temporal processing** with input-dependent time constants:
 
-![LTC Architecture](doc/diagrams/ltc-neuron-architecture.svg)
+![LTC Architecture](assets/ltc-neuron-architecture.svg)
 
 ```erlang
 %% CfC evaluation (fast, closed-form)
@@ -81,7 +81,7 @@ See the [LTC Neurons Guide](https://hexdocs.pm/macula_tweann/ltc-neurons.html) f
 
 ## Architecture
 
-![Module Dependencies](doc/diagrams/module-dependencies.svg)
+![Module Dependencies](assets/module-dependencies.svg)
 
 Process-based neural networks with evolutionary operators. See [Architecture Guide](https://hexdocs.pm/macula_tweann/architecture.html) for details.
 

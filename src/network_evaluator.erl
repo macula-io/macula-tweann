@@ -420,16 +420,8 @@ hidden_labels(Size) ->
 %% The output format is suitable for JSON encoding and can be loaded
 %% in other runtimes (Python, JavaScript, etc.) for inference.
 %%
-%% == Format ==
-%%
-%% #{
-%%   <<"version">> => 1,
-%%   <<"activation">> => <<"tanh">>,
-%%   <<"layers">> => [
-%%     #{<<"weights">> => [[...],...], <<"biases">> => [...]},
-%%     ...
-%%   ]
-%% }
+%% Format: A map with keys "version", "activation", and "layers".
+%% The layers list contains maps with "weights" and "biases" keys.
 %%
 %% @param Network The network record
 %% @returns Map suitable for JSON encoding

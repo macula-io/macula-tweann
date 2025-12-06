@@ -51,10 +51,44 @@ See the module documentation for detailed API reference on:
 
 Based on DXNN2 by Gene Sher. Adapted and extended by [Macula.io](https://macula.io).
 
-### References
+## Academic References
 
-- Sher, Gene I. *"Handbook of Neuroevolution Through Erlang"* (2013)
-- Stanley, Kenneth O., and Risto Miikkulainen. *"Evolving neural networks through augmenting topologies."* Evolutionary Computation 10.2 (2002): 99-127.
+### Core TWEANN/NEAT Papers
+
+- **Sher, G.I.** (2013). *Handbook of Neuroevolution Through Erlang*. Springer.
+  Primary reference for DXNN2 architecture and Erlang-specific patterns.
+
+- **Stanley, K.O. & Miikkulainen, R.** (2002). Evolving Neural Networks through Augmenting Topologies. *Evolutionary Computation*, 10(2), 99-127.
+  Foundational NEAT paper introducing speciation and structural innovation protection.
+
+### LTC/CfC Neurons
+
+- **Hasani, R., Lechner, M., et al.** (2021). Liquid Time-constant Networks. *AAAI Conference on Artificial Intelligence*, 35(9), 7657-7666.
+  Introduces adaptive time-constant neurons with continuous-time dynamics.
+
+- **Hasani, R., Lechner, M., et al.** (2022). Closed-form Continuous-time Neural Networks. *Nature Machine Intelligence*, 4, 992-1003.
+  CfC approximation enabling ~100x speedup over ODE-based evaluation.
+
+### Foundational Work
+
+- **Holland, J.H.** (1975). *Adaptation in Natural and Artificial Systems*. MIT Press.
+  Foundational text on genetic algorithms.
+
+- **Yao, X.** (1999). Evolving Artificial Neural Networks. *Proceedings of the IEEE*, 87(9), 1423-1447.
+  Comprehensive neuroevolution survey.
+
+## Related Projects
+
+### Macula Ecosystem
+
+- **macula** - HTTP/3 mesh networking for distributed neuroevolution
+- **macula_neuroevolution** - Population-based evolutionary training engine
+
+### External
+
+- **DXNN2** - Gene Sher's original Erlang implementation
+- **NEAT-Python** - Python NEAT implementation
+- **LTC Reference** - MIT/ISTA reference LTC implementation
 
 ## License
 

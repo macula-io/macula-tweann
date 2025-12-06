@@ -28,7 +28,12 @@
     get_weights/1,
     set_weights/2,
     get_topology/1,
-    get_viz_data/3
+    get_viz_data/3,
+    %% Serialization
+    to_json/1,
+    from_json/1,
+    to_binary/1,
+    from_binary/1
 ]).
 
 -record(network, {
@@ -405,3 +410,92 @@ output_labels(Size) ->
 %% @private Generate hidden layer labels
 hidden_labels(Size) ->
     [list_to_binary("H" ++ integer_to_list(I)) || I <- lists:seq(1, Size)].
+
+%%==============================================================================
+%% Serialization Functions
+%%==============================================================================
+
+%% @doc Serialize a network to a JSON-compatible map.
+%%
+%% The output format is suitable for JSON encoding and can be loaded
+%% in other runtimes (Python, JavaScript, etc.) for inference.
+%%
+%% == Format ==
+%%
+%% #{
+%%   <<"version">> => 1,
+%%   <<"activation">> => <<"tanh">>,
+%%   <<"layers">> => [
+%%     #{<<"weights">> => [[...],...], <<"biases">> => [...]},
+%%     ...
+%%   ]
+%% }
+%%
+%% @param Network The network record
+%% @returns Map suitable for JSON encoding
+-spec to_json(network()) -> map().
+to_json(#network{layers = Layers, activation = Activation}) ->
+    #{
+        <<"version">> => 1,
+        <<"activation">> => atom_to_binary(Activation, utf8),
+        <<"layers">> => [
+            #{
+                <<"weights">> => Weights,
+                <<"biases">> => Biases
+            }
+            || {Weights, Biases} <- Layers
+        ]
+    }.
+
+%% @doc Deserialize a network from a JSON-compatible map.
+%%
+%% Accepts the format produced by to_json/1.
+%%
+%% @param JsonMap Map from JSON decoding
+%% @returns {ok, Network} | {error, Reason}
+-spec from_json(map()) -> {ok, network()} | {error, term()}.
+from_json(#{<<"version">> := 1, <<"activation">> := ActivationBin, <<"layers">> := LayerMaps}) ->
+    try
+        Activation = binary_to_atom(ActivationBin, utf8),
+        Layers = [
+            {maps:get(<<"weights">>, L), maps:get(<<"biases">>, L)}
+            || L <- LayerMaps
+        ],
+        {ok, #network{layers = Layers, activation = Activation}}
+    catch
+        _:Reason ->
+            {error, {invalid_network_format, Reason}}
+    end;
+from_json(_) ->
+    {error, unsupported_version}.
+
+%% @doc Serialize a network to binary using Erlang term format.
+%%
+%% This is more compact than JSON and preserves exact floating point values.
+%% Use this for Erlang-to-Erlang transfer or storage.
+%%
+%% @param Network The network record
+%% @returns Binary representation
+-spec to_binary(network()) -> binary().
+to_binary(Network) ->
+    term_to_binary(Network, [compressed]).
+
+%% @doc Deserialize a network from binary.
+%%
+%% @param Binary Binary from to_binary/1
+%% @returns {ok, Network} | {error, Reason}
+-spec from_binary(binary()) -> {ok, network()} | {error, term()}.
+from_binary(Binary) when is_binary(Binary) ->
+    try
+        case binary_to_term(Binary) of
+            #network{} = Network ->
+                {ok, Network};
+            _ ->
+                {error, invalid_network}
+        end
+    catch
+        _:Reason ->
+            {error, {deserialize_failed, Reason}}
+    end;
+from_binary(_) ->
+    {error, invalid_binary}.

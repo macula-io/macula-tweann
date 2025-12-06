@@ -96,12 +96,61 @@ rebar3 ex_doc         # Generate documentation
 ## Academic References
 
 ### TWEANN/NEAT
-- Sher, G.I. *Handbook of Neuroevolution Through Erlang* (2013)
-- Stanley, K.O., Miikkulainen, R. *Evolving Neural Networks Through Augmenting Topologies* (2002)
 
-### LTC/CfC
-- Hasani, R., Lechner, M., et al. *Liquid Time-constant Networks* (AAAI 2021)
-- Hasani, R., Lechner, M., et al. *Closed-form Continuous-time Neural Networks* (Nature Machine Intelligence, 2022)
+- **Sher, G.I.** (2013). [*Handbook of Neuroevolution Through Erlang*](https://www.springer.com/gp/book/9781461444626). Springer.
+  - Primary reference for DXNN2 architecture and Erlang implementation patterns.
+
+- **Stanley, K.O. & Miikkulainen, R.** (2002). [Evolving Neural Networks through Augmenting Topologies](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf). *Evolutionary Computation*, 10(2), 99-127.
+  - Foundational NEAT paper introducing speciation and structural innovation protection.
+
+- **Stanley, K.O.** (2004). [Efficient Evolution of Neural Network Topologies](http://nn.cs.utexas.edu/downloads/papers/stanley.cec02.pdf). *Proceedings of the 2002 Congress on Evolutionary Computation (CEC)*.
+  - Complexity analysis and efficiency improvements for topology evolution.
+
+### LTC/CfC Neurons
+
+- **Hasani, R., Lechner, M., et al.** (2021). [Liquid Time-constant Networks](https://ojs.aaai.org/index.php/AAAI/article/view/16936). *Proceedings of the AAAI Conference on Artificial Intelligence*, 35(9), 7657-7666.
+  - Introduces adaptive time-constant neurons with continuous-time dynamics.
+
+- **Hasani, R., Lechner, M., et al.** (2022). [Closed-form Continuous-time Neural Networks](https://www.nature.com/articles/s42256-022-00556-7). *Nature Machine Intelligence*, 4, 992-1003.
+  - CfC closed-form approximation enabling ~100x speedup over ODE-based LTC.
+
+### Weight Initialization
+
+- **Glorot, X. & Bengio, Y.** (2010). [Understanding the difficulty of training deep feedforward neural networks](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf). *Proceedings of AISTATS*.
+  - Xavier initialization theory used for network weight initialization.
+
+### Evolutionary Algorithms
+
+- **Holland, J.H.** (1975). *Adaptation in Natural and Artificial Systems*. MIT Press.
+  - Foundational text on genetic algorithms.
+
+- **Yao, X.** (1999). [Evolving Artificial Neural Networks](https://ieeexplore.ieee.org/document/784219). *Proceedings of the IEEE*, 87(9), 1423-1447.
+  - Comprehensive survey of neuroevolution approaches.
+
+### ONNX Export
+
+- **ONNX Consortium** (2017-present). [Open Neural Network Exchange](https://onnx.ai/).
+  - Open standard for neural network interoperability enabling cross-platform inference.
+
+## Related Projects
+
+### Macula Ecosystem
+
+- **[macula](https://hex.pm/packages/macula)** - HTTP/3 mesh networking platform with NAT traversal, Pub/Sub, and async RPC. Enables distributed neuroevolution across edge devices.
+
+- **[macula_neuroevolution](https://hex.pm/packages/macula_neuroevolution)** - Population-based evolutionary training engine that orchestrates neural network evolution using this library.
+
+### Inspiration & Related Work
+
+- **[DXNN2](https://github.com/CorticalComputer/DXNN2)** - Gene Sher's original TWEANN implementation in Erlang, the foundation for this library.
+
+- **[NEAT-Python](https://neat-python.readthedocs.io/)** - Popular Python implementation of NEAT.
+
+- **[SharpNEAT](http://sharpneat.sourceforge.net/)** - High-performance C# NEAT implementation.
+
+- **[PyTorch-NEAT](https://github.com/uber-research/PyTorch-NEAT)** - Uber's PyTorch-based NEAT implementation.
+
+- **[LTC/CfC Reference Implementation](https://github.com/raminmh/liquid_time_constant_networks)** - MIT/ISTA reference implementation of LTC networks.
 
 ## License
 

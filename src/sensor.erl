@@ -97,7 +97,13 @@ loop(State) ->
 
         {link, fanout_pids, FanoutPids} ->
             %% Dynamic linking from constructor
-            loop(State#state{fanout_pids = FanoutPids})
+            loop(State#state{fanout_pids = FanoutPids});
+
+        %% Catch-all: log and discard unexpected messages to prevent mailbox bloat
+        UnexpectedMsg ->
+            tweann_logger:warning("Sensor ~p received unexpected message: ~p",
+                                 [State#state.id, UnexpectedMsg]),
+            loop(State)
     end.
 
 handle_sync(State) ->

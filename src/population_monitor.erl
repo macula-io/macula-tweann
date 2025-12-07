@@ -161,7 +161,9 @@ handle_cast(_Msg, State) ->
 
 %% @doc Handle info messages.
 -spec handle_info(term(), population_state()) -> {noreply, population_state()}.
-handle_info(_Info, State) ->
+handle_info(Info, State) ->
+    tweann_logger:warning("PopMon ~p received unexpected info: ~p",
+                         [State#population_state.population_id, Info]),
     {noreply, State}.
 
 %% @doc Cleanup on termination.
@@ -251,6 +253,11 @@ handle_generation_complete(State) ->
     io:format("Best fitness this generation: ~p (overall: ~p)~n",
               [BestFitness, UpdatedBestFitness]),
 
+    %% Clean up non-survivors to prevent memory accumulation
+    NonSurvivors = [AgentId || {AgentId, _Fitness} <- State#population_state.fitness_acc,
+                              not lists:member(AgentId, Survivors)],
+    cleanup_agents(NonSurvivors),
+
     %% Reproduce survivors to fill population
     NewAgentIds = reproduce_population(Survivors, State#population_state.total_agents),
 
@@ -262,6 +269,21 @@ handle_generation_complete(State) ->
     %% Start next generation
     gen_server:cast(self(), start_evaluation),
     {noreply, UpdatedState}.
+
+%% @private Clean up agents that are no longer needed
+-spec cleanup_agents([term()]) -> ok.
+cleanup_agents([]) ->
+    ok;
+cleanup_agents(AgentIds) ->
+    NumCleaned = length(AgentIds),
+    lists:foreach(
+        fun(AgentId) ->
+            genotype:delete_Agent(AgentId)
+        end,
+        AgentIds
+    ),
+    tweann_logger:debug("Cleaned up ~p non-survivor agents", [NumCleaned]),
+    ok.
 
 %% @private Advance to next generation
 -spec handle_generation_advance(population_state()) -> {noreply, population_state()}.
@@ -298,12 +320,13 @@ spawn_agent(AgentId, State) ->
             OpMode
         ),
 
-        %% Wait for agent to complete
+        %% Wait for agent to complete (5s timeout to prevent hanging agents)
         receive
             {exoself_terminated, Fitness} ->
                 population_monitor:agent_terminated(MonitorPid, AgentId, Fitness)
-        after 60000 ->
-            %% Timeout - use default fitness
+        after 5000 ->
+            %% Timeout - use default fitness and log warning
+            tweann_logger:warning("Agent ~p evaluation timeout after 5s", [AgentId]),
             population_monitor:agent_terminated(MonitorPid, AgentId, [0.0])
         end
     end).

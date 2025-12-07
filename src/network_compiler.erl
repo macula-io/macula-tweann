@@ -112,26 +112,25 @@ compile_simple(InputCount, HiddenLayers, OutputCount) ->
 %% Internal Functions
 %%==============================================================================
 
-%% @private Load genotype from Mnesia
+%% @private Load genotype from ETS
 load_genotype(AgentId) ->
-    case mnesia:transaction(fun() ->
-        [Agent] = mnesia:read({agent, AgentId}),
-        CxId = Agent#agent.cx_id,
-        [Cortex] = mnesia:read({cortex, CxId}),
-
-        Neurons = [N || NId <- Cortex#cortex.neuron_ids,
-                        [N] <- [mnesia:read({neuron, NId})]],
-        Sensors = [S || SId <- Cortex#cortex.sensor_ids,
-                        [S] <- [mnesia:read({sensor, SId})]],
-        Actuators = [A || AId <- Cortex#cortex.actuator_ids,
-                          [A] <- [mnesia:read({actuator, AId})]],
-
-        {Cortex, Neurons, Sensors, Actuators}
-    end) of
-        {atomic, {Cortex, Neurons, Sensors, Actuators}} ->
-            {ok, Cortex, Neurons, Sensors, Actuators};
-        {aborted, Reason} ->
-            {error, {mnesia_error, Reason}}
+    case genotype:dirty_read({agent, AgentId}) of
+        undefined ->
+            {error, {agent_not_found, AgentId}};
+        Agent ->
+            CxId = Agent#agent.cx_id,
+            case genotype:dirty_read({cortex, CxId}) of
+                undefined ->
+                    {error, {cortex_not_found, CxId}};
+                Cortex ->
+                    Neurons = [genotype:dirty_read({neuron, NId})
+                               || NId <- Cortex#cortex.neuron_ids],
+                    Sensors = [genotype:dirty_read({sensor, SId})
+                               || SId <- Cortex#cortex.sensor_ids],
+                    Actuators = [genotype:dirty_read({actuator, AId})
+                                 || AId <- Cortex#cortex.actuator_ids],
+                    {ok, Cortex, Neurons, Sensors, Actuators}
+            end
     end.
 
 %% @private Build mapping from record IDs to flat indices

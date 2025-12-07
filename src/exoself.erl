@@ -506,8 +506,21 @@ terminate_network(State) ->
 
     %% Terminate cortex (which will terminate sensors, neurons, actuators)
     case CortexPid of
-        undefined -> ok;
-        _ -> cortex:terminate(CortexPid)
+        undefined ->
+            ok;
+        _ ->
+            %% Monitor cortex before terminating
+            Ref = erlang:monitor(process, CortexPid),
+            cortex:terminate(CortexPid),
+            %% Wait for cortex to finish (with timeout)
+            receive
+                {'DOWN', Ref, process, CortexPid, _Reason} ->
+                    ok
+            after 5000 ->
+                %% Timeout - demonitor and continue (don't force-kill to avoid cascading failures)
+                erlang:demonitor(Ref, [flush]),
+                tweann_logger:warning("Exoself: cortex ~p did not terminate within 5s", [CortexPid])
+            end
     end,
 
     %% Clean up ETS table

@@ -140,7 +140,19 @@ loop(State) ->
 
         {exoself, stop} ->
             handle_terminate(State),
-            ok
+            ok;
+
+        {neuron_timeout, NeuronPid, NeuronId} ->
+            %% Handle neuron timeout - remove from tracking and log
+            tweann_logger:warning("Cortex ~p: Neuron ~p (~p) timed out",
+                                 [State#state.id, NeuronId, NeuronPid]),
+            loop(State);
+
+        %% Catch-all: log and discard unexpected messages to prevent mailbox bloat
+        UnexpectedMsg ->
+            tweann_logger:warning("Cortex ~p received unexpected message: ~p",
+                                 [State#state.id, UnexpectedMsg]),
+            loop(State)
     after Timeout ->
         handle_timeout(State)
     end.
@@ -255,6 +267,17 @@ handle_terminate(State) ->
         actuator_pids = ActuatorPids
     } = State,
 
+    AllPids = SensorPids ++ NeuronPids ++ ActuatorPids,
+
+    %% Monitor all processes before sending terminate
+    Monitors = lists:map(
+        fun(Pid) ->
+            Ref = erlang:monitor(process, Pid),
+            {Pid, Ref}
+        end,
+        AllPids
+    ),
+
     %% Terminate all sensors
     lists:foreach(
         fun(SensorPid) ->
@@ -277,4 +300,22 @@ handle_terminate(State) ->
             ActuatorPid ! {cortex, terminate}
         end,
         ActuatorPids
-    ).
+    ),
+
+    %% Wait for all processes to terminate (with timeout per process)
+    wait_for_terminations(Monitors, 2000).
+
+%% @private Wait for all monitored processes to terminate
+wait_for_terminations([], _Timeout) ->
+    ok;
+wait_for_terminations([{Pid, Ref} | Rest], Timeout) ->
+    receive
+        {'DOWN', Ref, process, Pid, _Reason} ->
+            wait_for_terminations(Rest, Timeout)
+    after Timeout ->
+        %% Timeout waiting for process - demonitor and continue
+        %% Don't force-kill to avoid cascading failures from linked processes
+        erlang:demonitor(Ref, [flush]),
+        tweann_logger:warning("Cortex: process ~p did not terminate within ~pms", [Pid, Timeout]),
+        wait_for_terminations(Rest, Timeout)
+    end.

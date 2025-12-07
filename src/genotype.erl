@@ -1,7 +1,7 @@
 %% @doc Genotype representation for TWEANN networks.
 %%
-%% This module provides the genetic encoding for neural networks using Mnesia
-%% for persistent storage. A genotype describes the network topology and
+%% This module provides the genetic encoding for neural networks using ETS
+%% for in-memory storage. A genotype describes the network topology and
 %% parameters that can be evolved, then converted to a running phenotype.
 %%
 %% Based on DXNN2 by Gene Sher ("Handbook of Neuroevolution through Erlang").
@@ -78,49 +78,30 @@
 %% Database Operations
 %%==============================================================================
 
-%% @doc Initialize Mnesia database with required tables.
+%% @doc Initialize ETS tables for genotype storage.
 %%
-%% Creates schema and tables for all genotype elements.
+%% Creates ETS tables for all genotype elements.
 %% Should be called once at application startup.
+%% ETS tables are faster than Mnesia for this workload since we don't
+%% need distribution or disk persistence.
 -spec init_db() -> ok.
 init_db() ->
-    %% Create schema if needed
-    case mnesia:create_schema([node()]) of
-        ok -> ok;
-        {error, {_, {already_exists, _}}} -> ok
-    end,
-
-    %% Start Mnesia
-    ok = mnesia:start(),
-
-    %% Create tables
-    Tables = [
-        {agent, record_info(fields, agent), set},
-        {cortex, record_info(fields, cortex), set},
-        {sensor, record_info(fields, sensor), set},
-        {actuator, record_info(fields, actuator), set},
-        {neuron, record_info(fields, neuron), set},
-        {substrate, record_info(fields, substrate), set},
-        {specie, record_info(fields, specie), set},
-        {population, record_info(fields, population), set}
-    ],
+    %% Create ETS tables for each record type
+    Tables = [agent, cortex, sensor, actuator, neuron, substrate, specie, population],
 
     lists:foreach(
-        fun({Name, Fields, Type}) ->
-            case mnesia:create_table(Name, [
-                {attributes, Fields},
-                {type, Type},
-                {ram_copies, [node()]}
-            ]) of
-                {atomic, ok} -> ok;
-                {aborted, {already_exists, Name}} -> ok
+        fun(Name) ->
+            case ets:whereis(Name) of
+                undefined ->
+                    ets:new(Name, [set, public, named_table, {keypos, 2},
+                                   {read_concurrency, true}]);
+                _Tid ->
+                    %% Table already exists
+                    ok
             end
         end,
         Tables
     ),
-
-    %% Wait for tables
-    ok = mnesia:wait_for_tables([agent, cortex, sensor, actuator, neuron], 5000),
     ok.
 
 %% @doc Reset database by clearing all tables.
@@ -129,9 +110,9 @@ reset_db() ->
     Tables = [agent, cortex, sensor, actuator, neuron, substrate, specie, population],
     lists:foreach(
         fun(Table) ->
-            case mnesia:clear_table(Table) of
-                {atomic, ok} -> ok;
-                {aborted, _} -> ok
+            case ets:whereis(Table) of
+                undefined -> ok;
+                _Tid -> ets:delete_all_objects(Table)
             end
         end,
         Tables
@@ -142,33 +123,58 @@ reset_db() ->
 %% Core Operations
 %%==============================================================================
 
-%% @doc Read a record from Mnesia using a transaction.
+%% @doc Read a record from ETS.
+%%
+%% Key format: {Table, RecordKey} where RecordKey is the record's id field.
 -spec read(tuple()) -> tuple() | undefined.
-read(Key) ->
-    case mnesia:transaction(fun() -> mnesia:read(Key) end) of
-        {atomic, [Record]} -> Record;
-        {atomic, []} -> undefined;
-        {aborted, _Reason} -> undefined
-    end.
-
-%% @doc Write a record to Mnesia using a transaction.
--spec write(tuple()) -> ok.
-write(Record) ->
-    {atomic, ok} = mnesia:transaction(fun() -> mnesia:write(Record) end),
-    ok.
-
-%% @doc Read a record without transaction (for performance).
--spec dirty_read(tuple()) -> tuple() | undefined.
-dirty_read({Table, Key}) ->
-    case mnesia:dirty_read(Table, Key) of
+read({Table, Key}) ->
+    case ets:lookup(Table, Key) of
         [Record] -> Record;
         [] -> undefined
     end.
 
-%% @doc Delete a record from Mnesia.
+%% Maximum entries to keep in evo_hist (evolution history)
+-define(MAX_EVO_HIST_SIZE, 50).
+
+%% @doc Write a record to ETS.
+%%
+%% The record type determines which table to use (first element of record tuple).
+%% For agent records, the evo_hist is capped to prevent unbounded growth.
+-spec write(tuple()) -> ok.
+write(Record) when element(1, Record) =:= agent ->
+    %% Cap evo_hist for agent records to prevent unbounded growth
+    CappedRecord = cap_evo_hist(Record),
+    true = ets:insert(agent, CappedRecord),
+    ok;
+write(Record) ->
+    Table = element(1, Record),
+    true = ets:insert(Table, Record),
+    ok.
+
+%% @private Cap evo_hist to prevent unbounded memory growth
+-spec cap_evo_hist(#agent{}) -> #agent{}.
+cap_evo_hist(Agent) ->
+    EvoHist = Agent#agent.evo_hist,
+    CappedHist = case length(EvoHist) > ?MAX_EVO_HIST_SIZE of
+        true -> lists:sublist(EvoHist, ?MAX_EVO_HIST_SIZE);
+        false -> EvoHist
+    end,
+    Agent#agent{evo_hist = CappedHist}.
+
+%% @doc Read a record directly from ETS (same as read/1 for ETS).
+%%
+%% This function exists for API compatibility with the old Mnesia interface.
+-spec dirty_read(tuple()) -> tuple() | undefined.
+dirty_read({Table, Key}) ->
+    case ets:lookup(Table, Key) of
+        [Record] -> Record;
+        [] -> undefined
+    end.
+
+%% @doc Delete a record from ETS.
 -spec delete(tuple()) -> ok.
-delete(Key) ->
-    {atomic, ok} = mnesia:transaction(fun() -> mnesia:delete(Key) end),
+delete({Table, Key}) ->
+    true = ets:delete(Table, Key),
     ok.
 
 %%==============================================================================

@@ -100,7 +100,13 @@ loop(State) ->
                 fanin_pids = FaninPids,
                 expected_inputs = length(FaninPids)
             },
-            loop(NewState)
+            loop(NewState);
+
+        %% Catch-all: log and discard unexpected messages to prevent mailbox bloat
+        UnexpectedMsg ->
+            tweann_logger:warning("Actuator ~p received unexpected message: ~p",
+                                 [State#state.id, UnexpectedMsg]),
+            loop(State)
     end.
 
 handle_forward(FromPid, Signal, State) ->

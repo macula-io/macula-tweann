@@ -94,9 +94,14 @@ build_model(Network, Opts) ->
 
 %% @private Extract network data
 get_network_data(Network) when is_tuple(Network) ->
-    %% Record: #network{layers, activation}
-    {network, Layers, Activation} = Network,
-    {Layers, Activation};
+    %% Record: #network{layers, activation, compiled_ref}
+    %% Handle both old 3-tuple and new 4-tuple record formats
+    case Network of
+        {network, Layers, Activation, _CompiledRef} ->
+            {Layers, Activation};
+        {network, Layers, Activation} ->
+            {Layers, Activation}
+    end;
 get_network_data(#{layers := Layers, activation := Activation}) ->
     {Layers, Activation}.
 

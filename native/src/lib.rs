@@ -288,7 +288,9 @@ fn evaluate(network: ResourceArc<NetworkResource>, inputs: Vec<f64>) -> Vec<f64>
 }
 
 /// Evaluate a compiled network with multiple input sets (batch mode)
-#[rustler::nif]
+/// Uses dirty scheduler to prevent blocking the regular BEAM scheduler
+/// for large batch operations.
+#[rustler::nif(schedule = "DirtyCpu")]
 fn evaluate_batch(
     network: ResourceArc<NetworkResource>,
     inputs_batch: Vec<Vec<f64>>,
@@ -360,6 +362,47 @@ fn compatibility_distance(
     };
 
     (c1 * excess as f64 / n) + (c2 * disjoint as f64 / n) + (c3 * avg_weight_diff)
+}
+
+/// Compute dot product of signals and weights with optional bias.
+///
+/// This is a hot path function used in signal_aggregator.erl.
+/// Expects pre-flattened data for maximum performance:
+/// - signals: flattened list of all signal values [s1_1, s1_2, s2_1, ...]
+/// - weights: corresponding weight values [w1_1, w1_2, w2_1, ...]
+/// - bias: bias value to add to the result
+///
+/// Returns: sum(signal[i] * weight[i]) + bias
+#[rustler::nif]
+fn dot_product_flat(signals: Vec<f64>, weights: Vec<f64>, bias: f64) -> f64 {
+    signals
+        .iter()
+        .zip(weights.iter())
+        .map(|(s, w)| s * w)
+        .sum::<f64>()
+        + bias
+}
+
+/// Batch dot product for multiple neurons (most efficient).
+///
+/// Processes multiple neurons in one NIF call to amortize overhead.
+/// Uses dirty scheduler for large batches.
+///
+/// - batch: Vec of (signals, weights, bias) tuples
+/// Returns: Vec of dot product results
+#[rustler::nif(schedule = "DirtyCpu")]
+fn dot_product_batch(batch: Vec<(Vec<f64>, Vec<f64>, f64)>) -> Vec<f64> {
+    batch
+        .into_iter()
+        .map(|(signals, weights, bias)| {
+            signals
+                .iter()
+                .zip(weights.iter())
+                .map(|(s, w)| s * w)
+                .sum::<f64>()
+                + bias
+        })
+        .collect()
 }
 
 /// Benchmark: evaluate network N times and return average time in microseconds
@@ -576,6 +619,9 @@ rustler::init!(
         evaluate_batch,
         compatibility_distance,
         benchmark_evaluate,
+        // Signal aggregation NIFs
+        dot_product_flat,
+        dot_product_batch,
         // LTC/CfC functions
         evaluate_cfc,
         evaluate_cfc_with_weights,

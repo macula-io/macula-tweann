@@ -14,10 +14,9 @@ setup() ->
     %% Register example morphologies
     test_helper:register_all_example_morphologies(),
 
-    %% Stop Mnesia if running and delete any existing schema
-    application:stop(mnesia),
-    mnesia:delete_schema([node()]),
-    genotype:init_db().
+    %% Initialize ETS tables (no Mnesia needed)
+    genotype:init_db(),
+    innovation:init().
 
 teardown(_) ->
     genotype:reset_db().

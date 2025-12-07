@@ -38,7 +38,9 @@
 
 -record(network, {
     layers :: [layer()],
-    activation :: atom()
+    activation :: atom(),
+    %% Optional compiled NIF reference for fast evaluation
+    compiled_ref :: reference() | undefined
 }).
 
 -type layer() :: {Weights :: [[float()]], Biases :: [float()]}.
@@ -61,17 +63,24 @@ create_feedforward(InputSize, HiddenSizes, OutputSize) ->
 create_feedforward(InputSize, HiddenSizes, OutputSize, Activation) ->
     LayerSizes = [InputSize | HiddenSizes] ++ [OutputSize],
     Layers = create_layers(LayerSizes),
-    #network{layers = Layers, activation = Activation}.
+    Network = #network{layers = Layers, activation = Activation, compiled_ref = undefined},
+    %% Attempt to compile for NIF acceleration
+    maybe_compile_for_nif(Network).
 
 %% @doc Evaluate the network with given inputs.
 %%
 %% Performs synchronous forward propagation through all layers.
+%% Uses NIF acceleration if available and network was compiled.
 %%
 %% @param Network The network record
 %% @param Inputs List of input values (must match input size)
 %% @returns List of output values
 -spec evaluate(network(), [float()]) -> [float()].
+evaluate(#network{compiled_ref = CompiledRef}, Inputs) when CompiledRef =/= undefined ->
+    %% Fast path: use NIF-compiled network
+    tweann_nif:evaluate(CompiledRef, Inputs);
 evaluate(#network{layers = Layers, activation = Activation}, Inputs) ->
+    %% Fallback: pure Erlang evaluation
     forward_propagate(Layers, Inputs, Activation).
 
 %% @doc Load a network from a genotype stored in Mnesia.
@@ -106,6 +115,7 @@ get_weights(#network{layers = Layers}) ->
 %% @doc Set weights from a flat list.
 %%
 %% The list must have the same number of elements as returned by get_weights/1.
+%% Re-compiles the network for NIF acceleration if available.
 -spec set_weights(network(), [float()]) -> network().
 set_weights(Network = #network{layers = Layers}, FlatWeights) ->
     {NewLayers, []} = lists:mapfoldl(
@@ -120,7 +130,9 @@ set_weights(Network = #network{layers = Layers}, FlatWeights) ->
         FlatWeights,
         Layers
     ),
-    Network#network{layers = NewLayers}.
+    %% Create updated network and recompile for NIF
+    UpdatedNetwork = Network#network{layers = NewLayers, compiled_ref = undefined},
+    maybe_compile_for_nif(UpdatedNetwork).
 
 %%==============================================================================
 %% Internal Functions
@@ -186,41 +198,120 @@ reshape_weights(Weights, RowSize, Acc) ->
     {Row, Rest} = lists:split(RowSize, Weights),
     reshape_weights(Rest, RowSize, [Row | Acc]).
 
-%% @private Load genotype structure from Mnesia
+%%==============================================================================
+%% NIF Compilation
+%%==============================================================================
+
+%% @private Attempt to compile network for NIF acceleration.
+%%
+%% If the NIF is loaded, compiles the network to a flat representation
+%% that can be evaluated much faster. Falls back to Erlang evaluation
+%% if NIF is not available.
+-spec maybe_compile_for_nif(network()) -> network().
+maybe_compile_for_nif(Network = #network{layers = Layers, activation = Activation}) ->
+    case tweann_nif:is_loaded() of
+        true ->
+            try
+                {Nodes, InputCount, OutputIndices} = build_nif_network(Layers, Activation),
+                CompiledRef = tweann_nif:compile_network(Nodes, InputCount, OutputIndices),
+                Network#network{compiled_ref = CompiledRef}
+            catch
+                _:_ ->
+                    %% Compilation failed, use Erlang fallback
+                    Network
+            end;
+        false ->
+            Network
+    end.
+
+%% @private Build the flat node representation for NIF compilation.
+%%
+%% Converts the layer-based structure to a flat list of nodes in
+%% topological order (inputs first, then hidden layers, then outputs).
+%%
+%% Node format: {Index, Type, Activation, Bias, [{FromIndex, Weight}, ...]}
+-spec build_nif_network([layer()], atom()) ->
+    {Nodes :: list(), InputCount :: non_neg_integer(), OutputIndices :: [non_neg_integer()]}.
+build_nif_network(Layers, Activation) ->
+    LayerSizes = extract_layer_sizes(Layers),
+    InputCount = hd(LayerSizes),
+
+    %% Build input nodes (no connections, linear activation)
+    InputNodes = [{I, input, linear, 0.0, []} || I <- lists:seq(0, InputCount - 1)],
+
+    %% Build hidden and output nodes layer by layer
+    {HiddenOutputNodes, _} = lists:foldl(
+        fun({WeightMatrix, Biases}, {Acc, PrevLayerStart}) ->
+            PrevLayerSize = length(hd(WeightMatrix)),
+            CurrentLayerStart = PrevLayerStart + PrevLayerSize,
+
+            %% Each row in WeightMatrix is weights for one neuron
+            %% WeightMatrix[neuron][input] = weight from input to neuron
+            NewNodes = lists:zipwith(
+                fun(NeuronWeights, Bias) ->
+                    NeuronIdx = CurrentLayerStart + length(Acc) - length(InputNodes),
+                    Connections = [{PrevLayerStart + I, W}
+                                   || {I, W} <- lists:zip(
+                                        lists:seq(0, length(NeuronWeights) - 1),
+                                        NeuronWeights)],
+                    {NeuronIdx, hidden, Activation, Bias, Connections}
+                end,
+                WeightMatrix,
+                Biases
+            ),
+            {Acc ++ NewNodes, CurrentLayerStart}
+        end,
+        {[], 0},
+        Layers
+    ),
+
+    %% Combine all nodes
+    AllNodes = InputNodes ++ HiddenOutputNodes,
+
+    %% Re-index all nodes sequentially from 0
+    {FinalNodes, _} = lists:mapfoldl(
+        fun({_OldIdx, Type, Act, Bias, Conns}, NewIdx) ->
+            {{NewIdx, Type, Act, Bias, Conns}, NewIdx + 1}
+        end,
+        0,
+        AllNodes
+    ),
+
+    %% Calculate output indices (last layer nodes)
+    TotalNodes = length(FinalNodes),
+    OutputCount = length(element(2, lists:last(Layers))),
+    OutputIndices = lists:seq(TotalNodes - OutputCount, TotalNodes - 1),
+
+    {FinalNodes, InputCount, OutputIndices}.
+
+%% @private Load genotype structure from ETS
 load_genotype_structure(AgentId) ->
-    case mnesia:transaction(fun() ->
-        case mnesia:read({agent, AgentId}) of
-            [] ->
-                {error, agent_not_found};
-            [Agent] ->
-                CxId = element(3, Agent), %% #agent.cx_id
-                case mnesia:read({cortex, CxId}) of
-                    [] ->
-                        {error, cortex_not_found};
-                    [Cortex] ->
-                        %% Load neurons
-                        NeuronIds = element(5, Cortex), %% #cortex.neuron_ids
-                        Neurons = [N || NId <- NeuronIds,
-                                       [N] <- [mnesia:read({neuron, NId})]],
+    case genotype:dirty_read({agent, AgentId}) of
+        undefined ->
+            {error, agent_not_found};
+        Agent ->
+            CxId = element(3, Agent), %% #agent.cx_id
+            case genotype:dirty_read({cortex, CxId}) of
+                undefined ->
+                    {error, cortex_not_found};
+                Cortex ->
+                    %% Load neurons
+                    NeuronIds = element(5, Cortex), %% #cortex.neuron_ids
+                    Neurons = [genotype:dirty_read({neuron, NId})
+                               || NId <- NeuronIds],
 
-                        %% Load sensors for input count
-                        SensorIds = element(6, Cortex), %% #cortex.sensor_ids
-                        Sensors = [S || SId <- SensorIds,
-                                       [S] <- [mnesia:read({sensor, SId})]],
+                    %% Load sensors for input count
+                    SensorIds = element(6, Cortex), %% #cortex.sensor_ids
+                    Sensors = [genotype:dirty_read({sensor, SId})
+                               || SId <- SensorIds],
 
-                        %% Load actuators for output count
-                        ActuatorIds = element(7, Cortex), %% #cortex.actuator_ids
-                        Actuators = [A || AId <- ActuatorIds,
-                                         [A] <- [mnesia:read({actuator, AId})]],
+                    %% Load actuators for output count
+                    ActuatorIds = element(7, Cortex), %% #cortex.actuator_ids
+                    Actuators = [genotype:dirty_read({actuator, AId})
+                                 || AId <- ActuatorIds],
 
-                        {ok, {Sensors, Neurons, Actuators}}
-                end
-        end
-    end) of
-        {atomic, Result} ->
-            Result;
-        {aborted, Reason} ->
-            {error, {mnesia_error, Reason}}
+                    {ok, {Sensors, Neurons, Actuators}}
+            end
     end.
 
 %% @private Build network from genotype structure

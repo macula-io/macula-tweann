@@ -34,81 +34,33 @@
 %% Environment Setup
 %%==============================================================================
 
-%% @doc Set up test environment with Mnesia tables
+%% @doc Set up test environment with ETS tables
 %%
-%% Creates in-memory Mnesia tables for testing. Should be called
+%% Creates in-memory ETS tables for testing. Should be called
 %% in test setup functions.
 %%
 %% @returns ok on success
 -spec setup_test_env() -> ok.
 setup_test_env() ->
-    %% Stop mnesia if running
-    application:stop(mnesia),
+    %% Initialize genotype ETS tables
+    genotype:init_db(),
 
-    %% Delete any existing schema
-    ok = mnesia:delete_schema([node()]),
-
-    %% Create new schema and start mnesia
-    ok = mnesia:create_schema([node()]),
-    ok = application:start(mnesia),
-
-    %% Create test tables
-    create_test_tables(),
+    %% Initialize innovation tracking
+    innovation:init(),
     ok.
 
 %% @doc Tear down test environment
 %%
-%% Stops Mnesia and cleans up schema. Should be called in test
-%% teardown functions.
+%% Clears all ETS tables. Should be called in test teardown functions.
 %%
 %% @returns ok on success
 -spec teardown_test_env() -> ok.
 teardown_test_env() ->
-    application:stop(mnesia),
-    ok = mnesia:delete_schema([node()]),
-    ok.
+    %% Clear genotype tables
+    genotype:reset_db(),
 
-%% @private
-%% @doc Create minimal Mnesia tables for testing
--spec create_test_tables() -> ok.
-create_test_tables() ->
-    %% Create neuron table
-    {atomic, ok} = mnesia:create_table(neuron, [
-        {attributes, record_info(fields, neuron)},
-        {ram_copies, [node()]},
-        {type, set}
-    ]),
-
-    %% Create sensor table
-    {atomic, ok} = mnesia:create_table(sensor, [
-        {attributes, record_info(fields, sensor)},
-        {ram_copies, [node()]},
-        {type, set}
-    ]),
-
-    %% Create actuator table
-    {atomic, ok} = mnesia:create_table(actuator, [
-        {attributes, record_info(fields, actuator)},
-        {ram_copies, [node()]},
-        {type, set}
-    ]),
-
-    %% Create cortex table
-    {atomic, ok} = mnesia:create_table(cortex, [
-        {attributes, record_info(fields, cortex)},
-        {ram_copies, [node()]},
-        {type, set}
-    ]),
-
-    %% Create agent table
-    {atomic, ok} = mnesia:create_table(agent, [
-        {attributes, record_info(fields, agent)},
-        {ram_copies, [node()]},
-        {type, set}
-    ]),
-
-    %% Wait for tables to be ready
-    ok = mnesia:wait_for_tables([neuron, sensor, actuator, cortex, agent], 5000),
+    %% Clear innovation tables
+    innovation:reset(),
     ok.
 
 %%==============================================================================

@@ -39,6 +39,9 @@
     compatibility_distance/5,
     benchmark_evaluate/3,
     is_loaded/0,
+    %% Signal aggregation NIFs
+    dot_product_flat/3,
+    dot_product_batch/1,
     %% LTC/CfC functions
     evaluate_cfc/4,
     evaluate_cfc_with_weights/6,
@@ -174,6 +177,44 @@ compatibility_distance(_ConnectionsA, _ConnectionsB, _C1, _C2, _C3) ->
     Iterations :: pos_integer()
 ) -> float().
 benchmark_evaluate(_Network, _Inputs, _Iterations) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% ============================================================================
+%% Signal Aggregation NIF Functions
+%% ============================================================================
+
+%% @doc Fast dot product for signal aggregation.
+%%
+%% Computes: sum(signals[i] * weights[i]) + bias
+%%
+%% This is a hot path function for neural network forward propagation.
+%% Expects pre-flattened data - use signal_aggregator:flatten_for_nif/2
+%% to convert from the standard tuple format.
+%%
+%% @param Signals Flattened list of signal values
+%% @param Weights Flattened list of weight values (same length as Signals)
+%% @param Bias Bias value to add to result
+%% @returns Aggregated scalar value
+-spec dot_product_flat(
+    Signals :: [float()],
+    Weights :: [float()],
+    Bias :: float()
+) -> float().
+dot_product_flat(_Signals, _Weights, _Bias) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Batch dot product for multiple neurons.
+%%
+%% More efficient than calling dot_product_flat/3 multiple times.
+%% Processes multiple neurons in one NIF call to amortize overhead.
+%% Uses dirty scheduler for large batches to avoid blocking.
+%%
+%% @param Batch List of {Signals, Weights, Bias} tuples
+%% @returns List of dot product results
+-spec dot_product_batch(
+    Batch :: [{[float()], [float()], float()}]
+) -> [float()].
+dot_product_batch(_Batch) ->
     erlang:nif_error(nif_not_loaded).
 
 %% ============================================================================

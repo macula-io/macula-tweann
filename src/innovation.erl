@@ -11,6 +11,9 @@
 %% - When a link is split to add a neuron, the new node and its links get tracked
 %% - Same structural change (same from/to) always gets the same innovation
 %%
+%% Storage: Uses ETS for innovation tracking and the counters module for
+%% atomic counter increments (faster than Mnesia dirty_update_counter).
+%%
 %% @author Macula.io
 %% @copyright 2025 Macula.io, Apache-2.0
 -module(innovation).
@@ -29,12 +32,7 @@
     get_node_innovation/2
 ]).
 
-%% Internal records for Mnesia storage
--record(innovation_counter, {
-    id = counter :: counter,
-    value = 0 :: non_neg_integer()
-}).
-
+%% Internal records for ETS storage
 -record(link_innovation, {
     key :: {term(), term()},         % {FromId, ToId}
     innovation :: pos_integer()      % Unique innovation number
@@ -51,40 +49,35 @@
 %% API Functions
 %%==============================================================================
 
-%% @doc Initialize innovation tables in Mnesia.
+%% @doc Initialize innovation tracking with ETS and atomic counter.
 %%
-%% Creates the required tables for innovation tracking.
-%% Should be called after genotype:init_db().
+%% Creates ETS tables for innovation tracking and initializes the
+%% atomic counter. Should be called after genotype:init_db().
 -spec init() -> ok.
 init() ->
-    Tables = [
-        {innovation_counter, record_info(fields, innovation_counter), set},
-        {link_innovation, record_info(fields, link_innovation), set},
-        {node_innovation, record_info(fields, node_innovation), set}
-    ],
+    %% Create ETS tables for innovation tracking
+    Tables = [link_innovation, node_innovation],
 
     lists:foreach(
-        fun({Name, Fields, Type}) ->
-            case mnesia:create_table(Name, [
-                {attributes, Fields},
-                {type, Type},
-                {ram_copies, [node()]}
-            ]) of
-                {atomic, ok} -> ok;
-                {aborted, {already_exists, Name}} -> ok
+        fun(Name) ->
+            case ets:whereis(Name) of
+                undefined ->
+                    ets:new(Name, [set, public, named_table, {keypos, 2},
+                                   {read_concurrency, true}]);
+                _Tid ->
+                    ok
             end
         end,
         Tables
     ),
 
-    %% Wait for tables
-    ok = mnesia:wait_for_tables([innovation_counter, link_innovation, node_innovation], 5000),
-
-    %% Initialize counter if not exists
-    case mnesia:dirty_read(innovation_counter, counter) of
-        [] ->
-            mnesia:dirty_write(#innovation_counter{id = counter, value = 0});
-        _ ->
+    %% Initialize atomic counter using persistent_term
+    %% The counter starts at 0 and is incremented atomically
+    case persistent_term:get(innovation_counter, undefined) of
+        undefined ->
+            CounterRef = counters:new(1, [atomics]),
+            persistent_term:put(innovation_counter, CounterRef);
+        _Existing ->
             ok
     end,
     ok.
@@ -95,17 +88,27 @@ init() ->
 %% Useful for starting a fresh evolutionary run.
 -spec reset() -> ok.
 reset() ->
+    %% Clear ETS tables
     lists:foreach(
         fun(Table) ->
-            case mnesia:clear_table(Table) of
-                {atomic, ok} -> ok;
-                {aborted, {no_exists, Table}} -> ok
+            case ets:whereis(Table) of
+                undefined -> ok;
+                _Tid -> ets:delete_all_objects(Table)
             end
         end,
-        [innovation_counter, link_innovation, node_innovation]
+        [link_innovation, node_innovation]
     ),
-    %% Reinitialize counter
-    mnesia:dirty_write(#innovation_counter{id = counter, value = 0}),
+    %% Reset counter to 0
+    case persistent_term:get(innovation_counter, undefined) of
+        undefined ->
+            %% Counter not initialized, initialize it
+            CounterRef = counters:new(1, [atomics]),
+            persistent_term:put(innovation_counter, CounterRef);
+        CounterRef ->
+            %% Reset existing counter to 0
+            Current = counters:get(CounterRef, 1),
+            counters:sub(CounterRef, 1, Current)
+    end,
     ok.
 
 %% @doc Get the next innovation number.
@@ -113,7 +116,9 @@ reset() ->
 %% Atomically increments and returns the global innovation counter.
 -spec next_innovation() -> pos_integer().
 next_innovation() ->
-    mnesia:dirty_update_counter(innovation_counter, counter, 1).
+    CounterRef = persistent_term:get(innovation_counter),
+    counters:add(CounterRef, 1, 1),
+    counters:get(CounterRef, 1).
 
 %% @doc Get or create innovation number for a link.
 %%
@@ -124,12 +129,12 @@ next_innovation() ->
 -spec get_or_create_link_innovation(FromId :: term(), ToId :: term()) -> pos_integer().
 get_or_create_link_innovation(FromId, ToId) ->
     Key = {FromId, ToId},
-    case mnesia:dirty_read(link_innovation, Key) of
+    case ets:lookup(link_innovation, Key) of
         [#link_innovation{innovation = Inn}] ->
             Inn;
         [] ->
             Inn = next_innovation(),
-            mnesia:dirty_write(#link_innovation{key = Key, innovation = Inn}),
+            true = ets:insert(link_innovation, #link_innovation{key = Key, innovation = Inn}),
             Inn
     end.
 
@@ -145,7 +150,7 @@ get_or_create_link_innovation(FromId, ToId) ->
     {pos_integer(), pos_integer(), pos_integer()}.
 get_or_create_node_innovation(FromId, ToId) ->
     Key = {FromId, ToId},
-    case mnesia:dirty_read(node_innovation, Key) of
+    case ets:lookup(node_innovation, Key) of
         [#node_innovation{node_innovation = NodeInn,
                           in_innovation = InInn,
                           out_innovation = OutInn}] ->
@@ -154,7 +159,7 @@ get_or_create_node_innovation(FromId, ToId) ->
             NodeInn = next_innovation(),
             InInn = next_innovation(),
             OutInn = next_innovation(),
-            mnesia:dirty_write(#node_innovation{
+            true = ets:insert(node_innovation, #node_innovation{
                 key = Key,
                 node_innovation = NodeInn,
                 in_innovation = InInn,
@@ -178,7 +183,7 @@ get_innovation_info(InnovationNum) ->
             when Inn =:= InnovationNum -> Key
         end
     ),
-    case mnesia:dirty_select(link_innovation, LinkMatch) of
+    case ets:select(link_innovation, LinkMatch) of
         [{FromId, ToId}] ->
             {link, FromId, ToId};
         [] ->
@@ -191,7 +196,7 @@ get_innovation_info(InnovationNum) ->
                     when NodeInn =:= InnovationNum -> {Key, InInn, OutInn}
                 end
             ),
-            case mnesia:dirty_select(node_innovation, NodeMatch) of
+            case ets:select(node_innovation, NodeMatch) of
                 [{{FromId, ToId}, InInn, OutInn}] ->
                     {node, FromId, ToId, InInn, OutInn};
                 [] ->
@@ -204,7 +209,7 @@ get_innovation_info(InnovationNum) ->
 %% Returns the innovation number if the link exists, undefined otherwise.
 -spec get_link_innovation(FromId :: term(), ToId :: term()) -> pos_integer() | undefined.
 get_link_innovation(FromId, ToId) ->
-    case mnesia:dirty_read(link_innovation, {FromId, ToId}) of
+    case ets:lookup(link_innovation, {FromId, ToId}) of
         [#link_innovation{innovation = Inn}] -> Inn;
         [] -> undefined
     end.
@@ -215,7 +220,7 @@ get_link_innovation(FromId, ToId) ->
 -spec get_node_innovation(FromId :: term(), ToId :: term()) ->
     {pos_integer(), pos_integer(), pos_integer()} | undefined.
 get_node_innovation(FromId, ToId) ->
-    case mnesia:dirty_read(node_innovation, {FromId, ToId}) of
+    case ets:lookup(node_innovation, {FromId, ToId}) of
         [#node_innovation{node_innovation = NodeInn,
                           in_innovation = InInn,
                           out_innovation = OutInn}] ->

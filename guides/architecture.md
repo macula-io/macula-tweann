@@ -96,6 +96,42 @@ Survivors
 New Genotypes
 ```
 
+## Why This Architecture
+
+### Process-Based Benefits
+
+The process-per-neuron design offers unique advantages:
+
+- **True Parallelism**: On multi-core systems, neurons evaluate concurrently
+- **Fault Isolation**: A crashed neuron doesn't corrupt other components
+- **Hot Code Loading**: Update logic without stopping evolution
+- **Debuggability**: Inspect any component with standard Erlang tools
+- **Distributed Potential**: Network components can span multiple nodes
+
+### Comparison to Traditional Implementations
+
+| Feature | Matrix-Based (NumPy/PyTorch) | Process-Based (macula-tweann) |
+|---------|------------------------------|-------------------------------|
+| Speed | Faster for batch | Better for real-time |
+| Debugging | Tensor shapes | Individual processes |
+| Fault tolerance | Full crash | Graceful degradation |
+| Topology changes | Expensive reshape | Natural add/remove |
+| Distribution | GPU only | CPU clusters |
+
+### When to Choose macula-tweann
+
+**Ideal for:**
+- Embedded systems needing fault tolerance
+- Real-time applications (games, robotics)
+- Research on topology evolution
+- Distributed AI systems
+- When debuggability matters
+
+**Consider alternatives when:**
+- Batch training massive datasets (use PyTorch/TensorFlow)
+- Maximum throughput on single machine (use matrix libraries)
+- GPU acceleration is critical
+
 ## Next Steps
 
 - See module documentation for detailed API reference

@@ -285,13 +285,9 @@ genome_mutator:mutate_state_bound(AgentId).
 %% Switches between standard <-> ltc <-> cfc with configurable probability
 genome_mutator:mutate_neuron_type(AgentId).
 
-%% Mutate LTC backbone weights
-%% Perturbs the f() backbone network weights
-genome_mutator:mutate_ltc_backbone(AgentId).
-
-%% Mutate LTC head weights
-%% Perturbs the h() head network weights
-genome_mutator:mutate_ltc_head(AgentId).
+%% Mutate LTC weights (backbone and head)
+%% Perturbs both the f() backbone and h() head network weights
+genome_mutator:mutate_ltc_weights(AgentId).
 ```
 
 ### LTC Crossover
@@ -386,5 +382,5 @@ If you see NaN or Inf:
 ## Next Steps
 
 - Read [LTC Neurons Concepts](ltc-neurons.md) for theory
-- See [Custom Morphologies](custom-morphologies.md) to create LTC-based morphologies
+- See [Custom Morphologies](CUSTOM_MORPHOLOGIES.md) to create LTC-based morphologies
 - Check the `ltc_dynamics` module documentation for complete function reference

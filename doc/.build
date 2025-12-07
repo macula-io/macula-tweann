@@ -41,8 +41,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-QPNJX265.woff2
-dist/search_data-589372BC.js
-dist/sidebar_items-3B04CF87.js
+dist/search_data-F2404F16.js
+dist/sidebar_items-99FC4F80.js
 exoself.html
 fitness_postprocessor.html
 functions.html
@@ -51,6 +51,7 @@ genome_mutator.html
 genotype.html
 index.html
 installation.html
+ltc-evolution.html
 ltc-neurons.html
 ltc-usage-guide.html
 ltc_dynamics.html

@@ -12,6 +12,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.0] - 2025-12-07
+
+### Summary
+**Complete Topology Evolution & Test Coverage Release** - NEAT-style topology evolution with innovation tracking, comprehensive test coverage (791 tests), and enhanced documentation.
+
+### Added
+
+#### Topology Evolution (NEAT-Style)
+- **innovation.erl** (~200 lines): Innovation number tracking for structural mutations
+  - `init/0`, `reset/0` - Initialize/reset innovation tracking
+  - `get_or_create_link_innovation/2` - Track link additions
+  - `get_or_create_node_innovation/2` - Track node additions
+  - Mnesia persistence for innovation history
+
+- **genome_crossover.erl** (~250 lines): Variable-topology crossover
+  - `crossover/3` - NEAT-style crossover with gene alignment
+  - `align_genomes/2` - Align genes by innovation number
+  - `compatibility_distance/3` - Species distance calculation
+  - Matching, disjoint, and excess gene handling
+
+- **topological_mutations.erl** enhancements:
+  - `add_sensor/2` - Add sensor to existing network
+  - `add_actuator/2` - Add actuator to existing network
+  - Innovation number assignment for all structural changes
+
+#### Comprehensive Test Coverage
+- **198 new tests** bringing total to **791 tests**
+- New test files:
+  - `functions_tests.erl` - 76 tests for activation functions
+  - `morphology_tests.erl` - 25 tests for morphology system
+  - `brain_system_tests.erl` - 28 tests for brain API
+  - `network_evaluator_tests.erl` - 27 tests for synchronous evaluation
+  - `network_onnx_tests.erl` - 21 tests for ONNX export
+  - `app_tests.erl` - 21 tests for application modules
+
+#### Documentation Enhancements
+- **SVG Diagrams**: Created professional diagrams
+  - `assets/ltc-neuron-architecture.svg` - LTC neuron diagram
+  - `assets/module-dependencies.svg` - Module architecture
+  - `guides/assets/planetary-mesh-vision.svg` - Distributed vision
+
+- **Research Opportunities**: Added to ltc-neurons.md
+  - Temporal dynamics evolution
+  - Hybrid architecture research
+  - Application domain suggestions
+
+- **Value Sections**: Added competitive comparisons
+  - "Why Choose macula-tweann" in overview.md
+  - "Why This Architecture" in architecture.md
+  - Comparison tables with alternatives
+
+#### Tooling
+- **validate-docs.sh**: Link validation script
+  - SVG reference checking
+  - Markdown link validation
+  - ASCII diagram detection
+  - CI-ready exit codes
+
+### Changed
+- Version bumped from 0.11.3 to 0.12.0
+- README test count updated to 791
+- Replaced ASCII diagram in vision guide with SVG
+
+### Fixed
+- Broken SVG links in README.md (created missing assets)
+- ASCII diagram in vision-distributed-mega-brain.md replaced with SVG
+
+### Academic References
+- NEAT paper (Stanley & Miikkulainen, 2002) referenced in innovation.erl and genome_crossover.erl
+
+### Test Results
+- 791 tests passing
+- Dialyzer clean
+- All documentation links validated
+
+---
+
 ## [0.11.2] - 2025-12-06
 
 ### Summary

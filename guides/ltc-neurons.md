@@ -210,8 +210,53 @@ The LTC implementation in macula-tweann is based on peer-reviewed research:
    "On the Dynamics of Small Continuous-Time Recurrent Neural Networks"
    *Adaptive Behavior, 3(4)*
 
+## Research Opportunities
+
+LTC neurons in an evolutionary context open exciting research directions:
+
+### Temporal Dynamics Evolution
+
+Unlike fixed architectures like LSTMs, macula-tweann evolves LTC parameters:
+
+- **Tau Evolution**: Networks discover optimal time constants for different temporal scales
+- **Multi-timescale Systems**: Single networks can evolve neurons with different tau values, capturing both fast reactions and slow trends
+- **Adaptive Plasticity**: Combine LTC dynamics with Hebbian learning for biologically plausible temporal learning
+
+### Hybrid Architectures
+
+The ability to mix standard and LTC neurons enables novel architectures:
+
+- **Temporal Gating**: Standard neurons for pattern recognition, LTC for temporal integration
+- **Hierarchical Timing**: Fast LTC neurons at input, slow LTC at decision layers
+- **Emergent Temporal Structure**: Let evolution discover which neurons need temporal dynamics
+
+### Comparative Studies
+
+macula-tweann provides a unique platform for comparing temporal approaches:
+
+- **LTC vs LSTM**: Evolved LTC networks vs manually-designed recurrent architectures
+- **CfC Efficiency**: When does the ~100x speedup justify the closed-form approximation?
+- **Temporal Necessity**: Which problems truly require temporal dynamics vs simple feedforward?
+
+### Application Domains
+
+High-potential research applications:
+
+- **Robotics**: Evolved LTC controllers for locomotion with natural rhythm emergence
+- **Time-series**: Financial prediction, sensor anomaly detection, predictive maintenance
+- **Game AI**: Agents that adapt response timing to opponent behavior
+- **Edge Computing**: Lightweight temporal models for embedded systems
+
+### Publishing Opportunities
+
+If you use macula-tweann LTC neurons in research, consider contributing:
+
+- Evolved network architectures that solve interesting problems
+- Performance comparisons with other temporal network approaches
+- Novel morphologies designed for specific temporal tasks
+
 ## Next Steps
 
 - See the [LTC Usage Guide](ltc-usage-guide.md) for practical examples
-- Explore [Custom Morphologies](custom-morphologies.md) to create LTC-based morphologies
+- Explore [Custom Morphologies](CUSTOM_MORPHOLOGIES.md) to create LTC-based morphologies
 - Check the `ltc_dynamics` module documentation for detailed function reference

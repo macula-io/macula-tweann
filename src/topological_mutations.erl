@@ -161,6 +161,11 @@ insert_neuron(Agent, Cortex, FromId, ToId, Weight) ->
     AF = selection_utils:random_select(Constraint#constraint.neural_afs),
     AggrF = selection_utils:random_select(Constraint#constraint.neural_aggr_fs),
 
+    %% Get innovation number for this node split (NEAT tracking)
+    %% Same FromId->ToId split always gets the same innovation
+    {NodeInnovation, _InLinkInn, _OutLinkInn} =
+        innovation:get_or_create_node_innovation(FromId, ToId),
+
     NewNeuron = #neuron{
         id = NewNeuronId,
         generation = Agent#agent.generation,
@@ -169,7 +174,8 @@ insert_neuron(Agent, Cortex, FromId, ToId, Weight) ->
         aggr_f = AggrF,
         input_idps = [{FromId, [Weight]}],
         output_ids = [ToId],
-        ro_ids = []
+        ro_ids = [],
+        innovation = NodeInnovation
     },
 
     %% Update connections
@@ -245,16 +251,146 @@ link_neuron_to_available_actuator(ActuatorId, Actuator, Neurons) ->
 
 %% @doc Add a new sensor to the network.
 %%
+%% Selects a sensor type from the morphology that isn't already
+%% in the network, creates it, and connects it to a random neuron.
+%% Enables networks to evolve new perception capabilities.
+%%
 %% @param AgentId the agent to mutate
 %% @returns ok or {error, term()}
 -spec add_sensor(term()) -> ok | {error, term()}.
-add_sensor(_AgentId) ->
-    {error, not_implemented}.
+add_sensor(AgentId) ->
+    Agent = genotype:dirty_read({agent, AgentId}),
+    Cortex = genotype:dirty_read({cortex, Agent#agent.cx_id}),
+    Constraint = Agent#agent.constraint,
+    Morphology = Constraint#constraint.morphology,
+
+    %% Get all available sensors from morphology
+    AllSensors = morphology:get_Sensors(Morphology),
+
+    %% Get sensor names already in network
+    CurrentSensorNames = get_current_sensor_names(Cortex#cortex.sensor_ids),
+
+    %% Find sensors not yet in network
+    CandidateSensors = [S || S <- AllSensors,
+                             not lists:member(S#sensor.name, CurrentSensorNames)],
+
+    add_sensor_from_candidates(Agent, Cortex, CandidateSensors).
+
+add_sensor_from_candidates(_Agent, _Cortex, []) ->
+    {error, no_available_sensors};
+add_sensor_from_candidates(Agent, Cortex, Candidates) ->
+    %% Select random sensor template
+    SensorTemplate = selection_utils:random_select(Candidates),
+
+    %% Get innovation number for adding this sensor type
+    %% Same sensor type always gets the same innovation (NEAT tracking)
+    SensorInnovation = innovation:get_or_create_link_innovation(
+        {add_sensor, SensorTemplate#sensor.name}, Agent#agent.cx_id),
+
+    %% Create sensor with unique ID
+    NewSensorId = genotype:generate_id(sensor),
+    NewSensor = SensorTemplate#sensor{
+        id = NewSensorId,
+        cx_id = Agent#agent.cx_id,
+        generation = Agent#agent.generation,
+        fanout_ids = [],
+        innovation = SensorInnovation
+    },
+
+    %% Write sensor to Mnesia
+    genotype:write(NewSensor),
+
+    %% Update cortex with new sensor
+    NewSensorIds = [NewSensorId | Cortex#cortex.sensor_ids],
+    UpdatedCortex = Cortex#cortex{sensor_ids = NewSensorIds},
+    genotype:write(UpdatedCortex),
+
+    %% Connect to a random neuron
+    connect_sensor_to_random_neuron(NewSensorId, NewSensor, Cortex#cortex.neuron_ids).
+
+get_current_sensor_names(SensorIds) ->
+    [begin
+        Sensor = genotype:dirty_read({sensor, SId}),
+        Sensor#sensor.name
+     end || SId <- SensorIds].
+
+connect_sensor_to_random_neuron(_SensorId, _Sensor, []) ->
+    %% No neurons - sensor added but unconnected (will connect when neurons added)
+    ok;
+connect_sensor_to_random_neuron(SensorId, Sensor, NeuronIds) ->
+    NeuronId = selection_utils:random_select(NeuronIds),
+    mutation_helpers:link_sensor_to_neuron(SensorId, Sensor, NeuronId),
+    ok.
 
 %% @doc Add a new actuator to the network.
+%%
+%% Selects an actuator type from the morphology that isn't already
+%% in the network, creates it, and connects a random neuron to it.
+%% Enables networks to evolve new action capabilities.
 %%
 %% @param AgentId the agent to mutate
 %% @returns ok or {error, term()}
 -spec add_actuator(term()) -> ok | {error, term()}.
-add_actuator(_AgentId) ->
-    {error, not_implemented}.
+add_actuator(AgentId) ->
+    Agent = genotype:dirty_read({agent, AgentId}),
+    Cortex = genotype:dirty_read({cortex, Agent#agent.cx_id}),
+    Constraint = Agent#agent.constraint,
+    Morphology = Constraint#constraint.morphology,
+
+    %% Get all available actuators from morphology
+    AllActuators = morphology:get_Actuators(Morphology),
+
+    %% Get actuator names already in network
+    CurrentActuatorNames = get_current_actuator_names(Cortex#cortex.actuator_ids),
+
+    %% Find actuators not yet in network
+    CandidateActuators = [A || A <- AllActuators,
+                               not lists:member(A#actuator.name, CurrentActuatorNames)],
+
+    add_actuator_from_candidates(Agent, Cortex, CandidateActuators).
+
+add_actuator_from_candidates(_Agent, _Cortex, []) ->
+    {error, no_available_actuators};
+add_actuator_from_candidates(Agent, Cortex, Candidates) ->
+    %% Select random actuator template
+    ActuatorTemplate = selection_utils:random_select(Candidates),
+
+    %% Get innovation number for adding this actuator type
+    %% Same actuator type always gets the same innovation (NEAT tracking)
+    ActuatorInnovation = innovation:get_or_create_link_innovation(
+        {add_actuator, ActuatorTemplate#actuator.name}, Agent#agent.cx_id),
+
+    %% Create actuator with unique ID
+    NewActuatorId = genotype:generate_id(actuator),
+    NewActuator = ActuatorTemplate#actuator{
+        id = NewActuatorId,
+        cx_id = Agent#agent.cx_id,
+        generation = Agent#agent.generation,
+        fanin_ids = [],
+        innovation = ActuatorInnovation
+    },
+
+    %% Write actuator to Mnesia
+    genotype:write(NewActuator),
+
+    %% Update cortex with new actuator
+    NewActuatorIds = [NewActuatorId | Cortex#cortex.actuator_ids],
+    UpdatedCortex = Cortex#cortex{actuator_ids = NewActuatorIds},
+    genotype:write(UpdatedCortex),
+
+    %% Connect a random neuron to this actuator
+    connect_random_neuron_to_actuator(NewActuatorId, NewActuator, Cortex#cortex.neuron_ids).
+
+get_current_actuator_names(ActuatorIds) ->
+    [begin
+        Actuator = genotype:dirty_read({actuator, AId}),
+        Actuator#actuator.name
+     end || AId <- ActuatorIds].
+
+connect_random_neuron_to_actuator(_ActuatorId, _Actuator, []) ->
+    %% No neurons - actuator added but unconnected (will connect when neurons added)
+    ok;
+connect_random_neuron_to_actuator(ActuatorId, Actuator, NeuronIds) ->
+    NeuronId = selection_utils:random_select(NeuronIds),
+    mutation_helpers:link_neuron_to_actuator(NeuronId, ActuatorId, Actuator),
+    ok.

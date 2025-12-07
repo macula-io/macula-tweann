@@ -8,6 +8,40 @@ Macula TWEANN is an evolutionary neural network library that implements the TWEA
 
 Based on DXNN2 by Gene Sher (from "Handbook of Neuroevolution Through Erlang"), this library provides a production-ready implementation with modern Erlang practices, process safety, and comprehensive logging.
 
+## Why Choose macula-tweann
+
+### Comparison with Other Neuroevolution Libraries
+
+| Feature | macula-tweann | NEAT-Python | TensorNEAT | DXNN2 (original) |
+|---------|---------------|-------------|------------|------------------|
+| Language | Erlang | Python | Python/JAX | Erlang |
+| LTC Neurons | Yes | No | No | No |
+| Process-based | Yes | No | No | Yes |
+| Fault tolerance | Yes | No | No | Limited |
+| Hot code loading | Yes | No | No | Yes |
+| ONNX export | Yes | No | Limited | No |
+| Real-time inference | Yes | Limited | Limited | Yes |
+| Mnesia persistence | Yes | File-based | None | Yes |
+| Brain API | Yes | No | No | No |
+
+### Unique Strengths
+
+**LTC/CfC Neurons**: First TWEANN library to implement Liquid Time-Constant neurons, enabling evolved networks that adapt their temporal dynamics - critical for time-series and control problems.
+
+**Production-Ready**: Comprehensive test suite (791 tests), structured logging, process timeouts, and crash handling make this suitable for real applications.
+
+**Brain API**: Simple GenServer interface for real-time inference with optional Hebbian learning during operation - ideal for games, robotics, and interactive systems.
+
+**ONNX Export**: Deploy evolved networks to Python, JavaScript, C++, mobile, and edge devices using standard tooling.
+
+**BEAM Ecosystem**: Leverage Erlang's distributed capabilities for multi-node evolution, integrate with Phoenix for web interfaces, or run on Nerves for embedded systems.
+
+### When to Use Alternatives
+
+- **TensorNEAT/JAX**: For GPU-accelerated batch evolution with massive populations
+- **NEAT-Python**: For quick prototyping in Python ecosystem
+- **PyTorch/TensorFlow**: For deep learning with gradient descent
+
 ## Architecture
 
 ![Module Dependencies](assets/module-dependencies.svg)

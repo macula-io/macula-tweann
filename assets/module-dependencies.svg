@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600">
+  <defs>
+    <marker id="dep-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#718096"/>
+    </marker>
+    <linearGradient id="coreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4299e1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2b6cb0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="neuralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9f7aea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6b46c1;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="mutationGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ed8936;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c05621;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="ltcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#48bb78;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#276749;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e53e3e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c53030;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="utilGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#718096;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4a5568;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="600" fill="#f7fafc"/>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2d3748">Macula-TWEANN Module Architecture</text>
+
+  <!-- Core Evolution Group -->
+  <rect x="30" y="60" width="200" height="150" rx="10" fill="url(#coreGrad)" opacity="0.9"/>
+  <text x="130" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Core Evolution</text>
+  <text x="50" y="110" font-family="monospace" font-size="11" fill="white">genotype</text>
+  <text x="50" y="128" font-family="monospace" font-size="11" fill="white">constructor</text>
+  <text x="50" y="146" font-family="monospace" font-size="11" fill="white">exoself</text>
+  <text x="50" y="164" font-family="monospace" font-size="11" fill="white">cortex</text>
+  <text x="50" y="182" font-family="monospace" font-size="11" fill="white">innovation</text>
+  <text x="50" y="200" font-family="monospace" font-size="11" fill="white">genome_crossover</text>
+
+  <!-- Neural Components Group -->
+  <rect x="250" y="60" width="160" height="120" rx="10" fill="url(#neuralGrad)" opacity="0.9"/>
+  <text x="330" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Neural Components</text>
+  <text x="270" y="110" font-family="monospace" font-size="11" fill="white">neuron</text>
+  <text x="270" y="128" font-family="monospace" font-size="11" fill="white">sensor</text>
+  <text x="270" y="146" font-family="monospace" font-size="11" fill="white">actuator</text>
+  <text x="270" y="164" font-family="monospace" font-size="11" fill="white">signal_aggregator</text>
+
+  <!-- LTC Group -->
+  <rect x="430" y="60" width="140" height="120" rx="10" fill="url(#ltcGrad)" opacity="0.9"/>
+  <text x="500" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">LTC/CfC</text>
+  <text x="450" y="110" font-family="monospace" font-size="11" fill="white">ltc_dynamics</text>
+  <text x="450" y="128" font-family="monospace" font-size="11" fill="white">ltc_mutations</text>
+  <text x="450" y="146" font-family="monospace" font-size="11" fill="white">neuron_ltc</text>
+  <text x="450" y="164" font-family="monospace" font-size="10" fill="#c6f6d5">(temporal dynamics)</text>
+
+  <!-- Mutation Group -->
+  <rect x="30" y="230" width="200" height="130" rx="10" fill="url(#mutationGrad)" opacity="0.9"/>
+  <text x="130" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Mutation</text>
+  <text x="50" y="280" font-family="monospace" font-size="11" fill="white">genome_mutator</text>
+  <text x="50" y="298" font-family="monospace" font-size="11" fill="white">topological_mutations</text>
+  <text x="50" y="316" font-family="monospace" font-size="11" fill="white">parametric_mutations</text>
+  <text x="50" y="334" font-family="monospace" font-size="11" fill="white">mutation_helpers</text>
+
+  <!-- Selection Group -->
+  <rect x="250" y="200" width="160" height="100" rx="10" fill="#ed64a6" opacity="0.9"/>
+  <text x="330" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Selection</text>
+  <text x="270" y="250" font-family="monospace" font-size="11" fill="white">selection_algorithm</text>
+  <text x="270" y="268" font-family="monospace" font-size="11" fill="white">population_monitor</text>
+  <text x="270" y="286" font-family="monospace" font-size="11" fill="white">species_identifier</text>
+
+  <!-- Plasticity Group -->
+  <rect x="430" y="200" width="140" height="100" rx="10" fill="#667eea" opacity="0.9"/>
+  <text x="500" y="225" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Plasticity</text>
+  <text x="450" y="250" font-family="monospace" font-size="11" fill="white">plasticity</text>
+  <text x="450" y="268" font-family="monospace" font-size="11" fill="white">plasticity_hebbian</text>
+  <text x="450" y="286" font-family="monospace" font-size="11" fill="white">plasticity_modulated</text>
+
+  <!-- Brain System Group -->
+  <rect x="590" y="60" width="150" height="150" rx="10" fill="url(#brainGrad)" opacity="0.9"/>
+  <text x="665" y="85" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Brain System</text>
+  <text x="610" y="110" font-family="monospace" font-size="11" fill="white">brain</text>
+  <text x="610" y="128" font-family="monospace" font-size="11" fill="white">brain_system</text>
+  <text x="610" y="146" font-family="monospace" font-size="11" fill="white">brain_learner</text>
+  <text x="610" y="164" font-family="monospace" font-size="11" fill="white">brain_sup</text>
+  <text x="610" y="182" font-family="monospace" font-size="11" fill="white">brain_pubsub</text>
+  <text x="610" y="198" font-family="monospace" font-size="10" fill="#fed7d7">(realtime inference)</text>
+
+  <!-- Network/Export Group -->
+  <rect x="590" y="230" width="150" height="110" rx="10" fill="#38b2ac" opacity="0.9"/>
+  <text x="665" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Network Export</text>
+  <text x="610" y="280" font-family="monospace" font-size="11" fill="white">network_evaluator</text>
+  <text x="610" y="298" font-family="monospace" font-size="11" fill="white">network_compiler</text>
+  <text x="610" y="316" font-family="monospace" font-size="11" fill="white">network_onnx</text>
+  <text x="610" y="332" font-family="monospace" font-size="10" fill="#b2f5ea">(cross-platform)</text>
+
+  <!-- Morphology Group -->
+  <rect x="760" y="130" width="120" height="100" rx="10" fill="#d69e2e" opacity="0.9"/>
+  <text x="820" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Morphology</text>
+  <text x="780" y="180" font-family="monospace" font-size="11" fill="white">morphology</text>
+  <text x="780" y="198" font-family="monospace" font-size="11" fill="white">morphology_registry</text>
+  <text x="780" y="216" font-family="monospace" font-size="10" fill="#fefcbf">(sensors/actuators)</text>
+
+  <!-- Utility Group -->
+  <rect x="250" y="320" width="320" height="70" rx="10" fill="url(#utilGrad)" opacity="0.9"/>
+  <text x="410" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Utilities</text>
+  <text x="270" y="370" font-family="monospace" font-size="11" fill="white">functions</text>
+  <text x="370" y="370" font-family="monospace" font-size="11" fill="white">tweann_logger</text>
+  <text x="480" y="370" font-family="monospace" font-size="11" fill="white">tweann_nif</text>
+
+  <!-- Dependency Arrows -->
+  <!-- Core -> Neural -->
+  <line x1="230" y1="130" x2="245" y2="130" stroke="#718096" stroke-width="2" marker-end="url(#dep-arrow)"/>
+
+  <!-- Neural -> LTC -->
+  <line x1="410" y1="120" x2="425" y2="120" stroke="#718096" stroke-width="2" marker-end="url(#dep-arrow)"/>
+
+  <!-- Core -> Mutation -->
+  <line x1="130" y1="210" x2="130" y2="225" stroke="#718096" stroke-width="2" marker-end="url(#dep-arrow)"/>
+
+  <!-- Neural -> Brain -->
+  <line x1="410" y1="100" x2="585" y2="100" stroke="#718096" stroke-width="2" marker-end="url(#dep-arrow)"/>
+
+  <!-- LTC -> Brain -->
+  <line x1="500" y1="180" x2="585" y2="180" stroke="#718096" stroke-width="2" marker-end="url(#dep-arrow)"/>
+
+  <!-- Brain -> Network -->
+  <line x1="665" y1="210" x2="665" y2="225" stroke="#718096" stroke-width="2" marker-end="url(#dep-arrow)"/>
+
+  <!-- Morphology -> Core -->
+  <line x1="760" y1="180" x2="740" y2="180" stroke="#718096" stroke-width="2"/>
+  <line x1="740" y1="180" x2="740" y2="50" stroke="#718096" stroke-width="2"/>
+  <line x1="740" y1="50" x2="130" y2="50" stroke="#718096" stroke-width="2"/>
+  <line x1="130" y1="50" x2="130" y2="55" stroke="#718096" stroke-width="2" marker-end="url(#dep-arrow)"/>
+
+  <!-- Legend -->
+  <rect x="30" y="410" width="840" height="80" rx="5" fill="#edf2f7" stroke="#cbd5e0"/>
+  <text x="50" y="435" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d3748">Data Flow:</text>
+  <text x="50" y="455" font-family="Arial, sans-serif" font-size="11" fill="#4a5568">Genotype (blueprint) -> Constructor (build) -> Cortex/Neurons (execute) -> Selection (evolve)</text>
+  <text x="50" y="475" font-family="Arial, sans-serif" font-size="11" fill="#4a5568">Brain System provides real-time inference with learning. Network Export enables cross-platform deployment (ONNX).</text>
+
+  <!-- Version -->
+  <text x="850" y="480" text-anchor="end" font-family="Arial, sans-serif" font-size="10" fill="#a0aec0">macula-tweann v0.12.0</text>
+</svg>

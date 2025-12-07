@@ -12,6 +12,7 @@ register_all_example_morphologies() ->
     ok = morphology_registry:register(forex_trader, morphology_forex),
     ok = morphology_registry:register(prey, morphology_flatland),
     ok = morphology_registry:register(predator, morphology_flatland),
+    ok = morphology_registry:register(snake, morphology_snake),
     ok.
 
 %% @doc Unregister all example morphologies.
@@ -21,4 +22,5 @@ unregister_all_example_morphologies() ->
     ok = morphology_registry:unregister(forex_trader),
     ok = morphology_registry:unregister(prey),
     ok = morphology_registry:unregister(predator),
+    ok = morphology_registry:unregister(snake),
     ok.

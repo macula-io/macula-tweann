@@ -62,24 +62,7 @@ A **distributed mega-brain** is a massively parallel evolutionary neural network
 
 ### Example Scenario: Planetary AI Mesh
 
-```
-┌─────────────────────────────────────────────────────┐
-│          Macula Mesh (HTTP/3/QUIC)                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐          │
-│  │  Node 1  │  │  Node 2  │  │  Node 3  │  ... N   │
-│  │ (Berlin) │  │ (Tokyo)  │  │(New York)│          │
-│  └─────┬────┘  └─────┬────┘  └─────┬────┘          │
-│        │ DHT         │ DHT          │ DHT           │
-│        └──────Peer-to-Peer──────────┘               │
-└─────────────────────────────────────────────────────┘
-         ↓              ↓               ↓
-    ┌─────────┐    ┌─────────┐    ┌─────────┐
-    │ TWEANN  │    │ TWEANN  │    │ TWEANN  │
-    │Evolution│    │Evolution│    │Evolution│
-    └─────────┘    └─────────┘    └─────────┘
-         ↓              ↓               ↓
-    Local genotypes propagate best solutions globally
-```
+![Planetary AI Mesh](assets/planetary-mesh-vision.svg)
 
 **What happens:**
 - Each node evolves neural networks for its local problem

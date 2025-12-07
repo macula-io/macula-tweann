@@ -25,7 +25,8 @@ genome_mutator_exports_test() ->
 setup_test() ->
     application:ensure_all_started(macula_tweann),
     test_helper:register_all_example_morphologies(),
-    genotype:init_db().
+    genotype:init_db(),
+    innovation:init().
 
 calculate_mutation_count_test() ->
     setup_test(),

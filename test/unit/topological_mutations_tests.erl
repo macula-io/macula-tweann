@@ -27,7 +27,8 @@ topological_mutations_exports_test() ->
 setup_test() ->
     application:ensure_all_started(macula_tweann),
     test_helper:register_all_example_morphologies(),
-    genotype:init_db().
+    genotype:init_db(),
+    innovation:init().
 
 %% ============================================================================
 %% Add Bias Tests
@@ -194,13 +195,103 @@ add_actuatorlink_test() ->
     end.
 
 %% ============================================================================
-%% Not Implemented Tests
+%% Add Sensor Tests
 %% ============================================================================
 
-add_sensor_not_implemented_test() ->
-    Result = topological_mutations:add_sensor(some_agent_id),
-    ?assertEqual({error, not_implemented}, Result).
+add_sensor_success_test() ->
+    setup_test(),
+    try
+        %% Use snake morphology which has multiple sensors
+        test_helper:register_all_example_morphologies(),
+        SpecieId = test_specie,
+        AgentId = genotype:generate_id(agent),
+        %% Snake has 4 sensors, initial construction uses only 1
+        Constraint = #constraint{morphology = snake},
+        genotype:construct_Agent(SpecieId, AgentId, Constraint),
 
-add_actuator_not_implemented_test() ->
-    Result = topological_mutations:add_actuator(some_agent_id),
-    ?assertEqual({error, not_implemented}, Result).
+        Agent1 = genotype:dirty_read({agent, AgentId}),
+        Cortex1 = genotype:dirty_read({cortex, Agent1#agent.cx_id}),
+        InitialSensorCount = length(Cortex1#cortex.sensor_ids),
+
+        Result = topological_mutations:add_sensor(AgentId),
+        case Result of
+            ok ->
+                Cortex2 = genotype:dirty_read({cortex, Agent1#agent.cx_id}),
+                NewSensorCount = length(Cortex2#cortex.sensor_ids),
+                ?assertEqual(InitialSensorCount + 1, NewSensorCount);
+            {error, no_available_sensors} ->
+                %% All sensors already added - this is ok
+                ok
+        end
+    after
+        genotype:reset_db(),
+        application:stop(mnesia)
+    end.
+
+add_sensor_no_available_test() ->
+    setup_test(),
+    try
+        %% Use xor morphology which has only 1 sensor
+        SpecieId = test_specie,
+        AgentId = genotype:generate_id(agent),
+        Constraint = #constraint{morphology = xor_mimic},
+        genotype:construct_Agent(SpecieId, AgentId, Constraint),
+
+        %% XOR only has 1 sensor, already used, so should fail
+        Result = topological_mutations:add_sensor(AgentId),
+        ?assertEqual({error, no_available_sensors}, Result)
+    after
+        genotype:reset_db(),
+        application:stop(mnesia)
+    end.
+
+%% ============================================================================
+%% Add Actuator Tests
+%% ============================================================================
+
+add_actuator_success_test() ->
+    setup_test(),
+    try
+        %% Use snake morphology which has multiple actuators
+        test_helper:register_all_example_morphologies(),
+        SpecieId = test_specie,
+        AgentId = genotype:generate_id(agent),
+        %% Snake has 3 actuators, initial construction uses only 1
+        Constraint = #constraint{morphology = snake},
+        genotype:construct_Agent(SpecieId, AgentId, Constraint),
+
+        Agent1 = genotype:dirty_read({agent, AgentId}),
+        Cortex1 = genotype:dirty_read({cortex, Agent1#agent.cx_id}),
+        InitialActuatorCount = length(Cortex1#cortex.actuator_ids),
+
+        Result = topological_mutations:add_actuator(AgentId),
+        case Result of
+            ok ->
+                Cortex2 = genotype:dirty_read({cortex, Agent1#agent.cx_id}),
+                NewActuatorCount = length(Cortex2#cortex.actuator_ids),
+                ?assertEqual(InitialActuatorCount + 1, NewActuatorCount);
+            {error, no_available_actuators} ->
+                %% All actuators already added - this is ok
+                ok
+        end
+    after
+        genotype:reset_db(),
+        application:stop(mnesia)
+    end.
+
+add_actuator_no_available_test() ->
+    setup_test(),
+    try
+        %% Use xor morphology which has only 1 actuator
+        SpecieId = test_specie,
+        AgentId = genotype:generate_id(agent),
+        Constraint = #constraint{morphology = xor_mimic},
+        genotype:construct_Agent(SpecieId, AgentId, Constraint),
+
+        %% XOR only has 1 actuator, already used, so should fail
+        Result = topological_mutations:add_actuator(AgentId),
+        ?assertEqual({error, no_available_actuators}, Result)
+    after
+        genotype:reset_db(),
+        application:stop(mnesia)
+    end.

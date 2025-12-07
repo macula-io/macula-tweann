@@ -70,7 +70,8 @@
     phys_rep,
     vis_rep,
     pre_f,
-    post_f
+    post_f,
+    innovation = undefined      %% NEAT: unique historical marker
 }).
 
 %% @doc Actuator record - Output interface from the neural network
@@ -110,7 +111,8 @@
     phys_rep,
     vis_rep,
     pre_f,
-    post_f
+    post_f,
+    innovation = undefined      %% NEAT: unique historical marker
 }).
 
 %% @doc Neuron record - Core computational unit of the network
@@ -178,6 +180,29 @@
 %%   [2] Hasani, R., Lechner, M., et al. (2022). "Closed-form Continuous-time
 %%       Neural Networks." Nature Machine Intelligence.
 %%
+%% @doc Connection gene for NEAT-style evolution
+%%
+%% Each connection has a unique innovation number for crossover alignment.
+%% This enables meaningful crossover between networks with different topologies
+%% by identifying corresponding genes across lineages.
+%%
+%% Field Documentation:
+%%   innovation  - Unique historical marker for this structural element
+%%   from_id     - Source node ID (sensor or neuron)
+%%   to_id       - Target node ID (neuron or actuator)
+%%   weight      - Connection weight
+%%   enabled     - Whether connection is active (disabled connections still exist)
+%%
+%% Reference: Stanley, K.O. & Miikkulainen, R. (2002). "Evolving Neural
+%% Networks through Augmenting Topologies." Evolutionary Computation, 10(2).
+-record(connection_gene, {
+    innovation :: pos_integer() | undefined,
+    from_id :: term(),
+    to_id :: term(),
+    weight :: float(),
+    enabled = true :: boolean()
+}).
+
 -record(neuron, {
     id,
     generation,
@@ -199,7 +224,10 @@
     state_bound = 1.0,          %% A (bounds for stable dynamics)
     ltc_backbone_weights = [],  %% weights for f() backbone network
     ltc_head_weights = [],      %% weights for h() head network
-    internal_state = 0.0        %% x(t) persistent state
+    internal_state = 0.0,       %% x(t) persistent state
+
+    %% NEAT Extension Fields (Innovation Tracking)
+    innovation = undefined      %% unique historical marker for this neuron
 }).
 
 %% @doc Cortex record - Network coordinator
@@ -497,6 +525,7 @@
     agent_encoding_types = [neural],
     heredity_types = [darwinian],
     mutation_operators = [
+        %% Topological mutations
         {add_bias, 10},
         {add_outlink, 40},
         {add_inlink, 40},
@@ -506,7 +535,12 @@
         {add_sensor, 1},
         {add_actuator, 1},
         {add_cpp, 1},
-        {add_cep, 1}
+        {add_cep, 1},
+        %% LTC mutations - enable multi-timescale evolution
+        {mutate_neuron_type, 5},       % Switch between standard/ltc/cfc
+        {mutate_time_constant, 20},    % Perturb tau (response speed)
+        {mutate_state_bound, 10},      % Perturb state bound A
+        {mutate_ltc_weights, 30}       % Perturb backbone/head weights
     ],
     tot_topological_mutations_fs = [{ncount_exponential, 0.5}],
     population_evo_alg_f = generational,

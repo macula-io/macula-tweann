@@ -6,7 +6,7 @@
 %% - Historical alignment of genes during reproduction
 %% - Tracking which structural changes are the "same" across lineages
 %%
-%% Key concepts from NEAT (Stanley & Miikkulainen, 2002):
+%% Key concepts from NEAT (Stanley and Miikkulainen, 2002):
 %% - Each new link gets a unique innovation number
 %% - When a link is split to add a neuron, the new node and its links get tracked
 %% - Same structural change (same from/to) always gets the same innovation

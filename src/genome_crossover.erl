@@ -3,7 +3,7 @@
 %% This module implements crossover operations that work with networks
 %% of different topologies by aligning genes via innovation numbers.
 %%
-%% Key concepts from NEAT (Stanley & Miikkulainen, 2002):
+%% Key concepts from NEAT (Stanley and Miikkulainen, 2002):
 %% - Matching genes: Same innovation in both parents, randomly inherit
 %% - Disjoint genes: Present in one parent within the other's range
 %% - Excess genes: Present in one parent beyond the other's max innovation

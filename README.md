@@ -88,7 +88,7 @@ Process-based neural networks with evolutionary operators. See [Architecture Gui
 ## Testing
 
 ```bash
-rebar3 eunit          # Unit tests (791 tests)
+rebar3 eunit          # Unit tests (801 tests)
 rebar3 dialyzer       # Static analysis
 rebar3 ex_doc         # Generate documentation
 ```

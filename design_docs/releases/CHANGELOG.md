@@ -12,6 +12,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.13.0] - 2025-12-07
+
+### Summary
+**Memory Optimization & NIF Acceleration Release** - Major performance and stability improvements with 4x memory reduction target and 10-50x speedup on hot paths.
+
+### Added
+
+#### NIF Acceleration (Phase 3)
+- **native/src/lib.rs**: New NIF functions
+  - `dot_product_flat/3` - Flat array dot product for signal aggregation
+  - `dot_product_batch/1` - Batch dot product with dirty scheduler
+  - Added `schedule = "DirtyCpu"` to `evaluate_batch` to prevent blocking
+- **tweann_nif.erl**: Erlang wrappers for new NIFs
+
+#### Signal Aggregation Optimization (Phase 4)
+- **signal_aggregator.erl**: NIF-accelerated aggregation
+  - `dot_product_nif/2` - NIF-backed dot product with Erlang fallback
+  - `flatten_for_nif/2` - Convert nested weight structure to flat arrays
+- **neuron.erl**: Pre-compiled weight matrices
+  - `compiled_weights` field in state record
+  - `compile_weights_for_nif/4` - Pre-compile at init/link time
+  - `flatten_signals/2`, `aggregate_compiled/3` - Fast path evaluation
+  - Weights recompiled on `{update_weights, ...}` and `{link, input_weights, ...}`
+
+#### Benchmark Suite (Phase 5)
+- **test/benchmark/bench_common.erl**: Benchmark utilities
+  - `measure_time/1,2` - Execution timing in microseconds
+  - `measure_memory/1` - Memory delta measurement
+  - `run_trials/3`, `run_trials_gc/3` - Multiple trial execution
+  - `calc_stats/1` - Statistical analysis (min, max, avg, median, std)
+  - `format_bytes/1`, `format_time/1` - Human-readable formatting
+- **test/benchmark/bench_forward_pass.erl**: Network evaluation benchmarks
+  - Small/medium/large/XOR network tests
+  - Batch evaluation benchmarks
+  - Memory usage measurements
+- **test/benchmark/bench_nif_vs_erlang.erl**: NIF comparison benchmarks
+  - dot_product NIF vs Erlang comparison
+  - Flat dot product benchmarks
+  - Batch dot product benchmarks
+
+### Changed
+
+#### Memory Architecture (Phase 2)
+- **genotype.erl**: Replaced Mnesia with ETS
+  - 11 tables migrated from Mnesia RAM to ETS
+  - Faster startup, lower overhead
+  - Same semantics, simpler implementation
+- **innovation.erl**: Migrated to atomics/counters
+  - `counters` module for innovation numbers
+  - `persistent_term` for counter reference storage
+  - Eliminated Mnesia dependency
+- **genotype.erl**: Generation-based cleanup
+  - `cleanup_old_agents/1` - Remove agents older than N generations
+  - `cap_evo_hist/2` - Limit evo_hist to last 50 mutations
+  - `clear_dead_pool/1` - Clear dead_pool each generation
+
+#### Process Lifecycle Fixes (Phase 1)
+- **neuron.erl**: Fixed infinite timeout loop
+  - Exit after 3 consecutive timeouts (was infinite loop)
+  - `MAX_TIMEOUT_COUNT = 3` constant
+  - Notifies cortex on timeout termination
+- **population_monitor.erl**: Reduced timeout 60s → 5s
+- **cortex.erl**: Synchronous termination
+  - Wait for child processes before exit
+  - Monitor-based termination tracking
+- **exoself.erl**: Race condition fix on shutdown
+- **All process modules**: Added catch-all receive clauses
+  - Prevents mailbox bloat from unexpected messages
+  - Logs warnings for debugging
+
+#### Network Evaluator (Phase 3)
+- **network_evaluator.erl**: NIF integration
+  - Added `compiled_ref` field to network record
+  - `maybe_compile_for_nif/1` - Compile network for NIF at creation
+  - `evaluate/2` uses NIF when `compiled_ref` is available
+  - `set_weights/2` recompiles for NIF after weight changes
+- **network_onnx.erl**: Fixed for new record format
+  - Handles both 3-tuple and 4-tuple network records
+
+#### Configuration
+- **rebar.config**:
+  - Enabled NIF build hooks (were commented out)
+  - Added `test/benchmark` to extra_src_dirs
+
+### Fixed
+- Zombie neuron processes from infinite timeout loop
+- Orphaned child processes on cortex termination
+- Mailbox bloat from unhandled messages
+- Memory growth from unbounded evo_hist
+- Memory growth from persistent dead_pool
+
+### Performance Targets
+- Memory: 2-4 GB → 500 MB - 1 GB (4x reduction)
+- Forward pass: 5-10x faster with NIF for dot_product
+- Generation time: 4-6x faster with NIF acceleration
+
+### Test Results
+- **801 tests passing** (10 new benchmark tests)
+- Dialyzer clean
+- Documentation links validated
+
+### Dependencies
+- No new dependencies
+- Rust NIF uses existing rustler setup
+
+---
+
 ## [0.12.0] - 2025-12-07
 
 ### Summary
@@ -285,7 +392,9 @@ LTC neurons enable adaptive temporal processing with input-dependent time consta
 
 ---
 
-[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.11.2...HEAD
+[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/macula-io/macula-tweann/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/macula-io/macula-tweann/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/macula-io/macula-tweann/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/macula-io/macula-tweann/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/macula-io/macula-tweann/compare/v0.10.0...v0.11.0

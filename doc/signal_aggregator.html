@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.38.2">
-    <meta name="project" content="macula_tweann v0.12.0">
+    <meta name="project" content="macula_tweann v0.13.0">
 
 
-    <title>signal_aggregator — macula_tweann v0.12.0</title>
+    <title>signal_aggregator — macula_tweann v0.13.0</title>
 
     <link rel="stylesheet" href="dist/html-erlang-DQDXQC7W.css" />
 
-    <script defer src="dist/sidebar_items-15A361C4.js"></script>
+    <script defer src="dist/sidebar_items-9ADFC954.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-DPJLHKSM.js"></script>
 
@@ -37,7 +37,7 @@
 macula_tweann
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v0.12.0
+          v0.13.0
         </div>
       </div>
     </div>
@@ -76,11 +76,11 @@ macula_tweann
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">signal_aggregator</span> 
-      <small class="app-vsn" translate="no">(macula_tweann v0.12.0)</small>
+      <small class="app-vsn" translate="no">(macula_tweann v0.13.0)</small>
 
     </h1>
 
-      <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/signal_aggregator.erl#L32" title="View Source" class="icon-action" rel="help">
+      <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L32" title="View Source" class="icon-action" rel="help">
         <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         <span class="sr-only">View Source</span>
       </a>
@@ -262,6 +262,26 @@ macula_tweann
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#dot_product_nif/2" data-no-tooltip="" translate="no">dot_product_nif(InputSignals, WeightedInputs)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>NIF-accelerated dot product when available.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#flatten_for_nif/2" data-no-tooltip="" translate="no">flatten_for_nif(InputSignals, WeightedInputs)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Flatten nested signal/weight structure for NIF consumption.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#mult_product/2" data-no-tooltip="" translate="no">mult_product(InputSignals, WeightedInputs)</a>
 
       </div>
@@ -293,7 +313,7 @@ macula_tweann
       <h1 class="signature" translate="no">actuator_id/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L97" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L97" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -321,7 +341,7 @@ macula_tweann
       <h1 class="signature" translate="no">cortex_id/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L101" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L101" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -349,7 +369,7 @@ macula_tweann
       <h1 class="signature" translate="no">delta_weight/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L32" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L32" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -377,7 +397,7 @@ macula_tweann
       <h1 class="signature" translate="no">element_id/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L113" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L113" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -405,7 +425,7 @@ macula_tweann
       <h1 class="signature" translate="no">input_signal/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/signal_aggregator.erl#L46" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L49" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -433,7 +453,7 @@ macula_tweann
       <h1 class="signature" translate="no">input_signals/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/signal_aggregator.erl#L47" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L50" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -461,7 +481,7 @@ macula_tweann
       <h1 class="signature" translate="no">learning_rate/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L35" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L35" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -489,7 +509,7 @@ macula_tweann
       <h1 class="signature" translate="no">neuron_id/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L89" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L89" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -517,7 +537,7 @@ macula_tweann
       <h1 class="signature" translate="no">parameter_list/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L39" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L39" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -545,7 +565,7 @@ macula_tweann
       <h1 class="signature" translate="no">sensor_id/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L93" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L93" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -573,7 +593,7 @@ macula_tweann
       <h1 class="signature" translate="no">unique_id/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L85" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L85" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -601,7 +621,7 @@ macula_tweann
       <h1 class="signature" translate="no">weight/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L28" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L28" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -629,7 +649,7 @@ macula_tweann
       <h1 class="signature" translate="no">weight_list/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L75" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L75" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -657,7 +677,7 @@ macula_tweann
       <h1 class="signature" translate="no">weight_spec/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L72" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L72" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -685,7 +705,7 @@ macula_tweann
       <h1 class="signature" translate="no">weighted_input/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L122" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L122" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -713,7 +733,7 @@ macula_tweann
       <h1 class="signature" translate="no">weighted_inputs/0</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/include/types.hrl#L126" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/include/types.hrl#L126" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -753,7 +773,7 @@ macula_tweann
       <h1 class="signature" translate="no">diff_product(InputSignals, WeightedInputs)</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/signal_aggregator.erl#L137" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L140" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -781,7 +801,7 @@ macula_tweann
       <h1 class="signature" translate="no">dot_product(InputSignals, WeightedInputs)</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/signal_aggregator.erl#L79" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L82" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -799,6 +819,62 @@ macula_tweann
 <p>Compute dot product of inputs and weights</p><p>For each input source, multiplies each input signal component by its corresponding weight and sums all results. This is the standard weighted sum aggregation used in most neural networks.</p><p>The bias term is handled specially - if present as the last weight entry with source ID 'bias', its weight is added directly to the result.</p><p>Weight tuple format: {W, DW, LP, LPs} W - Weight value (used for computation) DW - Delta weight (ignored here, used by plasticity) LP - Learning parameter (ignored here) LPs - Parameter list (ignored here)</p>
   </section>
 </section>
+<section class="detail" id="dot_product_nif/2">
+
+  <div class="detail-header">
+    <a href="#dot_product_nif/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">dot_product_nif(InputSignals, WeightedInputs)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L166" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> dot_product_nif(<a href="#t:input_signals/0">input_signals</a>(), <a href="#t:weighted_inputs/0">weighted_inputs</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>NIF-accelerated dot product when available.</p><p>This function attempts to use the Rust NIF for dot product computation. Falls back to pure Erlang if NIF is not loaded.</p><p>Performance: 40-100x faster than pure Erlang for N &gt; 10 inputs.</p>
+  </section>
+</section>
+<section class="detail" id="flatten_for_nif/2">
+
+  <div class="detail-header">
+    <a href="#flatten_for_nif/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">flatten_for_nif(InputSignals, WeightedInputs)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L194" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> flatten_for_nif(<a href="#t:input_signals/0">input_signals</a>(), <a href="#t:weighted_inputs/0">weighted_inputs</a>()) -> {[<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()], [<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()], <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()}.</pre>
+
+      </div>
+
+<p>Flatten nested signal/weight structure for NIF consumption.</p><p>Converts from: Signals: [{SourceId, [S1, S2, ...]}, ...] Weights: [{SourceId, [{W1, DW1, LP1, []}, {W2, DW2, LP2, []}, ...]}, ...]</p><p>To: FlatSignals: [S1, S2, S3, ...] FlatWeights: [W1, W2, W3, ...] Bias: float()</p><p>The flattened format is cache-friendly and suitable for SIMD vectorization in the Rust NIF.</p>
+  </section>
+</section>
 <section class="detail" id="mult_product/2">
 
   <div class="detail-header">
@@ -809,7 +885,7 @@ macula_tweann
       <h1 class="signature" translate="no">mult_product(InputSignals, WeightedInputs)</h1>
 
 
-        <a href="https://github.com/macula-io/macula-tweann/blob/0.12.0/src/signal_aggregator.erl#L111" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.13.0/src/signal_aggregator.erl#L114" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -835,9 +911,9 @@ macula_tweann
       <p>
 
           <span class="line">
-            <a href="https://hex.pm/packages/macula_tweann/0.12.0" class="footer-hex-package">Hex Package</a>
+            <a href="https://hex.pm/packages/macula_tweann/0.13.0" class="footer-hex-package">Hex Package</a>
 
-            <a href="https://preview.hex.pm/preview/macula_tweann/0.12.0">Hex Preview</a>
+            <a href="https://preview.hex.pm/preview/macula_tweann/0.13.0">Hex Preview</a>
 
           </span>
 

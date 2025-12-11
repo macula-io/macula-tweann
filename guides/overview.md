@@ -64,9 +64,14 @@ See the [Architecture Guide](architecture.md) for details.
 ### Architecture
 - [C4 Architecture Model](c4-architecture.md) - Multi-level architectural views (Context, Container, Component, Code)
 - [Architecture Details](architecture.md) - Layer-by-layer system design
-- [Vision: Distributed Mega-Brain](vision-distributed-mega-brain.md) - Planet-scale evolutionary intelligence on Macula mesh
-- [Addendum: Military & Civil Resilience](addendum-military-civil-resilience.md) - Defense, security, and infrastructure implications
-- [Addendum: Anti-Drone Defense](addendum-anti-drone-defense.md) - Counter-swarm systems and autonomous threat mitigation
+
+### LTC Neurons (Advanced)
+- [LTC Neurons](ltc-neurons.md) - Theory and concepts of Liquid Time-Constant neurons
+- [LTC Usage Guide](ltc-usage-guide.md) - Practical API usage and examples
+- [LTC Evolution](ltc-evolution.md) - Evolving multi-timescale networks
+
+### Customization
+- [Custom Morphologies](CUSTOM_MORPHOLOGIES.md) - Create your own problem domains
 
 ### Core Concepts
 See the module documentation for detailed API reference on:

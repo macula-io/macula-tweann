@@ -360,7 +360,6 @@ LTC neurons enable adaptive temporal processing with input-dependent time consta
    - `af` -> `activation_function`
    - `pf` -> `plasticity_function`
    - `vl` -> `vector_length`
-   - See RELEASE_STRATEGY.md Section 6.1 for complete mapping
 
 2. **State Management**: Records instead of parameter lists
    - cortex: 10 parameters -> cortex_state record
@@ -388,7 +387,6 @@ LTC neurons enable adaptive temporal processing with input-dependent time consta
 
 - `design_docs/DXNN2_CODEBASE_ANALYSIS.md` - DXNN2 original codebase analysis (internal)
 - `design_docs/README.md` - Refactoring principles (internal)
-- [Release Strategy](RELEASE_STRATEGY.md)
 
 ---
 

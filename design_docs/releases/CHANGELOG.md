@@ -12,6 +12,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.14.0] - 2025-12-12
+
+### Summary
+**Documentation Cleanup Release** - Archived legacy release docs and vision documents to streamline hexdocs.
+
+### Changed
+- Moved version-specific release docs (v0.1.0 through v1.0.0) to `archive/releases/`
+- Moved vision/addendum documents to `archive/vision/` (for future macula-vision repo)
+- Updated `rebar.config` to exclude `archive/` from hex package
+- Removed broken hexdocs links from guides
+- Streamlined documentation for cleaner hexdocs experience
+
+### Removed
+- Removed duplicate addendum files from `guides/` (now only in archive)
+- Removed `FUTURE_OPTIMIZATION.md` and `RELEASE_STRATEGY.md` (superseded)
+- Removed `CODE_QUALITY_REVIEW_v0.10.0.md` (superseded)
+
+### Test Results
+- 801 tests passing
+- Dialyzer clean
+
+---
+
 ## [0.13.0] - 2025-12-07
 
 ### Summary

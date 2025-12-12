@@ -12,6 +12,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.2] - 2025-12-12
+
+### Summary
+**Documentation Enhancement** - Added comprehensive visual diagram index and consolidated all SVG assets into unified `assets/` directory.
+
+### Added
+- **guides/diagram-index.md**: New visual guide indexing all 25 SVG diagrams
+  - Core Concepts: TWEANN structure, neuroevolution cycle, NEAT evolution
+  - Architecture: Genotype/phenotype, supervision tree, C4 model
+  - LTC Neurons: Architecture and comparison diagrams
+  - Learning Mechanisms: Plasticity, activation functions, mutation sequences
+  - Distributed Evolution: Multi-node, federated, swarm models
+  - Application Domains: Military, civil, defense scenarios
+
+- **New educational SVG diagrams** in `assets/`:
+  - `tweann-structure.svg` - Core TWEANN architecture (sensors → hidden → actuators)
+  - `neuroevolution-cycle.svg` - The evolutionary optimization loop
+  - `neat-evolution.svg` - NEAT topology mutations and speciation
+  - `genotype-phenotype.svg` - Constructor pattern transformation
+  - `neural-plasticity.svg` - Online learning mechanisms (Hebbian, Oja, etc.)
+  - `activation-functions.svg` - Comparison of activation functions
+
+### Changed
+- **rebar.config**: Consolidated assets configuration
+  - Single assets path: `{assets, #{"assets" => "assets"}}`
+  - Added diagram-index.md to ex_doc extras
+  - Removed redundant `design_docs/diagrams` from hex files
+
+### Documentation
+- All 25 SVG diagrams now in unified `assets/` directory
+- Visual diagram index for easier navigation in hexdocs
+- Educational descriptions for each diagram category
+
+---
+
 ## [0.15.1] - 2025-12-12
 
 ### Summary

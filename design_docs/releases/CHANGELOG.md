@@ -12,6 +12,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.0] - 2025-12-12
+
+### Summary
+**NIF Acceleration Phase 2 Release** - Major NIF expansion with 18 new functions for novelty search, fitness statistics, selection, and reward computation.
+
+### Added
+
+#### Distance and KNN Functions (Novelty Search)
+- **native/src/lib.rs**: New NIF functions for novelty search
+  - `euclidean_distance/2` - Distance between two behavior vectors
+  - `euclidean_distance_batch/2` - Batch distance calculation sorted by distance
+  - `knn_novelty/4` - K-nearest neighbor novelty score
+  - `knn_novelty_batch/3` - Batch kNN novelty for entire population
+
+#### Statistics Functions
+- **native/src/lib.rs**: Vectorized fitness statistics
+  - `fitness_stats/1` - Single-pass (min, max, mean, variance, std_dev, sum)
+  - `weighted_moving_average/2` - Exponential decay weighted average
+  - `shannon_entropy/1` - Entropy calculation for diversity metrics
+  - `histogram/4` - Histogram binning for distribution analysis
+
+#### Selection Functions
+- **native/src/lib.rs**: Selection acceleration
+  - `build_cumulative_fitness/1` - Build cumulative array for roulette wheel
+  - `roulette_select/3` - O(log n) binary search roulette selection
+  - `roulette_select_batch/3` - Batch roulette selection
+  - `tournament_select/2` - Tournament selection
+
+#### Reward and Meta-Controller Functions
+- **native/src/lib.rs**: LC v2 reward computation
+  - `z_score/3` - Z-score normalization
+  - `compute_reward_component/2` - Component computation with sigmoid normalization
+  - `compute_weighted_reward/1` - Weighted sum of reward components
+
+#### Weight/Genome Utilities
+- **native/src/lib.rs**: Weight structure optimization
+  - `flatten_weights/1` - Flatten nested weight structure avoiding intermediate lists
+  - `dot_product_preflattened/3` - Dot product on pre-flattened arrays
+
+#### Test Coverage
+- **test/unit/tweann_nif_v2_tests.erl**: 42 new tests for all NIF functions
+  - Distance and kNN tests
+  - Statistics function tests
+  - Selection function tests
+  - Reward computation tests
+  - Performance sanity tests
+
+### Changed
+- **src/tweann_nif.erl**: Added exports and stubs for 18 new functions
+- All new NIFs use `DirtyCpu` scheduler for long-running operations
+
+### Performance Targets
+- Euclidean distance batch: 30-100x speedup for novelty search
+- kNN novelty: 50-200x speedup for behavior distance calculations
+- Fitness statistics: 5-10x speedup for single-pass computation
+- Roulette selection: 5-15x speedup with O(log n) binary search
+
+### Test Results
+- **843 tests passing** (42 new NIF tests)
+- Dialyzer clean
+
+---
+
 ## [0.14.0] - 2025-12-12
 
 ### Summary
@@ -413,7 +476,8 @@ LTC neurons enable adaptive temporal processing with input-dependent time consta
 
 ---
 
-[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/macula-io/macula-tweann/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/macula-io/macula-tweann/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/macula-io/macula-tweann/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/macula-io/macula-tweann/compare/v0.11.2...v0.12.0

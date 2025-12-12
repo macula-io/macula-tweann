@@ -610,10 +610,453 @@ fn clamp_state(state: f64, bound: f64) -> f64 {
     state.clamp(-bound, bound)
 }
 
+// ============================================================================
+// Distance and KNN Functions (for Novelty Search)
+// ============================================================================
+
+/// Compute Euclidean distance between two behavior vectors.
+/// Hot path function for novelty search.
+#[rustler::nif]
+fn euclidean_distance(v1: Vec<f64>, v2: Vec<f64>) -> f64 {
+    v1.iter()
+        .zip(v2.iter())
+        .map(|(a, b)| (a - b) * (a - b))
+        .sum::<f64>()
+        .sqrt()
+}
+
+/// Batch Euclidean distance: compute distance from one vector to many.
+/// Returns Vec of (index, distance) sorted by distance ascending.
+/// Used for finding k-nearest neighbors in novelty search.
+#[rustler::nif(schedule = "DirtyCpu")]
+fn euclidean_distance_batch(
+    target: Vec<f64>,
+    others: Vec<Vec<f64>>,
+) -> Vec<(usize, f64)> {
+    let mut distances: Vec<(usize, f64)> = others
+        .iter()
+        .enumerate()
+        .map(|(idx, other)| {
+            let dist = target
+                .iter()
+                .zip(other.iter())
+                .map(|(a, b)| (a - b) * (a - b))
+                .sum::<f64>()
+                .sqrt();
+            (idx, dist)
+        })
+        .collect();
+
+    // Sort by distance
+    distances.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+    distances
+}
+
+/// Compute k-nearest neighbor distances for novelty calculation.
+/// Returns the average distance to k nearest neighbors.
+#[rustler::nif(schedule = "DirtyCpu")]
+fn knn_novelty(
+    target: Vec<f64>,
+    population: Vec<Vec<f64>>,
+    archive: Vec<Vec<f64>>,
+    k: usize,
+) -> f64 {
+    // Combine population and archive, excluding exact matches with target
+    let mut all_distances: Vec<f64> = Vec::with_capacity(population.len() + archive.len());
+
+    for other in population.iter().chain(archive.iter()) {
+        let dist: f64 = target
+            .iter()
+            .zip(other.iter())
+            .map(|(a, b)| (a - b) * (a - b))
+            .sum::<f64>()
+            .sqrt();
+
+        // Exclude exact duplicates (distance ~= 0)
+        if dist > 1e-10 {
+            all_distances.push(dist);
+        }
+    }
+
+    if all_distances.is_empty() {
+        return 0.0;
+    }
+
+    // Partial sort to get k smallest (more efficient than full sort)
+    let k_actual = k.min(all_distances.len());
+    all_distances.select_nth_unstable_by(k_actual - 1, |a, b| {
+        a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    // Average of k nearest
+    all_distances[..k_actual].iter().sum::<f64>() / k_actual as f64
+}
+
+/// Batch kNN novelty: compute novelty scores for multiple behaviors.
+/// More efficient than calling knn_novelty repeatedly.
+#[rustler::nif(schedule = "DirtyCpu")]
+fn knn_novelty_batch(
+    behaviors: Vec<Vec<f64>>,
+    archive: Vec<Vec<f64>>,
+    k: usize,
+) -> Vec<f64> {
+    // Precompute all pairwise distances for efficiency
+    let n = behaviors.len();
+    let m = archive.len();
+
+    behaviors
+        .iter()
+        .enumerate()
+        .map(|(i, target)| {
+            let mut distances: Vec<f64> = Vec::with_capacity(n - 1 + m);
+
+            // Distances to other behaviors in population
+            for (j, other) in behaviors.iter().enumerate() {
+                if i != j {
+                    let dist: f64 = target
+                        .iter()
+                        .zip(other.iter())
+                        .map(|(a, b)| (a - b) * (a - b))
+                        .sum::<f64>()
+                        .sqrt();
+                    if dist > 1e-10 {
+                        distances.push(dist);
+                    }
+                }
+            }
+
+            // Distances to archive
+            for other in archive.iter() {
+                let dist: f64 = target
+                    .iter()
+                    .zip(other.iter())
+                    .map(|(a, b)| (a - b) * (a - b))
+                    .sum::<f64>()
+                    .sqrt();
+                if dist > 1e-10 {
+                    distances.push(dist);
+                }
+            }
+
+            if distances.is_empty() {
+                return 0.0;
+            }
+
+            let k_actual = k.min(distances.len());
+            distances.select_nth_unstable_by(k_actual - 1, |a, b| {
+                a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)
+            });
+
+            distances[..k_actual].iter().sum::<f64>() / k_actual as f64
+        })
+        .collect()
+}
+
+// ============================================================================
+// Statistics Functions
+// ============================================================================
+
+/// Compute fitness statistics in a single pass.
+/// Returns (min, max, mean, variance, std_dev, sum).
+#[rustler::nif]
+fn fitness_stats(fitnesses: Vec<f64>) -> (f64, f64, f64, f64, f64, f64) {
+    if fitnesses.is_empty() {
+        return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    }
+
+    let n = fitnesses.len() as f64;
+    let mut min = f64::INFINITY;
+    let mut max = f64::NEG_INFINITY;
+    let mut sum = 0.0;
+    let mut sum_sq = 0.0;
+
+    for &f in &fitnesses {
+        if f < min { min = f; }
+        if f > max { max = f; }
+        sum += f;
+        sum_sq += f * f;
+    }
+
+    let mean = sum / n;
+    // Variance using: Var = E[X²] - E[X]²
+    let variance = (sum_sq / n) - (mean * mean);
+    let std_dev = variance.max(0.0).sqrt();  // max(0) to handle floating point errors
+
+    (min, max, mean, variance, std_dev, sum)
+}
+
+/// Compute weighted moving average (for trend computation).
+/// Uses exponential decay weights: w[i] = decay^i
+#[rustler::nif]
+fn weighted_moving_average(values: Vec<f64>, decay: f64) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+
+    let mut weight_sum = 0.0;
+    let mut weighted_value_sum = 0.0;
+    let mut weight = 1.0;
+
+    for &value in &values {
+        weighted_value_sum += weight * value;
+        weight_sum += weight;
+        weight *= decay;
+    }
+
+    weighted_value_sum / weight_sum
+}
+
+/// Compute Shannon entropy of a distribution (for diversity metrics).
+/// Values should be non-negative; they'll be normalized to a probability distribution.
+#[rustler::nif]
+fn shannon_entropy(values: Vec<f64>) -> f64 {
+    let total: f64 = values.iter().filter(|&&v| v > 0.0).sum();
+    if total <= 0.0 {
+        return 0.0;
+    }
+
+    values
+        .iter()
+        .filter(|&&v| v > 0.0)
+        .map(|&v| {
+            let p = v / total;
+            -p * p.ln()
+        })
+        .sum()
+}
+
+/// Histogram binning for entropy/diversity calculations.
+/// Returns counts per bin.
+#[rustler::nif]
+fn histogram(values: Vec<f64>, num_bins: usize, min_val: f64, max_val: f64) -> Vec<usize> {
+    let mut bins = vec![0usize; num_bins];
+    let range = max_val - min_val;
+
+    if range <= 0.0 || num_bins == 0 {
+        return bins;
+    }
+
+    let bin_width = range / num_bins as f64;
+
+    for &v in &values {
+        if v >= min_val && v <= max_val {
+            let bin = ((v - min_val) / bin_width).floor() as usize;
+            let bin = bin.min(num_bins - 1);  // Handle edge case where v == max_val
+            bins[bin] += 1;
+        }
+    }
+
+    bins
+}
+
+// ============================================================================
+// Selection Functions
+// ============================================================================
+
+/// Build cumulative fitness array for roulette wheel selection.
+/// Returns (cumulative_fitnesses, total_fitness).
+/// Shifts fitnesses to ensure all are positive.
+#[rustler::nif]
+fn build_cumulative_fitness(fitnesses: Vec<f64>) -> (Vec<f64>, f64) {
+    if fitnesses.is_empty() {
+        return (vec![], 0.0);
+    }
+
+    // Find minimum to shift all fitnesses positive
+    let min_fitness = fitnesses.iter().cloned().fold(f64::INFINITY, f64::min);
+    let shift = if min_fitness < 0.0 { -min_fitness + 1.0 } else { 0.0 };
+
+    let mut cumulative = Vec::with_capacity(fitnesses.len());
+    let mut running_sum = 0.0;
+
+    for &f in &fitnesses {
+        running_sum += f + shift;
+        cumulative.push(running_sum);
+    }
+
+    (cumulative, running_sum)
+}
+
+/// Roulette wheel selection using pre-built cumulative array.
+/// Returns index of selected individual.
+/// Uses binary search for O(log n) selection.
+#[rustler::nif]
+fn roulette_select(cumulative: Vec<f64>, total: f64, random_val: f64) -> usize {
+    let target = random_val * total;
+
+    // Binary search for the first index where cumulative[i] >= target
+    match cumulative.binary_search_by(|c| {
+        c.partial_cmp(&target).unwrap_or(std::cmp::Ordering::Equal)
+    }) {
+        Ok(idx) => idx,
+        Err(idx) => idx.min(cumulative.len() - 1),
+    }
+}
+
+/// Batch roulette selection: select n individuals.
+/// random_vals should be uniformly distributed in [0, 1].
+#[rustler::nif]
+fn roulette_select_batch(
+    cumulative: Vec<f64>,
+    total: f64,
+    random_vals: Vec<f64>,
+) -> Vec<usize> {
+    random_vals
+        .iter()
+        .map(|&r| {
+            let target = r * total;
+            match cumulative.binary_search_by(|c| {
+                c.partial_cmp(&target).unwrap_or(std::cmp::Ordering::Equal)
+            }) {
+                Ok(idx) => idx,
+                Err(idx) => idx.min(cumulative.len().saturating_sub(1)),
+            }
+        })
+        .collect()
+}
+
+/// Tournament selection: select best from random subset.
+/// contestants: indices of individuals in tournament
+/// fitnesses: fitness values (indexed by contestant indices)
+/// Returns index of winner.
+#[rustler::nif]
+fn tournament_select(contestants: Vec<usize>, fitnesses: Vec<f64>) -> usize {
+    contestants
+        .into_iter()
+        .max_by(|&a, &b| {
+            let fa = fitnesses.get(a).copied().unwrap_or(f64::NEG_INFINITY);
+            let fb = fitnesses.get(b).copied().unwrap_or(f64::NEG_INFINITY);
+            fa.partial_cmp(&fb).unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .unwrap_or(0)
+}
+
+// ============================================================================
+// Reward and Meta-Controller Functions
+// ============================================================================
+
+/// Compute z-score normalization: (value - mean) / std_dev
+/// Returns 0 if std_dev is too small to prevent division by zero.
+#[rustler::nif]
+fn z_score(value: f64, mean: f64, std_dev: f64) -> f64 {
+    if std_dev.abs() < 1e-10 {
+        0.0
+    } else {
+        (value - mean) / std_dev
+    }
+}
+
+/// Compute reward components with normalization.
+/// history: recent values for computing baseline
+/// current: current value
+/// Returns (raw_component, normalized_component, z_score)
+#[rustler::nif]
+fn compute_reward_component(history: Vec<f64>, current: f64) -> (f64, f64, f64) {
+    if history.is_empty() {
+        return (current, current.tanh(), 0.0);
+    }
+
+    let n = history.len() as f64;
+    let mean: f64 = history.iter().sum::<f64>() / n;
+    let variance: f64 = history.iter().map(|&h| (h - mean) * (h - mean)).sum::<f64>() / n;
+    let std_dev = variance.max(0.0).sqrt();
+
+    let z = if std_dev.abs() < 1e-10 {
+        0.0
+    } else {
+        (current - mean) / std_dev
+    };
+
+    // Normalized via sigmoid for bounded output
+    let normalized = 1.0 / (1.0 + (-z).exp());
+
+    (current, normalized, z)
+}
+
+/// Batch compute multiple reward components.
+/// Each tuple is (history, current_value, weight).
+/// Returns weighted sum of normalized components.
+#[rustler::nif]
+fn compute_weighted_reward(components: Vec<(Vec<f64>, f64, f64)>) -> f64 {
+    components
+        .into_iter()
+        .map(|(history, current, weight)| {
+            let (_, normalized, _) = compute_reward_component_impl(&history, current);
+            normalized * weight
+        })
+        .sum()
+}
+
+fn compute_reward_component_impl(history: &[f64], current: f64) -> (f64, f64, f64) {
+    if history.is_empty() {
+        return (current, sigmoid(current), 0.0);
+    }
+
+    let n = history.len() as f64;
+    let mean: f64 = history.iter().sum::<f64>() / n;
+    let variance: f64 = history.iter().map(|&h| (h - mean) * (h - mean)).sum::<f64>() / n;
+    let std_dev = variance.max(0.0).sqrt();
+
+    let z = if std_dev.abs() < 1e-10 {
+        0.0
+    } else {
+        (current - mean) / std_dev
+    };
+
+    let normalized = sigmoid(z);
+
+    (current, normalized, z)
+}
+
+// ============================================================================
+// Weight/Genome Utilities
+// ============================================================================
+
+/// Flatten nested weight structure for efficient dot product.
+/// Input: list of {source_id, [{weight, delta, lr, params}, ...]} tuples
+/// Output: (flat_weights, weight_count_per_source)
+/// This avoids intermediate list creation in Erlang.
+#[rustler::nif]
+fn flatten_weights(
+    weighted_inputs: Vec<(u64, Vec<(f64, f64, f64, Vec<f64>)>)>,
+) -> (Vec<f64>, Vec<usize>) {
+    let mut flat_weights = Vec::new();
+    let mut counts = Vec::with_capacity(weighted_inputs.len());
+
+    for (_source_id, weights) in weighted_inputs {
+        counts.push(weights.len());
+        for (w, _delta, _lr, _params) in weights {
+            flat_weights.push(w);
+        }
+    }
+
+    (flat_weights, counts)
+}
+
+/// Compute dot product with pre-flattened weight structure.
+/// signals_flat: all signals concatenated
+/// weights_flat: all weights concatenated
+/// counts: number of weights per source (for validation)
+/// bias: bias to add
+#[rustler::nif]
+fn dot_product_preflattened(
+    signals_flat: Vec<f64>,
+    weights_flat: Vec<f64>,
+    bias: f64,
+) -> f64 {
+    signals_flat
+        .iter()
+        .zip(weights_flat.iter())
+        .map(|(s, w)| s * w)
+        .sum::<f64>()
+        + bias
+}
+
 #[allow(deprecated)]
 rustler::init!(
     "tweann_nif",
     [
+        // Network compilation and evaluation
         compile_network,
         evaluate,
         evaluate_batch,
@@ -622,12 +1065,33 @@ rustler::init!(
         // Signal aggregation NIFs
         dot_product_flat,
         dot_product_batch,
+        dot_product_preflattened,
+        flatten_weights,
         // LTC/CfC functions
         evaluate_cfc,
         evaluate_cfc_with_weights,
         evaluate_ode,
         evaluate_ode_with_weights,
-        evaluate_cfc_batch
+        evaluate_cfc_batch,
+        // Distance and KNN (Novelty Search)
+        euclidean_distance,
+        euclidean_distance_batch,
+        knn_novelty,
+        knn_novelty_batch,
+        // Statistics
+        fitness_stats,
+        weighted_moving_average,
+        shannon_entropy,
+        histogram,
+        // Selection
+        build_cumulative_fitness,
+        roulette_select,
+        roulette_select_batch,
+        tournament_select,
+        // Reward and Meta-Controller
+        z_score,
+        compute_reward_component,
+        compute_weighted_reward
     ],
     load = load
 );

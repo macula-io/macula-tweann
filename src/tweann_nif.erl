@@ -42,12 +42,33 @@
     %% Signal aggregation NIFs
     dot_product_flat/3,
     dot_product_batch/1,
+    dot_product_preflattened/3,
+    flatten_weights/1,
     %% LTC/CfC functions
     evaluate_cfc/4,
     evaluate_cfc_with_weights/6,
     evaluate_ode/5,
     evaluate_ode_with_weights/7,
-    evaluate_cfc_batch/4
+    evaluate_cfc_batch/4,
+    %% Distance and KNN (Novelty Search)
+    euclidean_distance/2,
+    euclidean_distance_batch/2,
+    knn_novelty/4,
+    knn_novelty_batch/3,
+    %% Statistics
+    fitness_stats/1,
+    weighted_moving_average/2,
+    shannon_entropy/1,
+    histogram/4,
+    %% Selection
+    build_cumulative_fitness/1,
+    roulette_select/3,
+    roulette_select_batch/3,
+    tournament_select/2,
+    %% Reward and Meta-Controller
+    z_score/3,
+    compute_reward_component/2,
+    compute_weighted_reward/1
 ]).
 
 -on_load(init/0).
@@ -320,4 +341,203 @@ evaluate_ode_with_weights(_Input, _State, _Tau, _Bound, _Dt, _BackboneWeights, _
     Bound :: float()
 ) -> [{float(), float()}].
 evaluate_cfc_batch(_Inputs, _InitialState, _Tau, _Bound) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% ============================================================================
+%% Weight Flattening NIF Functions
+%% ============================================================================
+
+%% @doc Flatten weights for efficient dot product.
+%%
+%% Converts nested weight structure to flat arrays.
+%% Returns {FlatWeights, CountsPerSource}.
+-spec flatten_weights(WeightedInputs :: [{non_neg_integer(), [{float(), float(), float(), [float()]}]}]) ->
+    {[float()], [non_neg_integer()]}.
+flatten_weights(_WeightedInputs) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Dot product with pre-flattened data.
+-spec dot_product_preflattened(Signals :: [float()], Weights :: [float()], Bias :: float()) -> float().
+dot_product_preflattened(_Signals, _Weights, _Bias) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% ============================================================================
+%% Distance and KNN NIF Functions (Novelty Search)
+%% ============================================================================
+
+%% @doc Compute Euclidean distance between two behavior vectors.
+%%
+%% Hot path function for novelty search.
+%% @param V1 First behavior vector
+%% @param V2 Second behavior vector
+%% @returns Euclidean distance
+-spec euclidean_distance(V1 :: [float()], V2 :: [float()]) -> float().
+euclidean_distance(_V1, _V2) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Batch Euclidean distance from one vector to many.
+%%
+%% Returns list of {Index, Distance} sorted by distance ascending.
+%% @param Target Target behavior vector
+%% @param Others List of other behavior vectors
+%% @returns Sorted list of {Index, Distance}
+-spec euclidean_distance_batch(Target :: [float()], Others :: [[float()]]) ->
+    [{non_neg_integer(), float()}].
+euclidean_distance_batch(_Target, _Others) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Compute k-nearest neighbor novelty score.
+%%
+%% Returns average distance to k nearest neighbors in population + archive.
+%% @param Target Target behavior vector
+%% @param Population Current population behaviors
+%% @param Archive Historical behavior archive
+%% @param K Number of nearest neighbors
+%% @returns Average distance to k nearest
+-spec knn_novelty(
+    Target :: [float()],
+    Population :: [[float()]],
+    Archive :: [[float()]],
+    K :: pos_integer()
+) -> float().
+knn_novelty(_Target, _Population, _Archive, _K) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Batch kNN novelty for multiple behaviors.
+%%
+%% More efficient than calling knn_novelty repeatedly.
+%% @param Behaviors List of behavior vectors
+%% @param Archive Historical behavior archive
+%% @param K Number of nearest neighbors
+%% @returns List of novelty scores
+-spec knn_novelty_batch(
+    Behaviors :: [[float()]],
+    Archive :: [[float()]],
+    K :: pos_integer()
+) -> [float()].
+knn_novelty_batch(_Behaviors, _Archive, _K) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% ============================================================================
+%% Statistics NIF Functions
+%% ============================================================================
+
+%% @doc Compute fitness statistics in single pass.
+%%
+%% Returns {Min, Max, Mean, Variance, StdDev, Sum}.
+-spec fitness_stats(Fitnesses :: [float()]) ->
+    {float(), float(), float(), float(), float(), float()}.
+fitness_stats(_Fitnesses) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Compute weighted moving average.
+%%
+%% Uses exponential decay weights.
+%% @param Values List of values (most recent first)
+%% @param Decay Decay factor (0-1)
+%% @returns Weighted average
+-spec weighted_moving_average(Values :: [float()], Decay :: float()) -> float().
+weighted_moving_average(_Values, _Decay) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Compute Shannon entropy.
+%%
+%% Values are normalized to a probability distribution.
+-spec shannon_entropy(Values :: [float()]) -> float().
+shannon_entropy(_Values) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Create histogram bins.
+%%
+%% @param Values Values to bin
+%% @param NumBins Number of bins
+%% @param MinVal Minimum value
+%% @param MaxVal Maximum value
+%% @returns List of bin counts
+-spec histogram(
+    Values :: [float()],
+    NumBins :: pos_integer(),
+    MinVal :: float(),
+    MaxVal :: float()
+) -> [non_neg_integer()].
+histogram(_Values, _NumBins, _MinVal, _MaxVal) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% ============================================================================
+%% Selection NIF Functions
+%% ============================================================================
+
+%% @doc Build cumulative fitness array for roulette selection.
+%%
+%% Shifts fitnesses to ensure all positive.
+%% Returns {CumulativeFitnesses, TotalFitness}.
+-spec build_cumulative_fitness(Fitnesses :: [float()]) -> {[float()], float()}.
+build_cumulative_fitness(_Fitnesses) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Roulette wheel selection with binary search.
+%%
+%% O(log n) selection using pre-built cumulative array.
+%% @param Cumulative Cumulative fitness array from build_cumulative_fitness/1
+%% @param Total Total fitness
+%% @param RandomVal Random value in [0, 1]
+%% @returns Selected index
+-spec roulette_select(Cumulative :: [float()], Total :: float(), RandomVal :: float()) ->
+    non_neg_integer().
+roulette_select(_Cumulative, _Total, _RandomVal) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Batch roulette selection.
+%%
+%% Select multiple individuals efficiently.
+%% @param Cumulative Cumulative fitness array
+%% @param Total Total fitness
+%% @param RandomVals List of random values in [0, 1]
+%% @returns List of selected indices
+-spec roulette_select_batch(
+    Cumulative :: [float()],
+    Total :: float(),
+    RandomVals :: [float()]
+) -> [non_neg_integer()].
+roulette_select_batch(_Cumulative, _Total, _RandomVals) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Tournament selection.
+%%
+%% Select best from random subset.
+%% @param Contestants List of contestant indices
+%% @param Fitnesses All fitness values
+%% @returns Index of winner
+-spec tournament_select(Contestants :: [non_neg_integer()], Fitnesses :: [float()]) ->
+    non_neg_integer().
+tournament_select(_Contestants, _Fitnesses) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% ============================================================================
+%% Reward and Meta-Controller NIF Functions
+%% ============================================================================
+
+%% @doc Compute z-score normalization.
+%%
+%% Returns 0 if std_dev is too small.
+-spec z_score(Value :: float(), Mean :: float(), StdDev :: float()) -> float().
+z_score(_Value, _Mean, _StdDev) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Compute reward component with normalization.
+%%
+%% Returns {RawComponent, NormalizedComponent, ZScore}.
+%% @param History Recent values for baseline
+%% @param Current Current value
+-spec compute_reward_component(History :: [float()], Current :: float()) ->
+    {float(), float(), float()}.
+compute_reward_component(_History, _Current) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Batch compute weighted reward.
+%%
+%% Each component is {History, CurrentValue, Weight}.
+%% Returns weighted sum of normalized components.
+-spec compute_weighted_reward(Components :: [{[float()], float(), float()}]) -> float().
+compute_weighted_reward(_Components) ->
     erlang:nif_error(nif_not_loaded).

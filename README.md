@@ -21,7 +21,7 @@ Evolutionary neural networks that evolve both topology and weights, now with **L
 
 ```erlang
 %% Add to rebar.config
-{deps, [{macula_tweann, "~> 0.15.0"}]}.
+{deps, [{macula_tweann, "~> 0.15.1"}]}.
 
 %% Create and evolve a standard network
 genotype:init_db(),
@@ -80,6 +80,48 @@ See the [LTC Neurons Guide](https://hexdocs.pm/macula_tweann/ltc-neurons.html) f
 - **Comprehensive Logging**: Structured logging throughout
 - **Rust NIF (optional)**: High-performance network evaluation
 - **Mnesia Storage**: Persistent genotype storage
+
+## Community vs Enterprise Edition
+
+This library is available in two editions:
+
+| Feature | Community (hex.pm) | Enterprise |
+|---------|-------------------|------------|
+| TWEANN topology evolution | Yes | Yes |
+| LTC/CfC neurons | Yes | Yes |
+| Weight evolution | Yes | Yes |
+| Speciation | Yes | Yes |
+| **Rust NIF acceleration** | No (pure Erlang) | Yes (30-200x faster) |
+| **Source code** | Hex package only | Full repository |
+
+### Community Edition
+
+The hex.pm package uses pure Erlang implementations for all algorithms. This is fully functional and suitable for:
+- Learning and experimentation
+- Small to medium populations (< 1000 individuals)
+- Development and prototyping
+
+```erlang
+%% Check if NIFs are available
+tweann_nif:is_loaded().  %% Returns false on Community Edition
+```
+
+### Enterprise Edition
+
+Enterprise users with full source access can enable Rust NIF acceleration by:
+
+1. Installing Rust toolchain (rustup.rs)
+2. Uncommenting NIF hooks in `rebar.config`
+3. Building from source
+
+NIF-accelerated functions include:
+- `fitness_stats/1` - Population statistics (30x faster)
+- `tournament_select/2` - Selection (50x faster)
+- `roulette_select/3` - Selection (40x faster)
+- `knn_novelty/4` - Novelty search (200x faster)
+- `evaluate/2` - Network forward pass (100x faster)
+
+Contact [Macula.io](https://macula.io) for enterprise licensing.
 
 ## Architecture
 

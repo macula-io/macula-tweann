@@ -12,6 +12,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.1] - 2025-12-12
+
+### Summary
+**Community vs Enterprise Edition** - NIF compilation hooks are now disabled by default in the hex.pm package. The Community Edition uses pure Erlang fallbacks, while Enterprise Edition users can enable Rust NIF acceleration from source.
+
+### Changed
+- **rebar.config**: NIF compilation hooks commented out for hex.pm package
+  - Community Edition (hex.pm) uses pure Erlang fallbacks
+  - Enterprise Edition users can uncomment hooks to enable NIF acceleration
+  - No Rust toolchain required for Community Edition users
+- **README.md**: Added "Community vs Enterprise Edition" section documenting the two editions
+
+### Documentation
+- Clear documentation of feature differences between editions
+- Instructions for Enterprise users to enable NIF acceleration
+- Contact information for enterprise licensing
+
+---
+
 ## [0.15.0] - 2025-12-12
 
 ### Summary

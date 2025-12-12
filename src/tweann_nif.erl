@@ -4,6 +4,9 @@
 %% The NIF is loaded on application start and provides ~50-100x speedup
 %% for forward propagation compared to the process-based approach.
 %%
+%% All functions have pure Erlang fallbacks in tweann_nif_fallback.erl
+%% that are used automatically when the NIF is not available.
+%%
 %% == Usage ==
 %%
 %% 1. Compile a genotype to a network reference:
@@ -95,84 +98,73 @@ init() ->
 %% @doc Check if the NIF is loaded.
 %%
 %% Returns true if the Rust NIF is available, false otherwise.
-%% When false, the pure Erlang fallback should be used.
+%% When false, the pure Erlang fallback is used automatically.
 -spec is_loaded() -> boolean().
 is_loaded() ->
     try
-        %% Try to call a NIF function - if it returns nif_error, NIF not loaded
-        _ = compile_network([], 0, []),
+        _ = nif_compile_network([], 0, []),
         true
     catch
         error:nif_not_loaded -> false;
-        _:_ -> true  %% Other errors mean NIF is loaded but inputs were bad
+        _:_ -> true
     end.
+
+%%==============================================================================
+%% Network Evaluation Functions
+%%==============================================================================
 
 %% @doc Compile a network for fast evaluation.
 %%
 %% Takes a list of nodes in topological order and returns an opaque
 %% network reference that can be used with evaluate/2.
 %%
-%% Node format: {Index, Type, Activation, Bias, Connections}
-%% - Index: 0-based node index
-%% - Type: input | hidden | output | bias
-%% - Activation: tanh | sigmoid | relu | linear | etc.
-%% - Bias: float bias value
-%% - Connections: [{FromIndex, Weight}, ...]
-%%
-%% @param Nodes List of node tuples in topological order
-%% @param InputCount Number of input nodes
-%% @param OutputIndices List of output node indices
-%% @returns Opaque network reference
+%% Falls back to pure Erlang if NIF not available.
 -spec compile_network(
     Nodes :: [{non_neg_integer(), atom(), atom(), float(), [{non_neg_integer(), float()}]}],
     InputCount :: non_neg_integer(),
     OutputIndices :: [non_neg_integer()]
-) -> reference().
-compile_network(_Nodes, _InputCount, _OutputIndices) ->
+) -> reference() | map().
+compile_network(Nodes, InputCount, OutputIndices) ->
+    try nif_compile_network(Nodes, InputCount, OutputIndices)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:compile_network(Nodes, InputCount, OutputIndices)
+    end.
+
+nif_compile_network(_Nodes, _InputCount, _OutputIndices) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Evaluate a compiled network with given inputs.
 %%
 %% Performs forward propagation through the network and returns
-%% the output values.
-%%
-%% @param Network Compiled network reference from compile_network/3
-%% @param Inputs List of input values (must match InputCount)
-%% @returns List of output values
--spec evaluate(Network :: reference(), Inputs :: [float()]) -> [float()].
-evaluate(_Network, _Inputs) ->
+%% the output values. Falls back to pure Erlang if NIF not available.
+-spec evaluate(Network :: reference() | map(), Inputs :: [float()]) -> [float()].
+evaluate(Network, Inputs) ->
+    try nif_evaluate(Network, Inputs)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:evaluate(Network, Inputs)
+    end.
+
+nif_evaluate(_Network, _Inputs) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Evaluate a network with multiple input sets.
 %%
 %% More efficient than calling evaluate/2 multiple times when
 %% evaluating the same network with different inputs.
-%%
-%% @param Network Compiled network reference
-%% @param InputsList List of input lists
-%% @returns List of output lists (one per input set)
--spec evaluate_batch(Network :: reference(), InputsList :: [[float()]]) -> [[float()]].
-evaluate_batch(_Network, _InputsList) ->
+-spec evaluate_batch(Network :: reference() | map(), InputsList :: [[float()]]) -> [[float()]].
+evaluate_batch(Network, InputsList) ->
+    try nif_evaluate_batch(Network, InputsList)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:evaluate_batch(Network, InputsList)
+    end.
+
+nif_evaluate_batch(_Network, _InputsList) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Calculate compatibility distance between two genomes.
 %%
 %% Used for NEAT speciation. Measures how different two genomes are
 %% based on their connection genes.
-%%
-%% Formula: (c1 * E / N) + (c2 * D / N) + (c3 * W)
-%% where:
-%% - E = excess genes (beyond the other genome's max innovation)
-%% - D = disjoint genes (within range but not matching)
-%% - W = average weight difference of matching genes
-%% - N = max genome size (for normalization)
-%%
-%% @param ConnectionsA Connections from genome A: [{Innovation, Weight}, ...]
-%% @param ConnectionsB Connections from genome B: [{Innovation, Weight}, ...]
-%% @param C1 Coefficient for excess genes
-%% @param C2 Coefficient for disjoint genes
-%% @param C3 Coefficient for weight differences
-%% @returns Compatibility distance (lower = more similar)
 -spec compatibility_distance(
     ConnectionsA :: [{non_neg_integer(), float()}],
     ConnectionsB :: [{non_neg_integer(), float()}],
@@ -180,96 +172,111 @@ evaluate_batch(_Network, _InputsList) ->
     C2 :: float(),
     C3 :: float()
 ) -> float().
-compatibility_distance(_ConnectionsA, _ConnectionsB, _C1, _C2, _C3) ->
+compatibility_distance(ConnectionsA, ConnectionsB, C1, C2, C3) ->
+    try nif_compatibility_distance(ConnectionsA, ConnectionsB, C1, C2, C3)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:compatibility_distance(ConnectionsA, ConnectionsB, C1, C2, C3)
+    end.
+
+nif_compatibility_distance(_ConnectionsA, _ConnectionsB, _C1, _C2, _C3) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Benchmark network evaluation.
 %%
 %% Evaluates the network N times and returns the average time
-%% in microseconds per evaluation. Useful for performance testing.
-%%
-%% @param Network Compiled network reference
-%% @param Inputs Input values to evaluate
-%% @param Iterations Number of evaluations to perform
-%% @returns Average time per evaluation in microseconds
+%% in microseconds per evaluation.
 -spec benchmark_evaluate(
-    Network :: reference(),
+    Network :: reference() | map(),
     Inputs :: [float()],
     Iterations :: pos_integer()
 ) -> float().
-benchmark_evaluate(_Network, _Inputs, _Iterations) ->
+benchmark_evaluate(Network, Inputs, Iterations) ->
+    try nif_benchmark_evaluate(Network, Inputs, Iterations)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:benchmark_evaluate(Network, Inputs, Iterations)
+    end.
+
+nif_benchmark_evaluate(_Network, _Inputs, _Iterations) ->
     erlang:nif_error(nif_not_loaded).
 
-%% ============================================================================
-%% Signal Aggregation NIF Functions
-%% ============================================================================
+%%==============================================================================
+%% Signal Aggregation Functions
+%%==============================================================================
 
 %% @doc Fast dot product for signal aggregation.
 %%
 %% Computes: sum(signals[i] * weights[i]) + bias
-%%
-%% This is a hot path function for neural network forward propagation.
-%% Expects pre-flattened data - use signal_aggregator:flatten_for_nif/2
-%% to convert from the standard tuple format.
-%%
-%% @param Signals Flattened list of signal values
-%% @param Weights Flattened list of weight values (same length as Signals)
-%% @param Bias Bias value to add to result
-%% @returns Aggregated scalar value
 -spec dot_product_flat(
     Signals :: [float()],
     Weights :: [float()],
     Bias :: float()
 ) -> float().
-dot_product_flat(_Signals, _Weights, _Bias) ->
+dot_product_flat(Signals, Weights, Bias) ->
+    try nif_dot_product_flat(Signals, Weights, Bias)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:dot_product_flat(Signals, Weights, Bias)
+    end.
+
+nif_dot_product_flat(_Signals, _Weights, _Bias) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Batch dot product for multiple neurons.
-%%
-%% More efficient than calling dot_product_flat/3 multiple times.
-%% Processes multiple neurons in one NIF call to amortize overhead.
-%% Uses dirty scheduler for large batches to avoid blocking.
-%%
-%% @param Batch List of {Signals, Weights, Bias} tuples
-%% @returns List of dot product results
--spec dot_product_batch(
-    Batch :: [{[float()], [float()], float()}]
-) -> [float()].
-dot_product_batch(_Batch) ->
+-spec dot_product_batch(Batch :: [{[float()], [float()], float()}]) -> [float()].
+dot_product_batch(Batch) ->
+    try nif_dot_product_batch(Batch)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:dot_product_batch(Batch)
+    end.
+
+nif_dot_product_batch(_Batch) ->
     erlang:nif_error(nif_not_loaded).
 
-%% ============================================================================
-%% LTC/CfC (Liquid Time-Constant) NIF Functions
-%% ============================================================================
+%% @doc Dot product with pre-flattened data.
+-spec dot_product_preflattened(Signals :: [float()], Weights :: [float()], Bias :: float()) -> float().
+dot_product_preflattened(Signals, Weights, Bias) ->
+    try nif_dot_product_preflattened(Signals, Weights, Bias)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:dot_product_preflattened(Signals, Weights, Bias)
+    end.
+
+nif_dot_product_preflattened(_Signals, _Weights, _Bias) ->
+    erlang:nif_error(nif_not_loaded).
+
+%% @doc Flatten weights for efficient dot product.
+-spec flatten_weights(WeightedInputs :: [{non_neg_integer(), [{float(), float(), float(), [float()]}]}]) ->
+    {[float()], [non_neg_integer()]}.
+flatten_weights(WeightedInputs) ->
+    try nif_flatten_weights(WeightedInputs)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:flatten_weights(WeightedInputs)
+    end.
+
+nif_flatten_weights(_WeightedInputs) ->
+    erlang:nif_error(nif_not_loaded).
+
+%%==============================================================================
+%% LTC/CfC (Liquid Time-Constant) Functions
+%%==============================================================================
 
 %% @doc CfC (Closed-form Continuous-time) evaluation.
 %%
 %% Fast closed-form approximation of LTC dynamics (~100x faster than ODE).
-%% Implements: x' = sigmoid(-f) * x + (1 - sigmoid(-f)) * h
-%%
-%% @param Input Current input value
-%% @param State Current internal state
-%% @param Tau Base time constant
-%% @param Bound State bound (clamping range)
-%% @returns {NewState, Output}
 -spec evaluate_cfc(
     Input :: float(),
     State :: float(),
     Tau :: float(),
     Bound :: float()
 ) -> {float(), float()}.
-evaluate_cfc(_Input, _State, _Tau, _Bound) ->
+evaluate_cfc(Input, State, Tau, Bound) ->
+    try nif_evaluate_cfc(Input, State, Tau, Bound)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:evaluate_cfc(Input, State, Tau, Bound)
+    end.
+
+nif_evaluate_cfc(_Input, _State, _Tau, _Bound) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc CfC evaluation with custom backbone and head weights.
-%%
-%% @param Input Current input value
-%% @param State Current internal state
-%% @param Tau Base time constant
-%% @param Bound State bound
-%% @param BackboneWeights Weights for f() backbone network
-%% @param HeadWeights Weights for h() head network
-%% @returns {NewState, Output}
 -spec evaluate_cfc_with_weights(
     Input :: float(),
     State :: float(),
@@ -278,20 +285,18 @@ evaluate_cfc(_Input, _State, _Tau, _Bound) ->
     BackboneWeights :: [float()],
     HeadWeights :: [float()]
 ) -> {float(), float()}.
-evaluate_cfc_with_weights(_Input, _State, _Tau, _Bound, _BackboneWeights, _HeadWeights) ->
+evaluate_cfc_with_weights(Input, State, Tau, Bound, BackboneWeights, HeadWeights) ->
+    try nif_evaluate_cfc_with_weights(Input, State, Tau, Bound, BackboneWeights, HeadWeights)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:evaluate_cfc_with_weights(Input, State, Tau, Bound, BackboneWeights, HeadWeights)
+    end.
+
+nif_evaluate_cfc_with_weights(_Input, _State, _Tau, _Bound, _BackboneWeights, _HeadWeights) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc ODE-based LTC evaluation.
 %%
 %% Accurate but slower evaluation using Euler integration.
-%% Implements: dx/dt = -[1/tau + f] * x + f * A
-%%
-%% @param Input Current input value
-%% @param State Current internal state
-%% @param Tau Base time constant
-%% @param Bound State bound
-%% @param Dt Integration time step
-%% @returns {NewState, Output}
 -spec evaluate_ode(
     Input :: float(),
     State :: float(),
@@ -299,19 +304,16 @@ evaluate_cfc_with_weights(_Input, _State, _Tau, _Bound, _BackboneWeights, _HeadW
     Bound :: float(),
     Dt :: float()
 ) -> {float(), float()}.
-evaluate_ode(_Input, _State, _Tau, _Bound, _Dt) ->
+evaluate_ode(Input, State, Tau, Bound, Dt) ->
+    try nif_evaluate_ode(Input, State, Tau, Bound, Dt)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:evaluate_ode(Input, State, Tau, Bound, Dt)
+    end.
+
+nif_evaluate_ode(_Input, _State, _Tau, _Bound, _Dt) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc ODE evaluation with custom weights.
-%%
-%% @param Input Current input value
-%% @param State Current internal state
-%% @param Tau Base time constant
-%% @param Bound State bound
-%% @param Dt Integration time step
-%% @param BackboneWeights Weights for f() backbone
-%% @param HeadWeights Weights for h() head
-%% @returns {NewState, Output}
 -spec evaluate_ode_with_weights(
     Input :: float(),
     State :: float(),
@@ -321,223 +323,235 @@ evaluate_ode(_Input, _State, _Tau, _Bound, _Dt) ->
     BackboneWeights :: [float()],
     HeadWeights :: [float()]
 ) -> {float(), float()}.
-evaluate_ode_with_weights(_Input, _State, _Tau, _Bound, _Dt, _BackboneWeights, _HeadWeights) ->
+evaluate_ode_with_weights(Input, State, Tau, Bound, Dt, BackboneWeights, HeadWeights) ->
+    try nif_evaluate_ode_with_weights(Input, State, Tau, Bound, Dt, BackboneWeights, HeadWeights)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:evaluate_ode_with_weights(Input, State, Tau, Bound, Dt, BackboneWeights, HeadWeights)
+    end.
+
+nif_evaluate_ode_with_weights(_Input, _State, _Tau, _Bound, _Dt, _BackboneWeights, _HeadWeights) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Batch CfC evaluation for time series.
-%%
-%% Evaluates a sequence of inputs, maintaining state between steps.
-%% Efficient for processing time series data.
-%%
-%% @param Inputs List of input values (time series)
-%% @param InitialState Starting internal state
-%% @param Tau Base time constant
-%% @param Bound State bound
-%% @returns List of {State, Output} tuples
 -spec evaluate_cfc_batch(
     Inputs :: [float()],
     InitialState :: float(),
     Tau :: float(),
     Bound :: float()
 ) -> [{float(), float()}].
-evaluate_cfc_batch(_Inputs, _InitialState, _Tau, _Bound) ->
+evaluate_cfc_batch(Inputs, InitialState, Tau, Bound) ->
+    try nif_evaluate_cfc_batch(Inputs, InitialState, Tau, Bound)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:evaluate_cfc_batch(Inputs, InitialState, Tau, Bound)
+    end.
+
+nif_evaluate_cfc_batch(_Inputs, _InitialState, _Tau, _Bound) ->
     erlang:nif_error(nif_not_loaded).
 
-%% ============================================================================
-%% Weight Flattening NIF Functions
-%% ============================================================================
-
-%% @doc Flatten weights for efficient dot product.
-%%
-%% Converts nested weight structure to flat arrays.
-%% Returns {FlatWeights, CountsPerSource}.
--spec flatten_weights(WeightedInputs :: [{non_neg_integer(), [{float(), float(), float(), [float()]}]}]) ->
-    {[float()], [non_neg_integer()]}.
-flatten_weights(_WeightedInputs) ->
-    erlang:nif_error(nif_not_loaded).
-
-%% @doc Dot product with pre-flattened data.
--spec dot_product_preflattened(Signals :: [float()], Weights :: [float()], Bias :: float()) -> float().
-dot_product_preflattened(_Signals, _Weights, _Bias) ->
-    erlang:nif_error(nif_not_loaded).
-
-%% ============================================================================
-%% Distance and KNN NIF Functions (Novelty Search)
-%% ============================================================================
+%%==============================================================================
+%% Distance and KNN Functions (Novelty Search)
+%%==============================================================================
 
 %% @doc Compute Euclidean distance between two behavior vectors.
-%%
-%% Hot path function for novelty search.
-%% @param V1 First behavior vector
-%% @param V2 Second behavior vector
-%% @returns Euclidean distance
 -spec euclidean_distance(V1 :: [float()], V2 :: [float()]) -> float().
-euclidean_distance(_V1, _V2) ->
+euclidean_distance(V1, V2) ->
+    try nif_euclidean_distance(V1, V2)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:euclidean_distance(V1, V2)
+    end.
+
+nif_euclidean_distance(_V1, _V2) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Batch Euclidean distance from one vector to many.
-%%
-%% Returns list of {Index, Distance} sorted by distance ascending.
-%% @param Target Target behavior vector
-%% @param Others List of other behavior vectors
-%% @returns Sorted list of {Index, Distance}
 -spec euclidean_distance_batch(Target :: [float()], Others :: [[float()]]) ->
     [{non_neg_integer(), float()}].
-euclidean_distance_batch(_Target, _Others) ->
+euclidean_distance_batch(Target, Others) ->
+    try nif_euclidean_distance_batch(Target, Others)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:euclidean_distance_batch(Target, Others)
+    end.
+
+nif_euclidean_distance_batch(_Target, _Others) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Compute k-nearest neighbor novelty score.
-%%
-%% Returns average distance to k nearest neighbors in population + archive.
-%% @param Target Target behavior vector
-%% @param Population Current population behaviors
-%% @param Archive Historical behavior archive
-%% @param K Number of nearest neighbors
-%% @returns Average distance to k nearest
 -spec knn_novelty(
     Target :: [float()],
     Population :: [[float()]],
     Archive :: [[float()]],
     K :: pos_integer()
 ) -> float().
-knn_novelty(_Target, _Population, _Archive, _K) ->
+knn_novelty(Target, Population, Archive, K) ->
+    try nif_knn_novelty(Target, Population, Archive, K)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:knn_novelty(Target, Population, Archive, K)
+    end.
+
+nif_knn_novelty(_Target, _Population, _Archive, _K) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Batch kNN novelty for multiple behaviors.
-%%
-%% More efficient than calling knn_novelty repeatedly.
-%% @param Behaviors List of behavior vectors
-%% @param Archive Historical behavior archive
-%% @param K Number of nearest neighbors
-%% @returns List of novelty scores
 -spec knn_novelty_batch(
     Behaviors :: [[float()]],
     Archive :: [[float()]],
     K :: pos_integer()
 ) -> [float()].
-knn_novelty_batch(_Behaviors, _Archive, _K) ->
+knn_novelty_batch(Behaviors, Archive, K) ->
+    try nif_knn_novelty_batch(Behaviors, Archive, K)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:knn_novelty_batch(Behaviors, Archive, K)
+    end.
+
+nif_knn_novelty_batch(_Behaviors, _Archive, _K) ->
     erlang:nif_error(nif_not_loaded).
 
-%% ============================================================================
-%% Statistics NIF Functions
-%% ============================================================================
+%%==============================================================================
+%% Statistics Functions
+%%==============================================================================
 
 %% @doc Compute fitness statistics in single pass.
 %%
 %% Returns {Min, Max, Mean, Variance, StdDev, Sum}.
 -spec fitness_stats(Fitnesses :: [float()]) ->
     {float(), float(), float(), float(), float(), float()}.
-fitness_stats(_Fitnesses) ->
+fitness_stats(Fitnesses) ->
+    try nif_fitness_stats(Fitnesses)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:fitness_stats(Fitnesses)
+    end.
+
+nif_fitness_stats(_Fitnesses) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Compute weighted moving average.
-%%
-%% Uses exponential decay weights.
-%% @param Values List of values (most recent first)
-%% @param Decay Decay factor (0-1)
-%% @returns Weighted average
 -spec weighted_moving_average(Values :: [float()], Decay :: float()) -> float().
-weighted_moving_average(_Values, _Decay) ->
+weighted_moving_average(Values, Decay) ->
+    try nif_weighted_moving_average(Values, Decay)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:weighted_moving_average(Values, Decay)
+    end.
+
+nif_weighted_moving_average(_Values, _Decay) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Compute Shannon entropy.
-%%
-%% Values are normalized to a probability distribution.
 -spec shannon_entropy(Values :: [float()]) -> float().
-shannon_entropy(_Values) ->
+shannon_entropy(Values) ->
+    try nif_shannon_entropy(Values)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:shannon_entropy(Values)
+    end.
+
+nif_shannon_entropy(_Values) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Create histogram bins.
-%%
-%% @param Values Values to bin
-%% @param NumBins Number of bins
-%% @param MinVal Minimum value
-%% @param MaxVal Maximum value
-%% @returns List of bin counts
 -spec histogram(
     Values :: [float()],
     NumBins :: pos_integer(),
     MinVal :: float(),
     MaxVal :: float()
 ) -> [non_neg_integer()].
-histogram(_Values, _NumBins, _MinVal, _MaxVal) ->
+histogram(Values, NumBins, MinVal, MaxVal) ->
+    try nif_histogram(Values, NumBins, MinVal, MaxVal)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:histogram(Values, NumBins, MinVal, MaxVal)
+    end.
+
+nif_histogram(_Values, _NumBins, _MinVal, _MaxVal) ->
     erlang:nif_error(nif_not_loaded).
 
-%% ============================================================================
-%% Selection NIF Functions
-%% ============================================================================
+%%==============================================================================
+%% Selection Functions
+%%==============================================================================
 
 %% @doc Build cumulative fitness array for roulette selection.
-%%
-%% Shifts fitnesses to ensure all positive.
-%% Returns {CumulativeFitnesses, TotalFitness}.
 -spec build_cumulative_fitness(Fitnesses :: [float()]) -> {[float()], float()}.
-build_cumulative_fitness(_Fitnesses) ->
+build_cumulative_fitness(Fitnesses) ->
+    try nif_build_cumulative_fitness(Fitnesses)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:build_cumulative_fitness(Fitnesses)
+    end.
+
+nif_build_cumulative_fitness(_Fitnesses) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Roulette wheel selection with binary search.
-%%
-%% O(log n) selection using pre-built cumulative array.
-%% @param Cumulative Cumulative fitness array from build_cumulative_fitness/1
-%% @param Total Total fitness
-%% @param RandomVal Random value in [0, 1]
-%% @returns Selected index
 -spec roulette_select(Cumulative :: [float()], Total :: float(), RandomVal :: float()) ->
     non_neg_integer().
-roulette_select(_Cumulative, _Total, _RandomVal) ->
+roulette_select(Cumulative, Total, RandomVal) ->
+    try nif_roulette_select(Cumulative, Total, RandomVal)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:roulette_select(Cumulative, Total, RandomVal)
+    end.
+
+nif_roulette_select(_Cumulative, _Total, _RandomVal) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Batch roulette selection.
-%%
-%% Select multiple individuals efficiently.
-%% @param Cumulative Cumulative fitness array
-%% @param Total Total fitness
-%% @param RandomVals List of random values in [0, 1]
-%% @returns List of selected indices
 -spec roulette_select_batch(
     Cumulative :: [float()],
     Total :: float(),
     RandomVals :: [float()]
 ) -> [non_neg_integer()].
-roulette_select_batch(_Cumulative, _Total, _RandomVals) ->
+roulette_select_batch(Cumulative, Total, RandomVals) ->
+    try nif_roulette_select_batch(Cumulative, Total, RandomVals)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:roulette_select_batch(Cumulative, Total, RandomVals)
+    end.
+
+nif_roulette_select_batch(_Cumulative, _Total, _RandomVals) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Tournament selection.
-%%
-%% Select best from random subset.
-%% @param Contestants List of contestant indices
-%% @param Fitnesses All fitness values
-%% @returns Index of winner
 -spec tournament_select(Contestants :: [non_neg_integer()], Fitnesses :: [float()]) ->
     non_neg_integer().
-tournament_select(_Contestants, _Fitnesses) ->
+tournament_select(Contestants, Fitnesses) ->
+    try nif_tournament_select(Contestants, Fitnesses)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:tournament_select(Contestants, Fitnesses)
+    end.
+
+nif_tournament_select(_Contestants, _Fitnesses) ->
     erlang:nif_error(nif_not_loaded).
 
-%% ============================================================================
-%% Reward and Meta-Controller NIF Functions
-%% ============================================================================
+%%==============================================================================
+%% Reward and Meta-Controller Functions
+%%==============================================================================
 
 %% @doc Compute z-score normalization.
-%%
-%% Returns 0 if std_dev is too small.
 -spec z_score(Value :: float(), Mean :: float(), StdDev :: float()) -> float().
-z_score(_Value, _Mean, _StdDev) ->
+z_score(Value, Mean, StdDev) ->
+    try nif_z_score(Value, Mean, StdDev)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:z_score(Value, Mean, StdDev)
+    end.
+
+nif_z_score(_Value, _Mean, _StdDev) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Compute reward component with normalization.
 %%
 %% Returns {RawComponent, NormalizedComponent, ZScore}.
-%% @param History Recent values for baseline
-%% @param Current Current value
 -spec compute_reward_component(History :: [float()], Current :: float()) ->
     {float(), float(), float()}.
-compute_reward_component(_History, _Current) ->
+compute_reward_component(History, Current) ->
+    try nif_compute_reward_component(History, Current)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:compute_reward_component(History, Current)
+    end.
+
+nif_compute_reward_component(_History, _Current) ->
     erlang:nif_error(nif_not_loaded).
 
 %% @doc Batch compute weighted reward.
-%%
-%% Each component is {History, CurrentValue, Weight}.
-%% Returns weighted sum of normalized components.
 -spec compute_weighted_reward(Components :: [{[float()], float(), float()}]) -> float().
-compute_weighted_reward(_Components) ->
+compute_weighted_reward(Components) ->
+    try nif_compute_weighted_reward(Components)
+    catch error:nif_not_loaded ->
+        tweann_nif_fallback:compute_weighted_reward(Components)
+    end.
+
+nif_compute_weighted_reward(_Components) ->
     erlang:nif_error(nif_not_loaded).

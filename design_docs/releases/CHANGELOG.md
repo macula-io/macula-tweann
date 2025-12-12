@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.15.0] - 2025-12-12
 
 ### Summary
-**NIF Acceleration Phase 2 Release** - Major NIF expansion with 18 new functions for novelty search, fitness statistics, selection, and reward computation.
+**NIF Acceleration Phase 2 Release** - Major NIF expansion with 18 new functions for novelty search, fitness statistics, selection, and reward computation. Includes complete pure Erlang fallback module for portability without Rust toolchain.
 
 ### Added
 
@@ -61,7 +61,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **src/tweann_nif.erl**: Added exports and stubs for 18 new functions
+- **src/tweann_nif.erl**: Rewritten with try-catch fallback pattern for portability
 - All new NIFs use `DirtyCpu` scheduler for long-running operations
+
+#### Pure Erlang Fallback Module
+- **src/tweann_nif_fallback.erl**: NEW - Complete Erlang implementations of all NIFs
+  - Full fallback for all 30+ NIF functions
+  - Automatic fallback when NIF not loaded (no Rust compilation required)
+  - Enables library use on any Erlang/OTP system without Rust toolchain
+  - Helper functions: sigmoid, clamp, apply_activation
+
+### Fixed
+- **src/genome_mutator.erl**: Substrate mutations (add_cpp, add_cep) now log warning instead of silent no-op
+- **src/genotype.erl:343**: Removed misleading TODO - link_FromElementToElement is fully implemented
+- **src/genotype.erl:498**: Implemented update_fingerprint using species_identifier:create_fingerprint/1
+- **src/network_evaluator.erl**: Documented feedforward approximation limitation with recommendation to use tweann_nif:compile_network/3 for exact topology evaluation
 
 ### Performance Targets
 - Euclidean distance batch: 30-100x speedup for novelty search
@@ -70,8 +84,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Roulette selection: 5-15x speedup with O(log n) binary search
 
 ### Test Results
-- **843 tests passing** (42 new NIF tests)
+- **593 tests passing** (includes 42 new NIF v2 tests)
 - Dialyzer clean
+- All fallback functions verified working
 
 ---
 

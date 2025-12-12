@@ -91,9 +91,18 @@ mutation_dispatch() ->
         mutate_state_bound => fun ltc_mutations:mutate_state_bound/1,
         mutate_ltc_weights => fun ltc_mutations:mutate_ltc_weights/1,
 
-        %% Substrate mutations (not implemented)
-        add_cpp => fun(_) -> ok end,
-        add_cep => fun(_) -> ok end
+        %% Substrate mutations (HyperNEAT/CPPN) - not supported in current version
+        %% These operators require Compositional Pattern Producing Networks
+        %% which will be implemented in a future version. Using these operators
+        %% will have no effect on the genotype.
+        add_cpp => fun(AgentId) ->
+            tweann_logger:warning("add_cpp mutation not supported: agent=~p", [AgentId]),
+            ok
+        end,
+        add_cep => fun(AgentId) ->
+            tweann_logger:warning("add_cep mutation not supported: agent=~p", [AgentId]),
+            ok
+        end
     }.
 
 %%==============================================================================

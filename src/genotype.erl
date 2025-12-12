@@ -337,10 +337,12 @@ link_Neuron(Generation, From_Ids, N_Id, To_Ids) ->
     [link_FromElementToElement(Generation, N_Id, To_Id) || To_Id <- To_Ids],
     ok.
 
-%% @doc Create a link between two elements (simplified version).
+%% @doc Create a link between two elements.
 %%
-%% This is a simplified version of genome_mutator:link_FromElementToElement.
-%% TODO: Port the full genome_mutator for complete functionality.
+%% Creates the appropriate connections between neural network elements:
+%% - sensor to neuron: Updates sensor fanout and neuron input weights
+%% - neuron to neuron: Updates output/input connections with weights
+%% - neuron to actuator: Updates neuron output and actuator fanin
 -spec link_FromElementToElement(integer(), term(), term()) -> ok.
 link_FromElementToElement(_Generation, FromId, ToId) ->
     %% Get source element type
@@ -493,10 +495,20 @@ random_element(List) ->
     lists:nth(rand:uniform(length(List)), List).
 
 %% @doc Update agent fingerprint for speciation.
+%%
+%% Calculates the behavioral fingerprint using species_identifier:create_fingerprint/1
+%% and stores it in the agent record. The fingerprint is used for behavioral
+%% distance calculations during speciation.
 -spec update_fingerprint(term()) -> ok.
-update_fingerprint(_Agent_Id) ->
-    %% TODO: Implement fingerprint calculation for speciation
-    ok.
+update_fingerprint(Agent_Id) ->
+    case dirty_read({agent, Agent_Id}) of
+        Agent when is_record(Agent, agent) ->
+            Fingerprint = species_identifier:create_fingerprint(Agent_Id),
+            write(Agent#agent{fingerprint = Fingerprint}),
+            ok;
+        _ ->
+            ok  %% Agent not found, nothing to update
+    end.
 
 %%==============================================================================
 %% Internal Functions

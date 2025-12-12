@@ -315,26 +315,33 @@ load_genotype_structure(AgentId) ->
     end.
 
 %% @private Build network from genotype structure
+%%
+%% NOTE: This creates a feedforward approximation of the evolved topology.
+%% TWEANN genotypes have arbitrary topology (including recurrent connections)
+%% which cannot be represented in the matrix-based feedforward format used
+%% by network_evaluator. For exact topology evaluation, use:
+%%   tweann_nif:compile_network/3 + tweann_nif:evaluate/2
+%% which supports arbitrary DAG and recurrent topologies.
+%%
+%% This function is primarily useful for visualization and analysis where
+%% a feedforward approximation is acceptable.
 build_network_from_structure({Sensors, Neurons, Actuators}) ->
     %% Calculate sizes
     InputSize = lists:sum([element(8, S) || S <- Sensors]), %% #sensor.vl
     OutputSize = lists:sum([element(7, A) || A <- Actuators]), %% #actuator.vl
     HiddenCount = length(Neurons),
 
-    %% For now, create a simple feedforward approximation
-    %% A proper implementation would recreate the exact topology
+    %% Create a feedforward approximation with similar structure
+    %% Cannot preserve exact topology due to format limitations
     HiddenSizes = case HiddenCount of
         0 -> [];
         N when N < 10 -> [N];
         N -> [N div 2, N div 2]
     end,
 
-    %% Create network and copy weights from neurons
-    Network = create_feedforward(InputSize, HiddenSizes, OutputSize),
-
-    %% TODO: Copy actual weights from neuron records
-    %% For now, the random weights from create_feedforward are used
-    Network.
+    %% Create network with random weights (topology approximation only)
+    %% For exact weight reproduction, use tweann_nif:compile_network/3
+    create_feedforward(InputSize, HiddenSizes, OutputSize).
 
 %%==============================================================================
 %% Visualization Functions

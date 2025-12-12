@@ -28,7 +28,7 @@ Based on DXNN2 by Gene Sher (from "Handbook of Neuroevolution Through Erlang"), 
 
 **LTC/CfC Neurons**: First TWEANN library to implement Liquid Time-Constant neurons, enabling evolved networks that adapt their temporal dynamics - critical for time-series and control problems.
 
-**Production-Ready**: Comprehensive test suite (791 tests), structured logging, process timeouts, and crash handling make this suitable for real applications.
+**Production-Ready**: Comprehensive test suite (593 tests), structured logging, process timeouts, and crash handling make this suitable for real applications.
 
 **Brain API**: Simple GenServer interface for real-time inference with optional Hebbian learning during operation - ideal for games, robotics, and interactive systems.
 

@@ -12,6 +12,8 @@ Evolutionary neural networks that evolve both topology and weights, now with **L
 
 - **First TWEANN library with LTC neurons** in Erlang/OTP
 - **CfC closed-form approximation** - ~100x faster than ODE-based LTC
+- **Rust NIF acceleration** - Optional 30-200x speedup for fitness statistics, novelty search, selection
+- **Pure Erlang fallback** - Works on any system without Rust toolchain
 - **Hybrid networks** - Mix standard and LTC neurons in the same network
 - **Production ready** - Comprehensive logging, error handling, and process safety
 
@@ -19,7 +21,7 @@ Evolutionary neural networks that evolve both topology and weights, now with **L
 
 ```erlang
 %% Add to rebar.config
-{deps, [{macula_tweann, "~> 0.10.0"}]}.
+{deps, [{macula_tweann, "~> 0.15.0"}]}.
 
 %% Create and evolve a standard network
 genotype:init_db(),

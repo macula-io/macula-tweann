@@ -12,6 +12,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.16.0] - 2025-12-23
+
+### Summary
+**Enterprise NIF Package Support** - Added automatic detection and integration with the separate `macula_nn_nifs` enterprise package, providing 10-15x performance improvements for compute-intensive operations.
+
+### Added
+
+#### Enterprise NIF Detection
+- **tweann_nif.erl**: Automatic detection of enterprise NIF package
+  - Checks for `macula_nn_nifs` module at startup
+  - Uses `persistent_term` for cached implementation lookup
+  - Priority: macula_nn_nifs (enterprise) > bundled NIF > pure Erlang fallback
+  - Zero code changes required - detection is automatic
+
+#### Documentation
+- **guides/enterprise-nifs.md**: New comprehensive guide for enterprise NIFs
+  - Performance comparison table (10-15x speedups)
+  - Installation instructions for Community vs Enterprise editions
+  - Complete list of 44 accelerated functions across 8 categories
+  - Verification and troubleshooting sections
+- **guides/installation.md**: Updated with Enterprise Edition section
+  - Clear separation of Community and Enterprise installation
+  - Enterprise requirements (Rust 1.70+, SSH access)
+  - NIF verification examples
+
+### Changed
+- **rebar.config**: Added enterprise-nifs.md to ex_doc extras
+
+### Enterprise NIF Package
+The `macula_nn_nifs` package (v0.1.0) is now available as a separate enterprise-only repository:
+- 44 Rust NIF functions for compute-intensive operations
+- Categories: Network Evaluation, Signal Aggregation, LTC/CfC, Novelty Search, Statistics, Selection, Meta-Controller, Evolutionary Genetics
+- 98 unit tests with full coverage
+- Apache-2.0 license (enterprise license required for commercial use)
+
+### Test Results
+- 593 tests passing
+- Dialyzer clean
+
+---
+
 ## [0.15.3] - 2025-12-23
 
 ### Summary
@@ -576,7 +617,8 @@ LTC neurons enable adaptive temporal processing with input-dependent time consta
 
 ---
 
-[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.15.3...HEAD
+[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/macula-io/macula-tweann/compare/v0.15.3...v0.16.0
 [0.15.3]: https://github.com/macula-io/macula-tweann/compare/v0.15.2...v0.15.3
 [0.15.2]: https://github.com/macula-io/macula-tweann/compare/v0.15.1...v0.15.2
 [0.15.1]: https://github.com/macula-io/macula-tweann/compare/v0.15.0...v0.15.1

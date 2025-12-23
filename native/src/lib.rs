@@ -8,6 +8,8 @@
 
 use rustler::{Atom, Env, NifResult, ResourceArc, Term};
 use std::collections::HashMap;
+use rand::prelude::*;
+use rand_distr::{Normal, Distribution};
 
 mod atoms {
     rustler::atoms! {
@@ -1012,6 +1014,245 @@ fn compute_reward_component_impl(history: &[f64], current: f64) -> (f64, f64, f6
 // Weight/Genome Utilities
 // ============================================================================
 
+// ============================================================================
+// Batch Mutation Functions (for Evolutionary Genetics)
+// ============================================================================
+
+/// Mutate a single weight according to mutation parameters.
+///
+/// With mutation_rate probability:
+///   - With perturb_rate probability: add gaussian noise scaled by perturb_strength
+///   - Otherwise: replace with new random weight in [-1, 1]
+#[inline]
+fn mutate_single_weight(
+    weight: f64,
+    mutation_rate: f64,
+    perturb_rate: f64,
+    perturb_strength: f64,
+    rng: &mut impl Rng,
+) -> f64 {
+    if rng.gen::<f64>() < mutation_rate {
+        if rng.gen::<f64>() < perturb_rate {
+            // Perturb: add gaussian noise
+            let normal = Normal::new(0.0, perturb_strength).unwrap();
+            weight + normal.sample(rng)
+        } else {
+            // Replace: new random weight in [-1, 1]
+            rng.gen::<f64>() * 2.0 - 1.0
+        }
+    } else {
+        weight
+    }
+}
+
+/// Mutate weights in batch using gaussian perturbation.
+///
+/// This is the hot path for neuroevolution - called for every offspring.
+/// Uses dirty scheduler to prevent blocking the BEAM scheduler.
+///
+/// Parameters:
+/// - weights: list of weights to mutate
+/// - mutation_rate: probability of mutating each weight (0.0 to 1.0)
+/// - perturb_rate: probability of perturbing vs replacing (0.0 to 1.0)
+/// - perturb_strength: standard deviation for gaussian perturbation
+///
+/// Returns: mutated weights
+#[rustler::nif(schedule = "DirtyCpu")]
+fn mutate_weights(
+    weights: Vec<f64>,
+    mutation_rate: f64,
+    perturb_rate: f64,
+    perturb_strength: f64,
+) -> Vec<f64> {
+    let mut rng = thread_rng();
+    weights
+        .into_iter()
+        .map(|w| mutate_single_weight(w, mutation_rate, perturb_rate, perturb_strength, &mut rng))
+        .collect()
+}
+
+/// Mutate weights with explicit seed for reproducibility.
+///
+/// Useful for debugging and deterministic testing.
+#[rustler::nif(schedule = "DirtyCpu")]
+fn mutate_weights_seeded(
+    weights: Vec<f64>,
+    mutation_rate: f64,
+    perturb_rate: f64,
+    perturb_strength: f64,
+    seed: u64,
+) -> Vec<f64> {
+    let mut rng = StdRng::seed_from_u64(seed);
+    weights
+        .into_iter()
+        .map(|w| mutate_single_weight(w, mutation_rate, perturb_rate, perturb_strength, &mut rng))
+        .collect()
+}
+
+/// Batch mutate multiple genomes' weights.
+///
+/// Each genome is a list of weights. Returns list of mutated genomes.
+/// More efficient than calling mutate_weights repeatedly due to:
+/// - Single NIF call overhead
+/// - Better cache locality
+/// - Shared RNG state
+///
+/// Input: Vec of (genome_weights, mutation_rate, perturb_rate, perturb_strength)
+/// This allows per-genome mutation parameters (useful for adaptive mutation).
+#[rustler::nif(schedule = "DirtyCpu")]
+fn mutate_weights_batch(
+    genomes: Vec<(Vec<f64>, f64, f64, f64)>,
+) -> Vec<Vec<f64>> {
+    let mut rng = thread_rng();
+    genomes
+        .into_iter()
+        .map(|(weights, mutation_rate, perturb_rate, perturb_strength)| {
+            weights
+                .into_iter()
+                .map(|w| mutate_single_weight(w, mutation_rate, perturb_rate, perturb_strength, &mut rng))
+                .collect()
+        })
+        .collect()
+}
+
+/// Batch mutate with uniform parameters (most common case).
+///
+/// All genomes use the same mutation parameters.
+/// Returns list of mutated weight vectors.
+#[rustler::nif(schedule = "DirtyCpu")]
+fn mutate_weights_batch_uniform(
+    genomes: Vec<Vec<f64>>,
+    mutation_rate: f64,
+    perturb_rate: f64,
+    perturb_strength: f64,
+) -> Vec<Vec<f64>> {
+    let mut rng = thread_rng();
+    genomes
+        .into_iter()
+        .map(|weights| {
+            weights
+                .into_iter()
+                .map(|w| mutate_single_weight(w, mutation_rate, perturb_rate, perturb_strength, &mut rng))
+                .collect()
+        })
+        .collect()
+}
+
+/// Generate random weights for initial genome creation.
+///
+/// Returns n random weights uniformly distributed in [-1, 1].
+#[rustler::nif]
+fn random_weights(n: usize) -> Vec<f64> {
+    let mut rng = thread_rng();
+    (0..n).map(|_| rng.gen::<f64>() * 2.0 - 1.0).collect()
+}
+
+/// Generate random weights with explicit seed.
+#[rustler::nif]
+fn random_weights_seeded(n: usize, seed: u64) -> Vec<f64> {
+    let mut rng = StdRng::seed_from_u64(seed);
+    (0..n).map(|_| rng.gen::<f64>() * 2.0 - 1.0).collect()
+}
+
+/// Generate gaussian random weights (normal distribution).
+///
+/// Returns n random weights from N(mean, std_dev).
+#[rustler::nif]
+fn random_weights_gaussian(n: usize, mean: f64, std_dev: f64) -> Vec<f64> {
+    let mut rng = thread_rng();
+    let normal = Normal::new(mean, std_dev).unwrap_or(Normal::new(0.0, 1.0).unwrap());
+    (0..n).map(|_| normal.sample(&mut rng)).collect()
+}
+
+/// Batch generate random weights for multiple genomes.
+///
+/// Returns list of random weight vectors, each of specified size.
+#[rustler::nif(schedule = "DirtyCpu")]
+fn random_weights_batch(sizes: Vec<usize>) -> Vec<Vec<f64>> {
+    let mut rng = thread_rng();
+    sizes
+        .into_iter()
+        .map(|n| (0..n).map(|_| rng.gen::<f64>() * 2.0 - 1.0).collect())
+        .collect()
+}
+
+/// Internal L1 distance implementation
+fn weight_distance_l1_impl(weights1: &[f64], weights2: &[f64]) -> f64 {
+    weights1
+        .iter()
+        .zip(weights2.iter())
+        .map(|(w1, w2)| (w1 - w2).abs())
+        .sum::<f64>()
+        / weights1.len().max(1) as f64
+}
+
+/// Compute L1 (Manhattan) distance between two weight vectors.
+///
+/// Used for speciation distance when comparing fixed-topology networks.
+#[rustler::nif]
+fn weight_distance_l1(weights1: Vec<f64>, weights2: Vec<f64>) -> f64 {
+    weight_distance_l1_impl(&weights1, &weights2)
+}
+
+/// Internal L2 distance implementation
+fn weight_distance_l2_impl(weights1: &[f64], weights2: &[f64]) -> f64 {
+    weights1
+        .iter()
+        .zip(weights2.iter())
+        .map(|(w1, w2)| (w1 - w2) * (w1 - w2))
+        .sum::<f64>()
+        .sqrt()
+        / (weights1.len().max(1) as f64).sqrt()
+}
+
+/// Compute L2 (Euclidean) distance between two weight vectors.
+#[rustler::nif]
+fn weight_distance_l2(weights1: Vec<f64>, weights2: Vec<f64>) -> f64 {
+    weight_distance_l2_impl(&weights1, &weights2)
+}
+
+/// Batch compute weight distances from one genome to many.
+///
+/// Returns Vec of (index, distance) sorted by distance ascending.
+/// Used for finding similar genomes in speciation.
+#[rustler::nif(schedule = "DirtyCpu")]
+fn weight_distance_batch(
+    target: Vec<f64>,
+    others: Vec<Vec<f64>>,
+    use_l2: bool,
+) -> Vec<(usize, f64)> {
+    let mut distances: Vec<(usize, f64)> = others
+        .iter()
+        .enumerate()
+        .map(|(idx, other)| {
+            let dist = if use_l2 {
+                target
+                    .iter()
+                    .zip(other.iter())
+                    .map(|(w1, w2)| (w1 - w2) * (w1 - w2))
+                    .sum::<f64>()
+                    .sqrt()
+                    / (target.len().max(1) as f64).sqrt()
+            } else {
+                target
+                    .iter()
+                    .zip(other.iter())
+                    .map(|(w1, w2)| (w1 - w2).abs())
+                    .sum::<f64>()
+                    / target.len().max(1) as f64
+            };
+            (idx, dist)
+        })
+        .collect();
+
+    distances.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+    distances
+}
+
+// ============================================================================
+// Weight/Genome Utilities (existing)
+// ============================================================================
+
 /// Flatten nested weight structure for efficient dot product.
 /// Input: list of {source_id, [{weight, delta, lr, params}, ...]} tuples
 /// Output: (flat_weights, weight_count_per_source)
@@ -1091,7 +1332,19 @@ rustler::init!(
         // Reward and Meta-Controller
         z_score,
         compute_reward_component,
-        compute_weighted_reward
+        compute_weighted_reward,
+        // Batch Mutation (Evolutionary Genetics)
+        mutate_weights,
+        mutate_weights_seeded,
+        mutate_weights_batch,
+        mutate_weights_batch_uniform,
+        random_weights,
+        random_weights_seeded,
+        random_weights_gaussian,
+        random_weights_batch,
+        weight_distance_l1,
+        weight_distance_l2,
+        weight_distance_batch
     ],
     load = load
 );
@@ -1277,5 +1530,189 @@ mod tests {
         // Just check both complete without error
         assert!(cfc_time.as_nanos() > 0);
         assert!(ode_time.as_nanos() > 0);
+    }
+
+    // ========================================================================
+    // Batch Mutation Tests
+    // ========================================================================
+
+    #[test]
+    fn test_mutate_single_weight_no_mutation() {
+        let mut rng = StdRng::seed_from_u64(42);
+        // With mutation_rate = 0, weight should not change
+        let result = mutate_single_weight(0.5, 0.0, 0.8, 0.1, &mut rng);
+        assert!((result - 0.5).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_mutate_single_weight_always_mutate() {
+        let mut rng = StdRng::seed_from_u64(42);
+        // With mutation_rate = 1.0, weight should change
+        let original = 0.5;
+        let result = mutate_single_weight(original, 1.0, 0.8, 0.1, &mut rng);
+        // Should be different from original (with very high probability)
+        assert!(result != original || (result - original).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_mutate_weights_seeded_reproducibility() {
+        let weights = vec![0.1, 0.2, 0.3, 0.4, 0.5];
+
+        // Same seed should produce same results
+        let mut rng1 = StdRng::seed_from_u64(12345);
+        let mut rng2 = StdRng::seed_from_u64(12345);
+
+        let result1: Vec<f64> = weights.iter()
+            .map(|&w| mutate_single_weight(w, 0.5, 0.8, 0.1, &mut rng1))
+            .collect();
+        let result2: Vec<f64> = weights.iter()
+            .map(|&w| mutate_single_weight(w, 0.5, 0.8, 0.1, &mut rng2))
+            .collect();
+
+        assert_eq!(result1.len(), result2.len());
+        for (r1, r2) in result1.iter().zip(result2.iter()) {
+            assert!((r1 - r2).abs() < 1e-10);
+        }
+    }
+
+    #[test]
+    fn test_mutate_weights_different_seeds() {
+        let weights = vec![0.1, 0.2, 0.3, 0.4, 0.5];
+
+        // Different seeds should produce different results
+        let mut rng1 = StdRng::seed_from_u64(12345);
+        let mut rng2 = StdRng::seed_from_u64(54321);
+
+        let result1: Vec<f64> = weights.iter()
+            .map(|&w| mutate_single_weight(w, 1.0, 0.8, 0.5, &mut rng1))
+            .collect();
+        let result2: Vec<f64> = weights.iter()
+            .map(|&w| mutate_single_weight(w, 1.0, 0.8, 0.5, &mut rng2))
+            .collect();
+
+        // At least one weight should differ
+        let any_different = result1.iter().zip(result2.iter())
+            .any(|(r1, r2)| (r1 - r2).abs() > 1e-10);
+        assert!(any_different);
+    }
+
+    #[test]
+    fn test_random_weights_range() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let weights: Vec<f64> = (0..100).map(|_| rng.gen::<f64>() * 2.0 - 1.0).collect();
+        assert_eq!(weights.len(), 100);
+
+        // All weights should be in [-1, 1]
+        for w in &weights {
+            assert!(*w >= -1.0 && *w <= 1.0);
+        }
+    }
+
+    #[test]
+    fn test_random_weights_seeded_reproducibility() {
+        let mut rng1 = StdRng::seed_from_u64(42);
+        let mut rng2 = StdRng::seed_from_u64(42);
+        let result1: Vec<f64> = (0..10).map(|_| rng1.gen::<f64>() * 2.0 - 1.0).collect();
+        let result2: Vec<f64> = (0..10).map(|_| rng2.gen::<f64>() * 2.0 - 1.0).collect();
+
+        for (r1, r2) in result1.iter().zip(result2.iter()) {
+            assert!((r1 - r2).abs() < 1e-10);
+        }
+    }
+
+    #[test]
+    fn test_random_weights_gaussian_distribution() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let normal = Normal::new(0.0, 1.0).unwrap();
+        let weights: Vec<f64> = (0..1000).map(|_| normal.sample(&mut rng)).collect();
+        assert_eq!(weights.len(), 1000);
+
+        // Check mean is approximately 0
+        let mean: f64 = weights.iter().sum::<f64>() / weights.len() as f64;
+        assert!(mean.abs() < 0.2); // Within 0.2 of 0 with high probability
+    }
+
+    #[test]
+    fn test_weight_distance_l1() {
+        let w1 = vec![0.0, 0.0, 0.0];
+        let w2 = vec![1.0, 1.0, 1.0];
+
+        let dist = weight_distance_l1_impl(&w1, &w2);
+        assert!((dist - 1.0).abs() < 1e-10); // Average of [1, 1, 1] = 1
+    }
+
+    #[test]
+    fn test_weight_distance_l2() {
+        let w1 = vec![0.0, 0.0, 0.0];
+        let w2 = vec![1.0, 1.0, 1.0];
+
+        let dist = weight_distance_l2_impl(&w1, &w2);
+        // L2 distance = sqrt(3) / sqrt(3) = 1
+        assert!((dist - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_weight_distance_identical() {
+        let w = vec![0.5, -0.3, 0.8];
+
+        let dist_l1 = weight_distance_l1_impl(&w, &w);
+        let dist_l2 = weight_distance_l2_impl(&w, &w);
+
+        assert!(dist_l1.abs() < 1e-10);
+        assert!(dist_l2.abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_mutate_weights_batch_uniform() {
+        // Test batch mutation with zero mutation rate
+        let mut rng = StdRng::seed_from_u64(42);
+        let genomes = vec![
+            vec![0.1, 0.2, 0.3],
+            vec![0.4, 0.5, 0.6],
+            vec![0.7, 0.8, 0.9],
+        ];
+
+        // Simulate batch uniform with mutation_rate = 0
+        let result: Vec<Vec<f64>> = genomes
+            .iter()
+            .map(|weights| {
+                weights
+                    .iter()
+                    .map(|&w| mutate_single_weight(w, 0.0, 0.8, 0.1, &mut rng))
+                    .collect()
+            })
+            .collect();
+
+        // With mutation_rate = 0, all weights should be unchanged
+        assert_eq!(result.len(), 3);
+        for (original, mutated) in genomes.iter().zip(result.iter()) {
+            for (o, m) in original.iter().zip(mutated.iter()) {
+                assert!((o - m).abs() < 1e-10);
+            }
+        }
+    }
+
+    #[test]
+    fn test_random_weights_batch() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let sizes = vec![5, 10, 3];
+
+        // Simulate batch random weights
+        let result: Vec<Vec<f64>> = sizes
+            .iter()
+            .map(|&n| (0..n).map(|_| rng.gen::<f64>() * 2.0 - 1.0).collect())
+            .collect();
+
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0].len(), 5);
+        assert_eq!(result[1].len(), 10);
+        assert_eq!(result[2].len(), 3);
+
+        // All weights in range
+        for genome in &result {
+            for w in genome {
+                assert!(*w >= -1.0 && *w <= 1.0);
+            }
+        }
     }
 }

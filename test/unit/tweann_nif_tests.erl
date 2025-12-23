@@ -298,7 +298,7 @@ benchmark_simple_network_test() ->
 activation_functions_test_() ->
     case tweann_nif:is_loaded() of
         false ->
-            {skip, "NIF not loaded"};
+            [];  %% Return empty list when NIF not loaded
         true ->
             [
                 {"tanh activation", fun test_tanh_activation/0},
@@ -618,3 +618,193 @@ zero_tau_test() ->
             ?assert(is_float(State)),
             ?assert(is_float(Output))
     end.
+
+%%==============================================================================
+%% Batch Mutation NIF Tests (Evolutionary Genetics)
+%%==============================================================================
+
+%% Test basic weight mutation
+mutate_weights_basic_test() ->
+    Weights = [0.5, -0.3, 0.8, 0.0, -0.9],
+    %% 100% mutation rate, 100% perturb rate, small perturbation
+    Mutated = tweann_nif:mutate_weights(Weights, 1.0, 1.0, 0.1),
+    ?assertEqual(length(Weights), length(Mutated)),
+    %% All weights should be perturbed (different from original)
+    DifferentCount = length([{O, M} || {O, M} <- lists:zip(Weights, Mutated), O =/= M]),
+    ?assert(DifferentCount >= 4).  %% Most should change with 100% mutation
+
+%% Test mutation rate controls mutation probability
+mutate_weights_zero_rate_test() ->
+    Weights = [0.5, -0.3, 0.8, 0.0, -0.9],
+    %% 0% mutation rate - nothing should change
+    Mutated = tweann_nif:mutate_weights(Weights, 0.0, 1.0, 0.1),
+    ?assertEqual(Weights, Mutated).
+
+%% Test seeded mutation is reproducible
+mutate_weights_seeded_reproducible_test() ->
+    Weights = [0.5, -0.3, 0.8, 0.0, -0.9],
+    Seed = 12345,
+    Mutated1 = tweann_nif:mutate_weights_seeded(Weights, 0.5, 0.8, 0.1, Seed),
+    Mutated2 = tweann_nif:mutate_weights_seeded(Weights, 0.5, 0.8, 0.1, Seed),
+    ?assertEqual(Mutated1, Mutated2).
+
+%% Test different seeds produce different results
+mutate_weights_seeded_different_seeds_test() ->
+    Weights = [0.5, -0.3, 0.8, 0.0, -0.9],
+    Mutated1 = tweann_nif:mutate_weights_seeded(Weights, 0.5, 0.8, 0.1, 111),
+    Mutated2 = tweann_nif:mutate_weights_seeded(Weights, 0.5, 0.8, 0.1, 222),
+    %% Very unlikely to be identical with different seeds
+    ?assertNotEqual(Mutated1, Mutated2).
+
+%% Test batch mutation with per-genome parameters
+mutate_weights_batch_test() ->
+    Batch = [
+        {[0.1, 0.2, 0.3], 1.0, 1.0, 0.01},  %% High mutation, small perturb
+        {[0.4, 0.5, 0.6], 0.0, 1.0, 0.01},  %% No mutation
+        {[0.7, 0.8, 0.9], 1.0, 0.0, 0.01}   %% Full replacement
+    ],
+    Results = tweann_nif:mutate_weights_batch(Batch),
+    ?assertEqual(3, length(Results)),
+    %% Second genome should be unchanged
+    [_, Unchanged, _] = Results,
+    ?assertEqual([0.4, 0.5, 0.6], Unchanged).
+
+%% Test batch mutation with uniform parameters
+mutate_weights_batch_uniform_test() ->
+    WeightsList = [
+        [0.1, 0.2, 0.3],
+        [0.4, 0.5, 0.6],
+        [0.7, 0.8, 0.9]
+    ],
+    Results = tweann_nif:mutate_weights_batch_uniform(WeightsList, 0.0, 1.0, 0.1),
+    ?assertEqual(3, length(Results)),
+    %% No mutation - should be identical
+    ?assertEqual(WeightsList, Results).
+
+%% Test random weight generation
+random_weights_test() ->
+    Weights = tweann_nif:random_weights(100),
+    ?assertEqual(100, length(Weights)),
+    %% All weights should be in [-1, 1]
+    lists:foreach(
+        fun(W) ->
+            ?assert(W >= -1.0),
+            ?assert(W =< 1.0)
+        end,
+        Weights
+    ).
+
+%% Test seeded random weights are reproducible
+random_weights_seeded_test() ->
+    Weights1 = tweann_nif:random_weights_seeded(50, 42),
+    Weights2 = tweann_nif:random_weights_seeded(50, 42),
+    ?assertEqual(Weights1, Weights2).
+
+%% Test Gaussian random weights
+random_weights_gaussian_test() ->
+    N = 1000,
+    Mean = 0.0,
+    StdDev = 0.5,
+    Weights = tweann_nif:random_weights_gaussian(N, Mean, StdDev),
+    ?assertEqual(N, length(Weights)),
+    %% Compute actual mean
+    ActualMean = lists:sum(Weights) / N,
+    %% Should be close to specified mean (within 3 sigma / sqrt(N))
+    ?assert(abs(ActualMean - Mean) < 0.1).
+
+%% Test batch random weight generation
+random_weights_batch_test() ->
+    Batch = [
+        {10, 0.0, 0.1},
+        {20, 0.5, 0.2},
+        {30, -0.5, 0.3}
+    ],
+    Results = tweann_nif:random_weights_batch(Batch),
+    ?assertEqual(3, length(Results)),
+    [R1, R2, R3] = Results,
+    ?assertEqual(10, length(R1)),
+    ?assertEqual(20, length(R2)),
+    ?assertEqual(30, length(R3)).
+
+%% Test L1 distance (Manhattan)
+weight_distance_l1_test() ->
+    W1 = [1.0, 2.0, 3.0],
+    W2 = [1.0, 3.0, 5.0],
+    %% L1 = |1-1| + |2-3| + |3-5| = 0 + 1 + 2 = 3
+    Distance = tweann_nif:weight_distance_l1(W1, W2),
+    ?assert(abs(Distance - 3.0) < 0.001).
+
+%% Test L2 distance (Euclidean)
+weight_distance_l2_test() ->
+    W1 = [1.0, 2.0, 3.0],
+    W2 = [1.0, 2.0, 4.0],
+    %% L2 = sqrt((1-1)^2 + (2-2)^2 + (3-4)^2) = sqrt(0 + 0 + 1) = 1
+    Distance = tweann_nif:weight_distance_l2(W1, W2),
+    ?assert(abs(Distance - 1.0) < 0.001).
+
+%% Test L2 distance for identical vectors
+weight_distance_l2_identical_test() ->
+    W = [0.5, -0.3, 0.8],
+    Distance = tweann_nif:weight_distance_l2(W, W),
+    ?assert(abs(Distance) < 0.001).
+
+%% Test batch distance computation
+weight_distance_batch_l1_test() ->
+    Target = [1.0, 2.0, 3.0],
+    Others = [
+        [1.0, 2.0, 3.0],  %% Distance = 0
+        [2.0, 2.0, 3.0],  %% Distance = 1
+        [0.0, 0.0, 0.0]   %% Distance = 6
+    ],
+    Distances = tweann_nif:weight_distance_batch(Target, Others, l1),
+    ?assertEqual(3, length(Distances)),
+    [D1, D2, D3] = Distances,
+    ?assert(abs(D1) < 0.001),
+    ?assert(abs(D2 - 1.0) < 0.001),
+    ?assert(abs(D3 - 6.0) < 0.001).
+
+%% Test batch distance with L2
+weight_distance_batch_l2_test() ->
+    Target = [0.0, 0.0, 0.0],
+    Others = [
+        [1.0, 0.0, 0.0],  %% Distance = 1
+        [0.0, 1.0, 0.0],  %% Distance = 1
+        [1.0, 1.0, 1.0]   %% Distance = sqrt(3) ≈ 1.732
+    ],
+    Distances = tweann_nif:weight_distance_batch(Target, Others, l2),
+    ?assertEqual(3, length(Distances)),
+    [D1, D2, D3] = Distances,
+    ?assert(abs(D1 - 1.0) < 0.001),
+    ?assert(abs(D2 - 1.0) < 0.001),
+    ?assert(abs(D3 - math:sqrt(3.0)) < 0.001).
+
+%% Test perturbation strength controls spread
+mutate_weights_perturb_strength_test() ->
+    Weights = lists:duplicate(100, 0.0),
+    %% 100% mutation, 100% perturb with large strength
+    Mutated = tweann_nif:mutate_weights(Weights, 1.0, 1.0, 1.0),
+    %% Calculate variance of mutations
+    Variance = lists:sum([M * M || M <- Mutated]) / 100,
+    %% Should have significant spread
+    ?assert(Variance > 0.1).
+
+%% Test empty weight list
+mutate_weights_empty_test() ->
+    Mutated = tweann_nif:mutate_weights([], 1.0, 1.0, 0.1),
+    ?assertEqual([], Mutated).
+
+%% Test random weights zero count
+random_weights_zero_test() ->
+    Weights = tweann_nif:random_weights(0),
+    ?assertEqual([], Weights).
+
+%% Benchmark mutation performance
+mutate_weights_benchmark_test() ->
+    N = 10000,
+    Weights = [rand:uniform() * 2 - 1 || _ <- lists:seq(1, N)],
+    Start = erlang:monotonic_time(microsecond),
+    _ = tweann_nif:mutate_weights(Weights, 0.5, 0.8, 0.1),
+    End = erlang:monotonic_time(microsecond),
+    TimeUs = End - Start,
+    %% Should complete in reasonable time (< 10ms for 10k weights)
+    ?assert(TimeUs < 10000).

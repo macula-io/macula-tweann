@@ -44,7 +44,19 @@
     %% Reward and Meta-Controller
     z_score/3,
     compute_reward_component/2,
-    compute_weighted_reward/1
+    compute_weighted_reward/1,
+    %% Batch Mutation (Evolutionary Genetics)
+    mutate_weights/4,
+    mutate_weights_seeded/5,
+    mutate_weights_batch/1,
+    mutate_weights_batch_uniform/4,
+    random_weights/1,
+    random_weights_seeded/2,
+    random_weights_gaussian/3,
+    random_weights_batch/1,
+    weight_distance_l1/2,
+    weight_distance_l2/2,
+    weight_distance_batch/3
 ]).
 
 %%==============================================================================
@@ -456,6 +468,92 @@ compute_weighted_reward(Components) ->
         end
         || {History, Current, Weight} <- Components
     ]).
+
+%%==============================================================================
+%% Batch Mutation Fallbacks (Evolutionary Genetics)
+%%==============================================================================
+
+%% @doc Mutate weights with Gaussian perturbation.
+%% Each weight has MutationRate chance of mutation.
+%% Mutated weights are either perturbed (PerturbRate) or randomized.
+-spec mutate_weights([float()], float(), float(), float()) -> [float()].
+mutate_weights(Weights, MutationRate, PerturbRate, PerturbStrength) ->
+    [mutate_single_weight(W, MutationRate, PerturbRate, PerturbStrength) || W <- Weights].
+
+%% @doc Mutate weights with specific random seed for reproducibility.
+-spec mutate_weights_seeded([float()], float(), float(), float(), integer()) -> [float()].
+mutate_weights_seeded(Weights, MutationRate, PerturbRate, PerturbStrength, Seed) ->
+    rand:seed(exsss, {Seed, Seed * 2, Seed * 3}),
+    mutate_weights(Weights, MutationRate, PerturbRate, PerturbStrength).
+
+%% @doc Batch mutate with per-genome parameters.
+%% Each tuple: {Weights, MutationRate, PerturbRate, PerturbStrength}
+-spec mutate_weights_batch([{[float()], float(), float(), float()}]) -> [[float()]].
+mutate_weights_batch(Batch) ->
+    [mutate_weights(W, MR, PR, PS) || {W, MR, PR, PS} <- Batch].
+
+%% @doc Batch mutate with uniform parameters across all genomes.
+-spec mutate_weights_batch_uniform([[float()]], float(), float(), float()) -> [[float()]].
+mutate_weights_batch_uniform(WeightsList, MutationRate, PerturbRate, PerturbStrength) ->
+    [mutate_weights(W, MutationRate, PerturbRate, PerturbStrength) || W <- WeightsList].
+
+%% @doc Generate random weights in range [-1.0, 1.0].
+-spec random_weights(non_neg_integer()) -> [float()].
+random_weights(Count) ->
+    [rand:uniform() * 2.0 - 1.0 || _ <- lists:seq(1, Count)].
+
+%% @doc Generate random weights with specific seed.
+-spec random_weights_seeded(non_neg_integer(), integer()) -> [float()].
+random_weights_seeded(Count, Seed) ->
+    rand:seed(exsss, {Seed, Seed * 2, Seed * 3}),
+    random_weights(Count).
+
+%% @doc Generate random weights from Gaussian distribution.
+-spec random_weights_gaussian(non_neg_integer(), float(), float()) -> [float()].
+random_weights_gaussian(Count, Mean, StdDev) ->
+    [rand:normal(Mean, StdDev) || _ <- lists:seq(1, Count)].
+
+%% @doc Batch generate random weights.
+%% Each tuple: {Count, Mean, StdDev}
+-spec random_weights_batch([{non_neg_integer(), float(), float()}]) -> [[float()]].
+random_weights_batch(Batch) ->
+    [random_weights_gaussian(C, M, S) || {C, M, S} <- Batch].
+
+%% @doc L1 (Manhattan) distance between two weight vectors.
+-spec weight_distance_l1([float()], [float()]) -> float().
+weight_distance_l1(W1, W2) ->
+    lists:sum([abs(A - B) || {A, B} <- lists:zip(W1, W2)]).
+
+%% @doc L2 (Euclidean) distance between two weight vectors.
+-spec weight_distance_l2([float()], [float()]) -> float().
+weight_distance_l2(W1, W2) ->
+    math:sqrt(lists:sum([(A - B) * (A - B) || {A, B} <- lists:zip(W1, W2)])).
+
+%% @doc Batch compute distances between target and multiple weight vectors.
+%% DistanceType: l1 | l2
+-spec weight_distance_batch([float()], [[float()]], l1 | l2) -> [float()].
+weight_distance_batch(Target, Others, DistanceType) ->
+    DistFun = case DistanceType of
+        l1 -> fun weight_distance_l1/2;
+        l2 -> fun weight_distance_l2/2
+    end,
+    [DistFun(Target, Other) || Other <- Others].
+
+%% @private Mutate a single weight.
+mutate_single_weight(Weight, MutationRate, PerturbRate, PerturbStrength) ->
+    case rand:uniform() < MutationRate of
+        true ->
+            case rand:uniform() < PerturbRate of
+                true ->
+                    %% Perturb with Gaussian noise
+                    Weight + rand:normal() * PerturbStrength;
+                false ->
+                    %% Full random replacement
+                    rand:uniform() * 2.0 - 1.0
+            end;
+        false ->
+            Weight
+    end.
 
 %%==============================================================================
 %% Internal Helper Functions

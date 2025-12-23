@@ -29,6 +29,10 @@
     set_weights/2,
     get_topology/1,
     get_viz_data/3,
+    %% Memory management
+    strip_compiled_ref/1,
+    %% NIF compilation (use sparingly - can cause memory leaks if networks accumulate)
+    compile_for_nif/1,
     %% Serialization
     to_json/1,
     from_json/1,
@@ -63,9 +67,11 @@ create_feedforward(InputSize, HiddenSizes, OutputSize) ->
 create_feedforward(InputSize, HiddenSizes, OutputSize, Activation) ->
     LayerSizes = [InputSize | HiddenSizes] ++ [OutputSize],
     Layers = create_layers(LayerSizes),
-    Network = #network{layers = Layers, activation = Activation, compiled_ref = undefined},
-    %% Attempt to compile for NIF acceleration
-    maybe_compile_for_nif(Network).
+    %% NOTE: Do NOT compile for NIF here - lazy compilation prevents memory leaks.
+    %% The compiled_ref holds a Rust ResourceArc that keeps native memory alive.
+    %% Eager compilation causes memory to accumulate unboundedly across generations.
+    %% Networks will use pure Erlang evaluation (fallback in evaluate/2).
+    #network{layers = Layers, activation = Activation, compiled_ref = undefined}.
 
 %% @doc Evaluate the network with given inputs.
 %%
@@ -115,7 +121,7 @@ get_weights(#network{layers = Layers}) ->
 %% @doc Set weights from a flat list.
 %%
 %% The list must have the same number of elements as returned by get_weights/1.
-%% Re-compiles the network for NIF acceleration if available.
+%% NOTE: Does NOT compile for NIF - this prevents memory leaks during evolution.
 -spec set_weights(network(), [float()]) -> network().
 set_weights(Network = #network{layers = Layers}, FlatWeights) ->
     {NewLayers, []} = lists:mapfoldl(
@@ -130,9 +136,29 @@ set_weights(Network = #network{layers = Layers}, FlatWeights) ->
         FlatWeights,
         Layers
     ),
-    %% Create updated network and recompile for NIF
-    UpdatedNetwork = Network#network{layers = NewLayers, compiled_ref = undefined},
-    maybe_compile_for_nif(UpdatedNetwork).
+    %% NOTE: Do NOT compile for NIF here - lazy compilation prevents memory leaks.
+    %% The compiled_ref holds a Rust ResourceArc that keeps native memory alive.
+    %% During breeding, set_weights is called for EVERY offspring - eager compilation
+    %% would create millions of compiled_ref references that accumulate unboundedly.
+    %% Networks will use pure Erlang evaluation (fallback in evaluate/2).
+    Network#network{layers = NewLayers, compiled_ref = undefined}.
+
+%% @doc Strip the compiled_ref from a network to release NIF memory.
+%%
+%% IMPORTANT: Call this before storing networks long-term (archives, events)
+%% to prevent NIF ResourceArc references from accumulating and causing
+%% memory leaks. The compiled_ref is a Rust ResourceArc that holds native
+%% memory - keeping references alive prevents the memory from being freed.
+%%
+%% The network can be recompiled on-demand when needed for evaluation.
+-spec strip_compiled_ref(Network :: network() | map() | term()) -> network() | map() | term().
+strip_compiled_ref(#network{} = Network) ->
+    Network#network{compiled_ref = undefined};
+strip_compiled_ref(#{compiled_ref := _} = NetworkMap) ->
+    maps:put(compiled_ref, undefined, NetworkMap);
+strip_compiled_ref(Other) ->
+    %% Unknown format or already stripped - return as-is
+    Other.
 
 %%==============================================================================
 %% Internal Functions
@@ -202,13 +228,22 @@ reshape_weights(Weights, RowSize, Acc) ->
 %% NIF Compilation
 %%==============================================================================
 
-%% @private Attempt to compile network for NIF acceleration.
+%% @doc Compile network for NIF acceleration.
 %%
 %% If the NIF is loaded, compiles the network to a flat representation
 %% that can be evaluated much faster. Falls back to Erlang evaluation
 %% if NIF is not available.
--spec maybe_compile_for_nif(network()) -> network().
-maybe_compile_for_nif(Network = #network{layers = Layers, activation = Activation}) ->
+%%
+%% WARNING: Use sparingly! Each compiled network holds a Rust ResourceArc
+%% reference that keeps native memory alive. During neuroevolution, do NOT
+%% compile networks automatically (especially in create_feedforward or
+%% set_weights) as this causes massive memory leaks - one compiled_ref
+%% per offspring per generation accumulates unboundedly.
+%%
+%% Only call this when you need maximum performance for a specific network
+%% that will be evaluated many times (e.g., the final champion network).
+-spec compile_for_nif(network()) -> network().
+compile_for_nif(Network = #network{layers = Layers, activation = Activation}) ->
     case tweann_nif:is_loaded() of
         true ->
             try

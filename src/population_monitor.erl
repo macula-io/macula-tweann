@@ -182,7 +182,7 @@ handle_start_evaluation(State) ->
     %% Check termination conditions before starting new generation
     case should_terminate(State) of
         true ->
-            io:format("Evolution complete: Generation ~p, Best Fitness: ~p~n",
+            io:format("Evolution complete: Cohort ~p, Best Fitness: ~p~n",
                       [State#population_state.generation_count,
                        State#population_state.current_best_fitness]),
             {stop, normal, State};
@@ -195,7 +195,7 @@ handle_start_evaluation(State) ->
                 fitness_acc = [],
                 generation_count = State#population_state.generation_count + 1
             },
-            io:format("Generation ~p started with ~p agents~n",
+            io:format("Cohort ~p started with ~p agents~n",
                       [UpdatedState#population_state.generation_count,
                        UpdatedState#population_state.remaining_agents]),
             {noreply, UpdatedState}
@@ -229,7 +229,7 @@ handle_agent_termination(AgentId, Fitness, State) ->
 %% @private Handle generation completion - selection and reproduction
 -spec handle_generation_complete(population_state()) -> {noreply, population_state()}.
 handle_generation_complete(State) ->
-    io:format("Generation ~p complete, selecting survivors~n",
+    io:format("Cohort ~p complete, selecting survivors~n",
               [State#population_state.generation_count]),
 
     %% Select survivors based on fitness
@@ -250,7 +250,7 @@ handle_generation_complete(State) ->
             end
     end,
 
-    io:format("Best fitness this generation: ~p (overall: ~p)~n",
+    io:format("Best fitness this cohort: ~p (overall: ~p)~n",
               [BestFitness, UpdatedBestFitness]),
 
     %% Clean up non-survivors to prevent memory accumulation

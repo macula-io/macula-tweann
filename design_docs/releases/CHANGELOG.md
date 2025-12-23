@@ -12,6 +12,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.3] - 2025-12-23
+
+### Summary
+**Memory Leak Prevention** - Fixed NIF ResourceArc memory accumulation during evolution by switching to lazy compilation and adding explicit memory management functions.
+
+### Changed
+
+#### Network Evaluator Memory Management
+- **network_evaluator.erl**: Lazy NIF compilation to prevent memory leaks
+  - `create_feedforward/3,4` no longer auto-compiles for NIF
+  - `set_weights/2` no longer auto-compiles for NIF
+  - NIF compilation is now opt-in via `compile_for_nif/1`
+  - Networks use pure Erlang evaluation by default (fallback path)
+  - **Rationale**: During breeding, `set_weights/2` is called for EVERY offspring. Eager compilation created millions of ResourceArc references that accumulated unboundedly, causing memory to grow without bound across generations.
+
+### Added
+- **network_evaluator.erl**: New memory management functions
+  - `strip_compiled_ref/1` - Remove compiled_ref to release NIF memory
+  - `compile_for_nif/1` - Explicit opt-in for NIF compilation
+  - **Usage**: Call `strip_compiled_ref/1` before storing networks in archives, events, or long-term storage to prevent ResourceArc accumulation.
+
+### Fixed
+- **population_monitor.erl**: Changed "Generation" to "Cohort" in log messages
+  - Aligns with terminology used elsewhere in the codebase
+
+### Test Results
+- 593 tests passing
+- Dialyzer clean
+
+---
+
 ## [0.15.2] - 2025-12-12
 
 ### Summary
@@ -545,7 +576,10 @@ LTC neurons enable adaptive temporal processing with input-dependent time consta
 
 ---
 
-[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/macula-io/macula-tweann/compare/v0.15.3...HEAD
+[0.15.3]: https://github.com/macula-io/macula-tweann/compare/v0.15.2...v0.15.3
+[0.15.2]: https://github.com/macula-io/macula-tweann/compare/v0.15.1...v0.15.2
+[0.15.1]: https://github.com/macula-io/macula-tweann/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/macula-io/macula-tweann/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/macula-io/macula-tweann/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/macula-io/macula-tweann/compare/v0.12.0...v0.13.0

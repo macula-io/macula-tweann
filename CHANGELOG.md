@@ -5,6 +5,16 @@ All notable changes to macula-tweann will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2025-12-26
+
+### Added
+- **neuron_info module** - Neuron introspection API for extracting information from neurons:
+  - `get_neuron_info/1` - Get comprehensive info from record or running process
+  - `get_neuron_type/1` - Identify neuron type (standard, ltc, cfc)
+  - `get_capabilities/1` - List neuron capabilities
+  - `is_temporal/1` - Check if neuron has temporal dynamics
+  - `describe/1` - Human-readable neuron description
+
 ## [0.17.0] - 2025-12-26
 
 ### Added

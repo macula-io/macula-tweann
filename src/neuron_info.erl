@@ -6,29 +6,28 @@
 %% == Usage ==
 %%
 %% From a neuron record:
-%% ```
-%% Info = neuron_info:get_neuron_info(NeuronRecord),
-%% #{neuron_type := Type, time_constant := Tau} = Info.
-%% ```
+%%
+%%   Info = neuron_info:get_neuron_info(NeuronRecord),
+%%   #{neuron_type := Type, time_constant := Tau} = Info.
 %%
 %% From a running neuron process:
-%% ```
-%% Info = neuron_info:get_neuron_info(NeuronPid),
-%% #{neuron_type := cfc, internal_state := State} = Info.
-%% ```
+%%
+%%   Info = neuron_info:get_neuron_info(NeuronPid),
+%%   #{neuron_type := cfc, internal_state := State} = Info.
 %%
 %% == Returned Information ==
 %%
 %% The returned map contains:
-%% - `neuron_type`: standard | ltc | cfc
-%% - `time_constant`: tau value (for LTC/CfC neurons)
-%% - `state_bound`: A value (for LTC/CfC neurons)
-%% - `internal_state`: current x(t) state (for LTC/CfC neurons)
-%% - `activation_function`: the activation function atom
-%% - `plasticity_function`: the plasticity function (if any)
-%% - `input_count`: number of input connections
-%% - `output_count`: number of output connections
-%% - `capabilities`: list of neuron capabilities
+%%
+%%   neuron_type - standard | ltc | cfc
+%%   time_constant - tau value (for LTC/CfC neurons)
+%%   state_bound - A value (for LTC/CfC neurons)
+%%   internal_state - current x(t) state (for LTC/CfC neurons)
+%%   activation_function - the activation function atom
+%%   plasticity_function - the plasticity function (if any)
+%%   input_count - number of input connections
+%%   output_count - number of output connections
+%%   capabilities - list of neuron capabilities
 %%
 %% @author Macula.io
 %% @copyright 2025 Macula.io
@@ -116,12 +115,13 @@ get_neuron_type(Pid) when is_pid(Pid) ->
 %% @doc Get capabilities for a neuron type.
 %%
 %% Returns a list of atoms describing what the neuron type can do:
-%% - `temporal_memory`: Can remember past inputs
-%% - `adaptive_dynamics`: Time constant varies with input
-%% - `fast_inference`: Optimized for production speed
-%% - `ode_accurate`: Uses accurate ODE integration
-%% - `hebbian_plasticity`: Supports Hebbian learning
-%% - `modulated_plasticity`: Supports neuromodulation
+%%
+%%   temporal_memory - Can remember past inputs
+%%   adaptive_dynamics - Time constant varies with input
+%%   fast_inference - Optimized for production speed
+%%   ode_accurate - Uses accurate ODE integration
+%%   hebbian_plasticity - Supports Hebbian learning
+%%   modulated_plasticity - Supports neuromodulation
 -spec get_capabilities(NeuronType) -> [atom()] when
     NeuronType :: standard | ltc | cfc | atom().
 get_capabilities(standard) ->

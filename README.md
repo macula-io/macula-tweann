@@ -21,7 +21,7 @@ Evolutionary neural networks that evolve both topology and weights, now with **L
 
 ```erlang
 %% Add to rebar.config
-{deps, [{macula_tweann, "~> 0.15.1"}]}.
+{deps, [{macula_tweann, "~> 0.17.0"}]}.
 
 %% Create and evolve a standard network
 genotype:init_db(),
@@ -69,7 +69,7 @@ See the [LTC Neurons Guide](https://hexdocs.pm/macula_tweann/ltc-neurons.html) f
 - **Speciation**: Behavioral diversity preservation (NEAT-style)
 - **Multi-objective**: Pareto dominance optimization
 
-### LTC/CfC Neurons (NEW in 0.10.0)
+### LTC/CfC Neurons
 - **Temporal Memory**: Neurons maintain persistent internal state
 - **Adaptive Dynamics**: Input-dependent time constants
 - **CfC Mode**: ~100x faster than ODE-based evaluation
@@ -132,7 +132,7 @@ Process-based neural networks with evolutionary operators. See [Architecture Gui
 ## Testing
 
 ```bash
-rebar3 eunit          # Unit tests (801 tests)
+rebar3 eunit          # Unit tests (858 tests)
 rebar3 dialyzer       # Static analysis
 rebar3 ex_doc         # Generate documentation
 ```

@@ -5,13 +5,31 @@ All notable changes to macula-tweann will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.16.1] - 2025-12-26
+## [0.17.0] - 2025-12-26
 
 ### Added
 - CHANGELOG.md with comprehensive version history
+- Documentation for 26 new NIFs in enterprise-nifs.md:
+  - SIMD batch activations (tanh, sigmoid, relu, softmax)
+  - Layer-specific mutation
+  - Plasticity rules (Hebbian, modulated Hebbian, STDP, Oja)
+  - Extended CfC/LTC functions
+  - Population analysis
+  - NEAT crossover operations
+  - K-means speciation
+  - Matrix operations
+  - Gradient-free meta-learning
+  - Network compression (pruning, quantization)
 
 ### Changed
-- Regenerated documentation
+- Updated macula-nn-nifs reference to v0.2.0
+- Updated test count to 858 tests
+- Updated version references to 0.17.0
+
+## [0.16.1] - 2025-12-26
+
+### Changed
+- Minor documentation regeneration
 
 ## [0.16.0] - 2024-12-12
 
@@ -195,7 +213,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| 0.16.1 | 2025-12-26 | CHANGELOG.md, documentation |
+| 0.17.0 | 2025-12-26 | 26 new NIF docs, v0.2.0 NIF support |
+| 0.16.1 | 2025-12-26 | Documentation regeneration |
 | 0.16.0 | 2024-12-12 | Enterprise NIF package, memory fix |
 | 0.15.x | 2024-12-04 | NIF acceleration Phase 2 |
 | 0.14.0 | 2024-12-03 | Documentation archive |

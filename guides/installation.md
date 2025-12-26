@@ -10,7 +10,7 @@ Add `macula_tweann` to your `rebar.config`:
 
 ```erlang
 {deps, [
-    {macula_tweann, "~> 0.16.0"}
+    {macula_tweann, "~> 0.17.0"}
 ]}.
 ```
 
@@ -44,8 +44,8 @@ The Enterprise Edition includes high-performance Rust NIFs for compute-intensive
 
 ```erlang
 {deps, [
-    {macula_tweann, "~> 0.16.0"},
-    {macula_nn_nifs, {git, "git@github.com:macula-io/macula-nn-nifs.git", {tag, "v0.1.0"}}}
+    {macula_tweann, "~> 0.17.0"},
+    {macula_nn_nifs, {git, "git@github.com:macula-io/macula-nn-nifs.git", {tag, "v0.2.0"}}}
 ]}.
 ```
 

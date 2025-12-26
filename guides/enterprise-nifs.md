@@ -35,7 +35,7 @@ Install from hex.pm - no additional setup required:
 
 ```erlang
 {deps, [
-    {macula_tweann, "~> 0.16.0"}
+    {macula_tweann, "~> 0.17.0"}
 ]}.
 ```
 
@@ -47,8 +47,8 @@ Add the private enterprise NIF package alongside macula-tweann:
 
 ```erlang
 {deps, [
-    {macula_tweann, "~> 0.16.0"},
-    {macula_nn_nifs, {git, "git@github.com:macula-io/macula-nn-nifs.git", {tag, "v0.1.0"}}}
+    {macula_tweann, "~> 0.17.0"},
+    {macula_nn_nifs, {git, "git@github.com:macula-io/macula-nn-nifs.git", {tag, "v0.2.0"}}}
 ]}.
 ```
 
@@ -83,7 +83,7 @@ true  %% Enterprise NIFs specifically
 
 ## Accelerated Functions
 
-The enterprise NIFs accelerate 44 functions across these categories:
+The enterprise NIFs accelerate 67 functions across these categories:
 
 ### Network Evaluation
 - `compile_network/3` - Compile topology for fast evaluation
@@ -140,6 +140,52 @@ The enterprise NIFs accelerate 44 functions across these categories:
 - `weight_distance_l1/2` - L1 (Manhattan) distance
 - `weight_distance_l2/2` - L2 (Euclidean) distance
 - `weight_distance_batch/3` - Batch distance computation
+
+### SIMD Batch Activations (NEW in v0.2.0)
+- `tanh_batch/1` - Vectorized tanh activation
+- `sigmoid_batch/1` - Vectorized sigmoid activation
+- `relu_batch/1` - Vectorized ReLU activation
+- `softmax_batch/1` - Vectorized softmax activation
+
+### Layer-Specific Mutation (NEW in v0.2.0)
+- `layer_specific_mutate/3` - Mutate with per-layer rates
+- `layer_specific_mutate_batch/1` - Batch layer-specific mutation
+
+### Plasticity Rules (NEW in v0.2.0)
+- `hebbian_update/4` - Hebbian plasticity weight update
+- `modulated_hebbian_batch/4` - Batch modulated Hebbian learning
+- `stdp_update/5` - STDP (Spike-Timing Dependent Plasticity)
+- `oja_update/5` - Oja's learning rule
+
+### Extended CfC/LTC (NEW in v0.2.0)
+- `evaluate_cfc_sequence/5` - Sequential CfC evaluation
+- `evaluate_cfc_parallel/1` - Parallel CfC for multiple neurons
+- `ltc_state_batch/4` - Batch LTC state computation
+
+### Population Analysis (NEW in v0.2.0)
+- `population_diversity/1` - Mean/min/max/variance of population
+- `weight_covariance_matrix/1` - Weight correlation analysis
+- `pairwise_distances_batch/2` - Batch pairwise distance matrix
+
+### NEAT Crossover (NEW in v0.2.0)
+- `neat_crossover/4` - NEAT-style genome crossover
+- `align_genes_by_innovation/2` - Align genes by innovation number
+- `count_excess_disjoint/2` - Count excess and disjoint genes
+
+### Speciation (NEW in v0.2.0)
+- `kmeans_speciation/3` - K-means based speciation clustering
+
+### Matrix Operations (NEW in v0.2.0)
+- `matmul_add_bias/3` - Matrix multiply with bias addition
+- `layer_forward/3` - Single layer forward pass
+- `multi_layer_forward/2` - Multi-layer forward pass
+
+### Meta-Learning (NEW in v0.2.0)
+- `gradient_free_meta_learn/4` - Gradient-free meta-learning
+
+### Network Compression (NEW in v0.2.0)
+- `network_prune/2` - Prune small weights
+- `weight_quantize/2` - Quantize weights to fixed precision
 
 ## Enterprise Licensing
 

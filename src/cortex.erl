@@ -44,7 +44,9 @@
     expected_actuators :: non_neg_integer(),
     cycle_count :: non_neg_integer(),
     max_cycles :: non_neg_integer() | infinity,
-    sync_timeout :: pos_integer()
+    sync_timeout :: pos_integer(),
+    %% Event-driven mode: use network_pubsub instead of direct messages
+    event_driven :: boolean()
 }).
 
 %% Default timeout for waiting on actuator outputs (30 seconds)
@@ -74,6 +76,17 @@ init(Opts) ->
     ActuatorPids = maps:get(actuator_pids, Opts, []),
     MaxCycles = maps:get(max_cycles, Opts, infinity),
     SyncTimeout = maps:get(sync_timeout, Opts, ?DEFAULT_SYNC_TIMEOUT),
+    EventDriven = maps:get(event_driven, Opts, false),
+
+    %% Initialize network pubsub if event-driven mode enabled
+    case EventDriven of
+        true ->
+            network_pubsub:init(Id),
+            %% Subscribe to actuator output events
+            network_pubsub:subscribe(Id, actuator_output_ready);
+        false ->
+            ok
+    end,
 
     State = #state{
         id = Id,
@@ -85,7 +98,8 @@ init(Opts) ->
         expected_actuators = length(ActuatorPids),
         cycle_count = 0,
         max_cycles = MaxCycles,
-        sync_timeout = SyncTimeout
+        sync_timeout = SyncTimeout,
+        event_driven = EventDriven
     },
 
     loop(State).
@@ -122,7 +136,13 @@ loop(State) ->
             NewState = handle_sync(State),
             loop(NewState);
 
+        %% Direct message (legacy/non-event-driven mode)
         {actuator_output, _ActuatorPid, Output} ->
+            NewState = handle_actuator_output(Output, State),
+            loop(NewState);
+
+        %% Event-driven: actuator output via pubsub
+        {network_event, actuator_output_ready, #{output := Output}} ->
             NewState = handle_actuator_output(Output, State),
             loop(NewState);
 
@@ -131,6 +151,11 @@ loop(State) ->
             loop(State);
 
         {backup, NeuronId, Weights, Bias} ->
+            _ = handle_neuron_backup(NeuronId, Weights, Bias, State),
+            loop(State);
+
+        %% Event-driven: weights backed up via pubsub
+        {network_event, weights_backed_up, #{neuron_id := NeuronId, weights := Weights, bias := Bias}} ->
             _ = handle_neuron_backup(NeuronId, Weights, Bias, State),
             loop(State);
 
@@ -171,22 +196,35 @@ handle_timeout(State) ->
 
 handle_sync(State) ->
     #state{
+        id = Id,
         sensor_pids = SensorPids,
-        cycle_count = CycleCount
+        cycle_count = CycleCount,
+        event_driven = EventDriven
     } = State,
 
-    %% Signal all sensors to start
-    lists:foreach(
-        fun(SensorPid) ->
-            SensorPid ! {cortex, sync}
-        end,
-        SensorPids
-    ),
+    NewCycleCount = CycleCount + 1,
+
+    case EventDriven of
+        true ->
+            %% Event-driven: publish evaluation_cycle_started
+            network_pubsub:publish(Id, evaluation_cycle_started, #{
+                cycle => NewCycleCount,
+                cortex_pid => self()
+            });
+        false ->
+            %% Legacy: direct message to sensors
+            lists:foreach(
+                fun(SensorPid) ->
+                    SensorPid ! {cortex, sync}
+                end,
+                SensorPids
+            )
+    end,
 
     %% Reset cycle accumulator
     State#state{
         cycle_acc = [],
-        cycle_count = CycleCount + 1
+        cycle_count = NewCycleCount
     }.
 
 handle_actuator_output(Output, State) ->
@@ -236,15 +274,27 @@ handle_actuator_output(Output, State) ->
     end.
 
 handle_backup(State) ->
-    #state{neuron_pids = NeuronPids} = State,
+    #state{
+        id = Id,
+        neuron_pids = NeuronPids,
+        event_driven = EventDriven
+    } = State,
 
-    %% Request backup from all neurons
-    lists:foreach(
-        fun(NeuronPid) ->
-            neuron:backup(NeuronPid)
-        end,
-        NeuronPids
-    ).
+    case EventDriven of
+        true ->
+            %% Event-driven: publish backup_requested
+            network_pubsub:publish(Id, backup_requested, #{
+                cortex_pid => self()
+            });
+        false ->
+            %% Legacy: direct message to neurons
+            lists:foreach(
+                fun(NeuronPid) ->
+                    neuron:backup(NeuronPid)
+                end,
+                NeuronPids
+            )
+    end.
 
 handle_neuron_backup(NeuronId, Weights, Bias, State) ->
     #state{
@@ -262,9 +312,11 @@ handle_neuron_backup(NeuronId, Weights, Bias, State) ->
 
 handle_terminate(State) ->
     #state{
+        id = Id,
         sensor_pids = SensorPids,
         neuron_pids = NeuronPids,
-        actuator_pids = ActuatorPids
+        actuator_pids = ActuatorPids,
+        event_driven = EventDriven
     } = State,
 
     AllPids = SensorPids ++ NeuronPids ++ ActuatorPids,
@@ -278,29 +330,40 @@ handle_terminate(State) ->
         AllPids
     ),
 
-    %% Terminate all sensors
-    lists:foreach(
-        fun(SensorPid) ->
-            SensorPid ! {cortex, terminate}
-        end,
-        SensorPids
-    ),
+    case EventDriven of
+        true ->
+            %% Event-driven: publish network_terminating
+            network_pubsub:publish(Id, network_terminating, #{
+                cortex_pid => self()
+            }),
+            %% Cleanup pubsub subscriptions
+            network_pubsub:cleanup(Id);
+        false ->
+            %% Legacy: direct messages to all components
+            %% Terminate all sensors
+            lists:foreach(
+                fun(SensorPid) ->
+                    SensorPid ! {cortex, terminate}
+                end,
+                SensorPids
+            ),
 
-    %% Terminate all neurons
-    lists:foreach(
-        fun(NeuronPid) ->
-            NeuronPid ! {cortex, terminate}
-        end,
-        NeuronPids
-    ),
+            %% Terminate all neurons
+            lists:foreach(
+                fun(NeuronPid) ->
+                    NeuronPid ! {cortex, terminate}
+                end,
+                NeuronPids
+            ),
 
-    %% Terminate all actuators
-    lists:foreach(
-        fun(ActuatorPid) ->
-            ActuatorPid ! {cortex, terminate}
-        end,
-        ActuatorPids
-    ),
+            %% Terminate all actuators
+            lists:foreach(
+                fun(ActuatorPid) ->
+                    ActuatorPid ! {cortex, terminate}
+                end,
+                ActuatorPids
+            )
+    end,
 
     %% Wait for all processes to terminate (with timeout per process)
     wait_for_terminations(Monitors, 2000).

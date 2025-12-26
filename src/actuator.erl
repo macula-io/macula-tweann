@@ -34,13 +34,16 @@
 -record(state, {
     id :: term(),
     cortex_pid :: pid(),
+    network_id :: term(),
     actuator_name :: atom(),
     vector_length :: pos_integer(),
     fanin_pids :: [pid()],
     scape_pid :: pid() | undefined,
     parameters :: list(),
     acc_input :: #{pid() => [float()]},
-    expected_inputs :: non_neg_integer()
+    expected_inputs :: non_neg_integer(),
+    %% Event-driven mode: use network_pubsub for lifecycle events
+    event_driven :: boolean()
 }).
 
 %% @doc Start an actuator process.
@@ -63,22 +66,34 @@ start_link(Opts) ->
 init(Opts) ->
     Id = maps:get(id, Opts),
     CortexPid = maps:get(cortex_pid, Opts),
+    NetworkId = maps:get(network_id, Opts, Id),
     ActuatorName = maps:get(actuator_name, Opts),
     VectorLength = maps:get(vector_length, Opts, 1),
     FaninPids = maps:get(fanin_pids, Opts, []),
     ScapePid = maps:get(scape_pid, Opts, undefined),
     Parameters = maps:get(parameters, Opts, []),
+    EventDriven = maps:get(event_driven, Opts, false),
+
+    %% Subscribe to network events if event-driven mode enabled
+    case EventDriven of
+        true ->
+            network_pubsub:subscribe(NetworkId, network_terminating);
+        false ->
+            ok
+    end,
 
     State = #state{
         id = Id,
         cortex_pid = CortexPid,
+        network_id = NetworkId,
         actuator_name = ActuatorName,
         vector_length = VectorLength,
         fanin_pids = FaninPids,
         scape_pid = ScapePid,
         parameters = Parameters,
         acc_input = #{},
-        expected_inputs = length(FaninPids)
+        expected_inputs = length(FaninPids),
+        event_driven = EventDriven
     },
 
     loop(State).
@@ -91,7 +106,14 @@ loop(State) ->
             NewState = handle_forward(FromPid, Signal, State),
             loop(NewState);
 
+        %% Legacy: direct terminate from cortex
         {cortex, terminate} ->
+            handle_cleanup(State),
+            ok;
+
+        %% Event-driven: network terminating via pubsub
+        {network_event, network_terminating, _Data} ->
+            handle_cleanup(State),
             ok;
 
         {link, fanin_pids, FaninPids} ->
@@ -107,6 +129,15 @@ loop(State) ->
             tweann_logger:warning("Actuator ~p received unexpected message: ~p",
                                  [State#state.id, UnexpectedMsg]),
             loop(State)
+    end.
+
+%% @private Cleanup on termination
+handle_cleanup(State) ->
+    case State#state.event_driven of
+        true ->
+            network_pubsub:cleanup(State#state.network_id);
+        false ->
+            ok
     end.
 
 handle_forward(FromPid, Signal, State) ->
@@ -129,12 +160,15 @@ handle_forward(FromPid, Signal, State) ->
 
 process_and_report(State) ->
     #state{
+        id = Id,
         cortex_pid = CortexPid,
+        network_id = NetworkId,
         actuator_name = ActuatorName,
         fanin_pids = FaninPids,
         scape_pid = ScapePid,
         parameters = Parameters,
-        acc_input = AccInput
+        acc_input = AccInput,
+        event_driven = EventDriven
     } = State,
 
     %% Build input vector in correct order
@@ -143,8 +177,18 @@ process_and_report(State) ->
     %% Process through actuator function
     Output = actuate(ActuatorName, Input, ScapePid, Parameters),
 
-    %% Report to cortex
-    CortexPid ! {actuator_output, self(), Output},
+    case EventDriven of
+        true ->
+            %% Event-driven: publish actuator_output_ready
+            network_pubsub:publish(NetworkId, actuator_output_ready, #{
+                from => self(),
+                actuator_id => Id,
+                output => Output
+            });
+        false ->
+            %% Legacy: direct message to cortex
+            CortexPid ! {actuator_output, self(), Output}
+    end,
 
     %% Reset accumulated inputs
     State#state{acc_input = #{}}.

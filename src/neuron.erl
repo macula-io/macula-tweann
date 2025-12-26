@@ -38,6 +38,7 @@
 -record(state, {
     id :: term(),
     cortex_pid :: pid(),
+    network_id :: term(),
     activation_function :: atom(),
     aggregation_function :: atom(),
     input_pids :: [pid()],
@@ -51,7 +52,9 @@
     timeout_count = 0 :: non_neg_integer(),
     %% Pre-compiled flat weights for NIF acceleration
     %% Format: {FlatWeights :: [float()], Bias :: float()} or undefined
-    compiled_weights :: {[float()], float()} | undefined
+    compiled_weights :: {[float()], float()} | undefined,
+    %% Event-driven mode: use network_pubsub for lifecycle events
+    event_driven :: boolean()
 }).
 
 %% Default timeout for waiting on neuron inputs (10 seconds)
@@ -82,6 +85,7 @@ start_link(Opts) ->
 init(Opts) ->
     Id = maps:get(id, Opts),
     CortexPid = maps:get(cortex_pid, Opts),
+    NetworkId = maps:get(network_id, Opts, Id),
     ActivationFn = maps:get(activation_function, Opts, tanh),
     AggregationFn = maps:get(aggregation_function, Opts, dot_product),
     InputPids = maps:get(input_pids, Opts, []),
@@ -90,6 +94,16 @@ init(Opts) ->
     InputWeights = maps:get(input_weights, Opts, #{}),
     Bias = maps:get(bias, Opts, 0.0),
     InputTimeout = maps:get(input_timeout, Opts, ?DEFAULT_INPUT_TIMEOUT),
+    EventDriven = maps:get(event_driven, Opts, false),
+
+    %% Subscribe to network events if event-driven mode enabled
+    case EventDriven of
+        true ->
+            network_pubsub:subscribe(NetworkId, backup_requested),
+            network_pubsub:subscribe(NetworkId, network_terminating);
+        false ->
+            ok
+    end,
 
     %% Pre-compile weights for NIF acceleration if using dot_product
     CompiledWeights = compile_weights_for_nif(AggregationFn, InputPids, InputWeights, Bias),
@@ -97,6 +111,7 @@ init(Opts) ->
     State = #state{
         id = Id,
         cortex_pid = CortexPid,
+        network_id = NetworkId,
         activation_function = ActivationFn,
         aggregation_function = AggregationFn,
         input_pids = InputPids,
@@ -107,7 +122,8 @@ init(Opts) ->
         acc_input = #{},
         expected_inputs = length(InputPids),
         input_timeout = InputTimeout,
-        compiled_weights = CompiledWeights
+        compiled_weights = CompiledWeights,
+        event_driven = EventDriven
     },
 
     loop(State).
@@ -137,11 +153,24 @@ loop(State) ->
             NewState = handle_forward(FromPid, Signal, State),
             loop(NewState);
 
+        %% Legacy: direct backup request
         backup ->
             _ = handle_backup(State),
             loop(State);
 
+        %% Event-driven: backup requested via pubsub
+        {network_event, backup_requested, _Data} ->
+            _ = handle_backup(State),
+            loop(State);
+
+        %% Legacy: direct terminate from cortex
         {cortex, terminate} ->
+            handle_cleanup(State),
+            ok;
+
+        %% Event-driven: network terminating via pubsub
+        {network_event, network_terminating, _Data} ->
+            handle_cleanup(State),
             ok;
 
         {update_weights, NewWeights, NewBias} ->
@@ -193,6 +222,15 @@ loop(State) ->
             loop(State)
     after Timeout ->
         handle_input_timeout(State)
+    end.
+
+%% @private Cleanup on termination
+handle_cleanup(State) ->
+    case State#state.event_driven of
+        true ->
+            network_pubsub:cleanup(State#state.network_id);
+        false ->
+            ok
     end.
 
 %% @private Handle input timeout
@@ -319,11 +357,24 @@ handle_backup(State) ->
     #state{
         id = Id,
         cortex_pid = CortexPid,
+        network_id = NetworkId,
         input_weights = InputWeights,
-        bias = Bias
+        bias = Bias,
+        event_driven = EventDriven
     } = State,
 
-    CortexPid ! {backup, Id, InputWeights, Bias}.
+    case EventDriven of
+        true ->
+            %% Event-driven: publish weights_backed_up
+            network_pubsub:publish(NetworkId, weights_backed_up, #{
+                neuron_id => Id,
+                weights => InputWeights,
+                bias => Bias
+            });
+        false ->
+            %% Legacy: direct message to cortex
+            CortexPid ! {backup, Id, InputWeights, Bias}
+    end.
 
 %%==============================================================================
 %% Pre-compiled Weight Acceleration

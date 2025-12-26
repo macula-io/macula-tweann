@@ -34,11 +34,14 @@
 -record(state, {
     id :: term(),
     cortex_pid :: pid(),
+    network_id :: term(),
     sensor_name :: atom(),
     vector_length :: pos_integer(),
     fanout_pids :: [pid()],
     scape_pid :: pid() | undefined,
-    parameters :: list()
+    parameters :: list(),
+    %% Event-driven mode: use network_pubsub instead of direct messages
+    event_driven :: boolean()
 }).
 
 %% @doc Start a sensor process.
@@ -61,20 +64,33 @@ start_link(Opts) ->
 init(Opts) ->
     Id = maps:get(id, Opts),
     CortexPid = maps:get(cortex_pid, Opts),
+    NetworkId = maps:get(network_id, Opts, Id),
     SensorName = maps:get(sensor_name, Opts),
     VectorLength = maps:get(vector_length, Opts, 1),
     FanoutPids = maps:get(fanout_pids, Opts, []),
     ScapePid = maps:get(scape_pid, Opts, undefined),
     Parameters = maps:get(parameters, Opts, []),
+    EventDriven = maps:get(event_driven, Opts, false),
+
+    %% Subscribe to network events if event-driven mode enabled
+    case EventDriven of
+        true ->
+            network_pubsub:subscribe(NetworkId, evaluation_cycle_started),
+            network_pubsub:subscribe(NetworkId, network_terminating);
+        false ->
+            ok
+    end,
 
     State = #state{
         id = Id,
         cortex_pid = CortexPid,
+        network_id = NetworkId,
         sensor_name = SensorName,
         vector_length = VectorLength,
         fanout_pids = FanoutPids,
         scape_pid = ScapePid,
-        parameters = Parameters
+        parameters = Parameters,
+        event_driven = EventDriven
     },
 
     loop(State).
@@ -83,11 +99,24 @@ init(Opts) ->
 
 loop(State) ->
     receive
+        %% Legacy: direct message from cortex
         {cortex, sync} ->
             handle_sync(State),
             loop(State);
 
+        %% Event-driven: evaluation cycle started via pubsub
+        {network_event, evaluation_cycle_started, _Data} ->
+            handle_sync(State),
+            loop(State);
+
+        %% Legacy: direct terminate from cortex
         {cortex, terminate} ->
+            handle_cleanup(State),
+            ok;
+
+        %% Event-driven: network terminating via pubsub
+        {network_event, network_terminating, _Data} ->
+            handle_cleanup(State),
             ok;
 
         {scape, Signal} ->
@@ -106,13 +135,25 @@ loop(State) ->
             loop(State)
     end.
 
+%% @private Cleanup on termination
+handle_cleanup(State) ->
+    case State#state.event_driven of
+        true ->
+            network_pubsub:cleanup(State#state.network_id);
+        false ->
+            ok
+    end.
+
 handle_sync(State) ->
     #state{
+        id = Id,
+        network_id = NetworkId,
         sensor_name = SensorName,
         vector_length = VectorLength,
         fanout_pids = FanoutPids,
         scape_pid = ScapePid,
-        parameters = Parameters
+        parameters = Parameters,
+        event_driven = EventDriven
     } = State,
 
     %% Get sensor output
@@ -132,13 +173,23 @@ handle_sync(State) ->
             end
     end,
 
-    %% Forward to all connected neurons
-    lists:foreach(
-        fun(NeuronPid) ->
-            NeuronPid ! {forward, self(), Signal}
-        end,
-        FanoutPids
-    ).
+    case EventDriven of
+        true ->
+            %% Event-driven: publish sensor_output_ready
+            network_pubsub:publish(NetworkId, sensor_output_ready, #{
+                from => self(),
+                sensor_id => Id,
+                signal => Signal
+            });
+        false ->
+            %% Legacy: direct message to neurons
+            lists:foreach(
+                fun(NeuronPid) ->
+                    NeuronPid ! {forward, self(), Signal}
+                end,
+                FanoutPids
+            )
+    end.
 
 handle_scape_signal(Signal, State) ->
     #state{fanout_pids = FanoutPids} = State,

@@ -6,6 +6,28 @@ Liquid Time-Constant (LTC) neurons are a breakthrough in neural network design t
 
 ![LTC Neuron Architecture](assets/ltc-neuron-architecture.svg)
 
+## Quick Selection Guide
+
+**Which neuron type should you use?** Use this decision tree:
+
+```
+Is your task temporal (time-series, sequences, control)?
+├── NO → Use Traditional neurons (fastest, simplest)
+└── YES → Do you need production-grade speed?
+    ├── NO → Use LTC (ODE) for maximum accuracy during research
+    └── YES → Use CfC (100x faster, equivalent expressivity)
+```
+
+| If your problem involves... | Use | Why |
+|-----------------------------|-----|-----|
+| Static classification (images, patterns) | **Traditional** | No temporal dynamics needed |
+| Real-time control (robotics, games) | **CfC** | Fast response with temporal memory |
+| Time-series prediction | **CfC** | Adaptive dynamics, production speed |
+| Research/training on temporal tasks | **LTC (ODE)** | Maximum accuracy for learning |
+| Maximum inference throughput | **Traditional** | Lowest computational overhead |
+
+**Key Insight:** CfC is the practical choice for most temporal tasks. It provides equivalent expressivity to LTC-ODE at ~100x the speed. Reserve Traditional neurons for non-temporal tasks, and LTC-ODE for research where accuracy matters more than speed.
+
 ## Why LTC Neurons?
 
 Traditional neural networks struggle with:

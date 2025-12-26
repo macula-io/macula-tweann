@@ -66,7 +66,7 @@ See the [Architecture Guide](architecture.md) for details.
 - [Architecture Details](architecture.md) - Layer-by-layer system design
 
 ### LTC Neurons (Advanced)
-- [LTC Neurons](ltc-neurons.md) - Theory and concepts of Liquid Time-Constant neurons
+- [LTC Neurons](neuron-types.md) - Theory and concepts of Liquid Time-Constant neurons
 - [LTC Usage Guide](ltc-usage-guide.md) - Practical API usage and examples
 - [LTC Evolution](ltc-evolution.md) - Evolving multi-timescale networks
 

@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Enterprise NIF package support via optional `macula_nn_nifs` dependency
 - Automatic detection and fallback for NIF acceleration
-- Neuron type selection guide in `guides/ltc-neurons.md`
+- Neuron type selection guide in `guides/neuron-types.md`
 
 ### Changed
 - Refactored NIF code out of Community Edition (now in separate enterprise package)

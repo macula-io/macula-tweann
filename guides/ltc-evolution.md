@@ -317,6 +317,6 @@ LTC evolution is inspired by research on evolved plasticity and temporal process
 
 ## Next Steps
 
-- See [LTC Neurons](ltc-neurons.md) for the mathematical foundations
+- See [LTC Neurons](neuron-types.md) for the mathematical foundations
 - See [LTC Usage Guide](ltc-usage-guide.md) for practical API usage
 - See [Custom Morphologies](CUSTOM_MORPHOLOGIES.md) to create LTC-based morphologies

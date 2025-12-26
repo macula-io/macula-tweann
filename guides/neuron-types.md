@@ -67,6 +67,8 @@ Where:
 
 The **liquid** aspect comes from the time constant varying based on both input and state - the neuron "flows" between fast and slow response modes.
 
+![LTC Dynamics](assets/ltc-dynamics.svg)
+
 ### CfC Closed-Form Approximation
 
 Solving the ODE numerically is computationally expensive. The **Closed-form Continuous-time (CfC)** approximation provides equivalent expressivity with ~100x speedup:
@@ -81,6 +83,8 @@ Where:
 - `h` = head network output (target state)
 
 This closed-form solution is what macula-tweann uses for production inference.
+
+![CfC Closed-Form Architecture](assets/cfc-closed-form.svg)
 
 ## Neuron Types Comparison
 

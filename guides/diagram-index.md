@@ -235,5 +235,5 @@ Multi-layer defense architecture.
 
 - [TWEANN Basics](tweann-basics.md) - Introduction to neuroevolution concepts
 - [Architecture Details](architecture.md) - In-depth system architecture
-- [LTC Neurons](ltc-neurons.md) - Liquid Time-Constant neuron guide
+- [LTC Neurons](neuron-types.md) - Liquid Time-Constant neuron guide
 - [Quick Start](quickstart.md) - Get started with examples

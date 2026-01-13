@@ -5,6 +5,7 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/macula_tweann.svg)](https://hex.pm/packages/macula_tweann)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/macula_tweann/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/macula-io/macula-tweann/blob/main/LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://buymeacoffee.com/beamologist)
 
 Evolutionary neural networks that evolve both topology and weights, now with **Liquid Time-Constant (LTC) neurons** for adaptive temporal processing. Based on DXNN2 by Gene Sher.
 

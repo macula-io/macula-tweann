@@ -7,6 +7,7 @@ assets/ai-arms-race-evolution.svg
 assets/c4-component.svg
 assets/c4-container.svg
 assets/c4-context.svg
+assets/cfc-closed-form.svg
 assets/civil-infrastructure-resilience.svg
 assets/counter-drone-detection-fusion.svg
 assets/distributed-evolution-model.svg
@@ -14,6 +15,7 @@ assets/evaluation-cycle-sequence.svg
 assets/federated-populations-model.svg
 assets/genotype-phenotype.svg
 assets/layered-defense-zones.svg
+assets/ltc-dynamics.svg
 assets/ltc-neuron-architecture.svg
 assets/ltc-vs-standard-neurons.svg
 assets/mega-brain-architecture.svg
@@ -46,8 +48,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-QPNJX265.woff2
-dist/search_data-A30A7EAA.js
-dist/sidebar_items-191647CA.js
+dist/search_data-A1520B66.js
+dist/sidebar_items-2C7FC282.js
 enterprise-nifs.html
 exoself.html
 fitness_postprocessor.html
@@ -59,7 +61,6 @@ index.html
 innovation.html
 installation.html
 ltc-evolution.html
-ltc-neurons.html
 ltc-usage-guide.html
 ltc_dynamics.html
 ltc_mutations.html
@@ -72,7 +73,10 @@ mutation_helpers.html
 network_compiler.html
 network_evaluator.html
 network_onnx.html
+network_pubsub.html
+neuron-types.html
 neuron.html
+neuron_info.html
 neuron_ltc.html
 overview.html
 parametric_mutations.html

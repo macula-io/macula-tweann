@@ -1,445 +1,1150 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Module functions</title>
-<link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
-</head>
-<body bgcolor="white">
-<div class="navbar"><a name="#navbar_top"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<hr>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.38.2">
+    <meta name="project" content="macula_tweann v0.18.0">
 
-<h1>Module functions</h1>
-<ul class="index"><li><a href="#description">Description</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>Activation and utility functions for neural computation.
-<p>Copyright © 2025 Macula.io, Apache-2.0</p>
 
-<p><b>Authors:</b> Macula.io.</p>
+    <title>functions — macula_tweann v0.18.0</title>
 
-<h2><a name="description">Description</a></h2><p>Activation and utility functions for neural computation.</p>
- 
-  <p>This module provides activation functions used by neurons to transform  
-aggregated input signals into output signals, plus utility functions  
-for saturation and scaling.</p>
- 
-  <p>Based on DXNN2 by Gene Sher ("Handbook of Neuroevolution through Erlang").</p>
- 
-  <h3><a name="Activation_Functions">Activation Functions</a></h3>
- 
-  <p>Monotonic:</p>
- 
-  <p>- <code>tanh</code> - Hyperbolic tangent, smooth, range [-1, 1]</p>
- 
-  <p>- <code>sigmoid</code> - Logistic function, range [0, 1]</p>
- 
-  <p>- <code>sigmoid1</code> - Alternative sigmoid, range [-1, 1]</p>
- 
-  <p>- <code>linear</code> - Identity function (no transformation)</p>
- 
-  <p>Periodic:</p>
- 
-  <p>- <code>sin</code> - Sine function</p>
- 
-  <p>- <code>cos</code> - Cosine function</p>
- 
-  <p>Radial Basis:</p>
- 
-  <p>- <code>gaussian</code> - Bell curve, peaks at 0</p>
- 
-  <p>- <code>multiquadric</code> - sqrt(x^2 + c)</p>
- 
-  <p>Threshold:</p>
- 
-  <p>- <code>sgn</code> - Sign function {-1, 0, 1}</p>
- 
-  <p>- <code>bin</code> - Binary threshold {0, 1}</p>
- 
-  <p>- <code>trinary</code> - Three-level output {-1, 0, 1}</p>
- 
-  <p>Other:</p>
- 
-  <p>- <code>absolute</code> - Absolute value</p>
- 
-  <p>- <code>quadratic</code> - Signed square</p>
- 
-  <p>- <code>sqrt</code> - Signed square root</p>
- 
-  <p>- <code>log</code> - Signed logarithm</p>
- 
-  <h3><a name="Extensions_(not_in_original_DXNN2)">Extensions (not in original DXNN2)</a></h3>
- 
-  <p>- <code>cubic</code> - Cube function x^3</p>
- 
-  <p>- <code>relu</code> - Rectified Linear Unit max(0, x)</p>
- 
-  <h3><a name="Utility_Functions">Utility Functions</a></h3>
- 
-  <p>- <code>saturation/1,2</code> - Clamp values to prevent overflow</p>
- 
-  <p>- <code>sat/3</code> - Clamp to [min, max] range</p>
- 
-  <p>- <code>sat_dzone/5</code> - Saturation with dead zone</p>
- 
-  - <code>scale/3,5</code> - Scale values between ranges
- 
-<h2><a name="index">Function Index</a></h2>
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#absolute-1">absolute/1</a></td><td>Absolute value activation function.</td></tr>
-<tr><td valign="top"><a href="#avg-1">avg/1</a></td><td>Calculate average of a list.</td></tr>
-<tr><td valign="top"><a href="#bin-1">bin/1</a></td><td>Binary threshold function.</td></tr>
-<tr><td valign="top"><a href="#cos-1">cos/1</a></td><td>Cosine activation function.</td></tr>
-<tr><td valign="top"><a href="#cubic-1">cubic/1</a></td><td>Cubic activation function.</td></tr>
-<tr><td valign="top"><a href="#gaussian-1">gaussian/1</a></td><td>Gaussian (radial basis) activation function.</td></tr>
-<tr><td valign="top"><a href="#gaussian-2">gaussian/2</a></td><td>Gaussian with custom base.</td></tr>
-<tr><td valign="top"><a href="#linear-1">linear/1</a></td><td>Linear (identity) activation function.</td></tr>
-<tr><td valign="top"><a href="#log-1">log/1</a></td><td>Logarithm activation function.</td></tr>
-<tr><td valign="top"><a href="#multiquadric-1">multiquadric/1</a></td><td>Multiquadric activation function.</td></tr>
-<tr><td valign="top"><a href="#quadratic-1">quadratic/1</a></td><td>Quadratic activation function.</td></tr>
-<tr><td valign="top"><a href="#relu-1">relu/1</a></td><td>Rectified Linear Unit (ReLU) activation function.</td></tr>
-<tr><td valign="top"><a href="#sat-3">sat/3</a></td><td>Clamp value to range [Min, Max].</td></tr>
-<tr><td valign="top"><a href="#sat_dzone-5">sat_dzone/5</a></td><td>Clamp value with dead zone.</td></tr>
-<tr><td valign="top"><a href="#saturation-1">saturation/1</a></td><td>Clamp value to default range [-1000, 1000].</td></tr>
-<tr><td valign="top"><a href="#saturation-2">saturation/2</a></td><td>Clamp value to symmetric range [-Spread, Spread].</td></tr>
-<tr><td valign="top"><a href="#scale-3">scale/3</a></td><td>Scale list or value from one range to [-1, 1].</td></tr>
-<tr><td valign="top"><a href="#scale-5">scale/5</a></td><td>Scale value from one range to another.</td></tr>
-<tr><td valign="top"><a href="#sgn-1">sgn/1</a></td><td>Sign function.</td></tr>
-<tr><td valign="top"><a href="#sigmoid-1">sigmoid/1</a></td><td>Sigmoid (logistic) activation function.</td></tr>
-<tr><td valign="top"><a href="#sigmoid1-1">sigmoid1/1</a></td><td>Alternative sigmoid activation function.</td></tr>
-<tr><td valign="top"><a href="#sin-1">sin/1</a></td><td>Sine activation function.</td></tr>
-<tr><td valign="top"><a href="#sqrt-1">sqrt/1</a></td><td>Square root activation function.</td></tr>
-<tr><td valign="top"><a href="#std-1">std/1</a></td><td>Calculate standard deviation of a list.</td></tr>
-<tr><td valign="top"><a href="#tanh-1">tanh/1</a></td><td>Hyperbolic tangent activation function.</td></tr>
-<tr><td valign="top"><a href="#trinary-1">trinary/1</a></td><td>Trinary threshold function.</td></tr>
-</table>
+    <link rel="stylesheet" href="dist/html-erlang-DQDXQC7W.css" />
 
-<h2><a name="functions">Function Details</a></h2>
+    <script defer src="dist/sidebar_items-2C7FC282.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-DPJLHKSM.js"></script>
 
-<h3 class="function"><a name="absolute-1">absolute/1</a></h3>
-<div class="spec">
-<p><code>absolute(Val::number()) -&gt; number()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: |Val|</p>
-</div><p>Absolute value activation function
- </p>
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
 
-<h3 class="function"><a name="avg-1">avg/1</a></h3>
-<div class="spec">
-<p><code>avg(List::[number()]) -&gt; float()</code><br></p>
-<p><code>List</code>: list of numbers<br>
-</p>
-<p>returns: arithmetic mean</p>
-</div><p>Calculate average of a list
- </p>
+<div class="body-wrapper">
 
-<h3 class="function"><a name="bin-1">bin/1</a></h3>
-<div class="spec">
-<p><code>bin(Val::number()) -&gt; 0 | 1</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: 0 or 1</p>
-</div><p><p>Binary threshold function</p>
- 
-  Returns 1 for positive input, 0 otherwise.
- </p>
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
 
-<h3 class="function"><a name="cos-1">cos/1</a></h3>
-<div class="spec">
-<p><code>cos(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output in range [-1, 1]</p>
-</div><p><p>Cosine activation function</p>
- 
-  Periodic function with range [-1, 1].
-  cos(0) = 1, phase-shifted from sine.
- </p>
+<nav id="sidebar" class="sidebar">
 
-<h3 class="function"><a name="cubic-1">cubic/1</a></h3>
-<div class="spec">
-<p><code>cubic(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: cube of input</p>
-</div><p><p>Cubic activation function</p>
- 
-  Signed cube: x^3
-  Preserves sign while strongly amplifying magnitude.
- </p>
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
 
-<h3 class="function"><a name="gaussian-1">gaussian/1</a></h3>
-<div class="spec">
-<p><code>gaussian(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output in range (0, 1]</p>
-</div><p><p>Gaussian (radial basis) activation function</p>
- 
-  <p>Bell curve centered at 0, peaks at 1.0, decays towards 0.  
-Mathematical definition: e^(-x^2)</p>
- 
-  <p>Input is clamped to [-10, 10] to prevent underflow.</p>
- 
-  Properties:
-  - Output range: (0, 1]
-  - gaussian(0) = 1
-  - Radially symmetric
- </p>
+      <div>
+        <a href="overview.html" class="sidebar-projectName" translate="no">
+macula_tweann
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v0.18.0
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras=""></ul>
+  </div>
+</nav>
 
-<h3 class="function"><a name="gaussian-2">gaussian/2</a></h3>
-<div class="spec">
-<p><code>gaussian(Base::float(), Val::float()) -&gt; float()</code><br></p>
-<p><code>Base</code>: the exponential base (typically e = 2.71828183)<br>
-<code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output value</p>
-</div><p>Gaussian with custom base
- </p>
+<output role="status" id="toast"></output>
 
-<h3 class="function"><a name="linear-1">linear/1</a></h3>
-<div class="spec">
-<p><code>linear(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: Val unchanged</p>
-</div><p><p>Linear (identity) activation function</p>
- 
-  No transformation - output equals input.
-  Used for output neurons when raw values are needed.
- </p>
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of macula_tweann</span>
+            <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          </label>
+          <button type="submit" class="search-button" aria-label="Submit Search" tabindex="-1">
+            <i class="ri-search-2-line ri-lg" aria-hidden="true"></i>
+          </button>
+          <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+            <i class="ri-close-line ri-lg" title="Cancel search"></i>
+          </button>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
 
-<h3 class="function"><a name="log-1">log/1</a></h3>
-<div class="spec">
-<p><code>log(Val::number()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: signed natural logarithm</p>
-</div><p><p>Logarithm activation function</p>
- 
-  Signed logarithm: sgn(x) * ln(|x|)
-  Handles zero input specially.
- </p>
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">functions</span> 
+      <small class="app-vsn" translate="no">(macula_tweann v0.18.0)</small>
 
-<h3 class="function"><a name="multiquadric-1">multiquadric/1</a></h3>
-<div class="spec">
-<p><code>multiquadric(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output value &gt;= 0.1</p>
-</div><p><p>Multiquadric activation function</p>
- 
-  Mathematical definition: sqrt(x^2 + 0.01)
-  Always positive, smooth at origin.
- </p>
+    </h1>
 
-<h3 class="function"><a name="quadratic-1">quadratic/1</a></h3>
-<div class="spec">
-<p><code>quadratic(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: signed square of input</p>
-</div><p><p>Quadratic activation function</p>
- 
-  Signed square: sgn(x) * x^2
-  Preserves sign while amplifying magnitude.
- </p>
+      <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L70" title="View Source" class="icon-action" rel="help">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
 
-<h3 class="function"><a name="relu-1">relu/1</a></h3>
-<div class="spec">
-<p><code>relu(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: max(0, Val)</p>
-</div><p><p>Rectified Linear Unit (ReLU) activation function</p>
- 
-  Returns max(0, x).
-  Popular in deep learning for its simplicity and effectiveness.
- </p>
+  </div>
 
-<h3 class="function"><a name="sat-3">sat/3</a></h3>
-<div class="spec">
-<p><code>sat(Val::number(), Max::number(), Min::number()) -&gt; number()</code><br></p>
-<p><code>Val</code>: the input value<br>
-<code>Max</code>: the maximum allowed value<br>
-<code>Min</code>: the minimum allowed value<br>
-</p>
-<p>returns: clamped value</p>
-</div><p>Clamp value to range [Min, Max]
- </p>
 
-<h3 class="function"><a name="sat_dzone-5">sat_dzone/5</a></h3>
-<div class="spec">
-<p><code>sat_dzone(Val::number(), Max::number(), Min::number(), DZMax::number(), DZMin::number()) -&gt; number()</code><br></p>
-<p><code>Val</code>: the input value<br>
-<code>Max</code>: the maximum allowed value<br>
-<code>Min</code>: the minimum allowed value<br>
-<code>DZMax</code>: the dead zone upper bound<br>
-<code>DZMin</code>: the dead zone lower bound<br>
-</p>
-<p>returns: processed value</p>
-</div><p><p>Clamp value with dead zone</p>
- 
-  Values within the dead zone [DZMin, DZMax] are set to 0.
-  Values outside are clamped to [Min, Max].
- </p>
+    <section id="moduledoc">
+<p>Activation and utility functions for neural computation.</p><p>This module provides activation functions used by neurons to transform aggregated input signals into output signals, plus utility functions for saturation and scaling.</p><p>Based on DXNN2 by Gene Sher (&quot;Handbook of Neuroevolution through Erlang&quot;).</p><h3 id="module-activation-functions" class="section-heading"><a href="#module-activation-functions" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text"><a name="Activation_Functions">Activation Functions</a></span></h3><p>Monotonic:</p><p>- <code>tanh</code> - Hyperbolic tangent, smooth, range [-1, 1]</p><p>- <code>sigmoid</code> - Logistic function, range [0, 1]</p><p>- <code>sigmoid1</code> - Alternative sigmoid, range [-1, 1]</p><p>- <code>linear</code> - Identity function (no transformation)</p><p>Periodic:</p><p>- <code>sin</code> - Sine function</p><p>- <code>cos</code> - Cosine function</p><p>Radial Basis:</p><p>- <code>gaussian</code> - Bell curve, peaks at 0</p><p>- <code>multiquadric</code> - sqrt(x^2 + c)</p><p>Threshold:</p><p>- <code>sgn</code> - Sign function {-1, 0, 1}</p><p>- <code>bin</code> - Binary threshold {0, 1}</p><p>- <code>trinary</code> - Three-level output {-1, 0, 1}</p><p>Other:</p><p>- <code>absolute</code> - Absolute value</p><p>- <code>quadratic</code> - Signed square</p><p>- <code>sqrt</code> - Signed square root</p><p>- <code>log</code> - Signed logarithm</p><h3 id="module-extensions-not-in-original-dxnn2" class="section-heading"><a href="#module-extensions-not-in-original-dxnn2" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text"><a name="Extensions_(not_in_original_DXNN2)">Extensions (not in original DXNN2)</a></span></h3><p>- <code>cubic</code> - Cube function x^3</p><p>- <code>relu</code> - Rectified Linear Unit max(0, x)</p><h3 id="module-utility-functions" class="section-heading"><a href="#module-utility-functions" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text"><a name="Utility_Functions">Utility Functions</a></span></h3><p>- <code>saturation/1,2</code> - Clamp values to prevent overflow</p><p>- <a href="#sat/3"><code>sat/3</code></a> - Clamp to [min, max] range</p><p>- <a href="#sat_dzone/5"><code>sat_dzone/5</code></a> - Saturation with dead zone</p><p>- <code>scale/3,5</code> - Scale values between ranges</p>
+    </section>
 
-<h3 class="function"><a name="saturation-1">saturation/1</a></h3>
-<div class="spec">
-<p><code>saturation(Val::number()) -&gt; number()</code><br></p>
-<p><code>Val</code>: the input value<br>
-</p>
-<p>returns: clamped value</p>
-</div><p><p>Clamp value to default range [-1000, 1000]</p>
- 
-  Prevents numerical overflow in subsequent calculations.
- </p>
+</div>
 
-<h3 class="function"><a name="saturation-2">saturation/2</a></h3>
-<div class="spec">
-<p><code>saturation(Val::number(), Spread::number()) -&gt; number()</code><br></p>
-<p><code>Val</code>: the input value<br>
-<code>Spread</code>: the maximum absolute value<br>
-</p>
-<p>returns: clamped value</p>
-</div><p>Clamp value to symmetric range [-Spread, Spread]
- </p>
+  <section id="summary" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h1>
+<div class="summary-functions summary">
+  <h2>
+    <a href="#functions">Functions</a>
+  </h2>
 
-<h3 class="function"><a name="scale-3">scale/3</a></h3>
-<div class="spec">
-<p><code>scale(T::[number()] | number(), Max::number(), Min::number()) -&gt; [float()] | float()</code><br></p>
-<p><code>Max</code>: the maximum of the input range<br>
-<code>Min</code>: the minimum of the input range<br>
-</p>
-<p>returns: scaled value(s) in range [-1, 1]</p>
-</div><p><p>Scale list or value from one range to [-1, 1]</p>
- 
-  Normalizes values using: (Val*2 - (Max + Min)) / (Max - Min)
- </p>
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#absolute/1" data-no-tooltip="" translate="no">absolute(Val)</a>
 
-<h3 class="function"><a name="scale-5">scale/5</a></h3>
-<div class="spec">
-<p><code>scale(Val::number(), FromMin::number(), FromMax::number(), ToMin::number(), ToMax::number()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input value<br>
-<code>FromMin</code>: minimum of input range<br>
-<code>FromMax</code>: maximum of input range<br>
-<code>ToMin</code>: minimum of output range<br>
-<code>ToMax</code>: maximum of output range<br>
-</p>
-<p>returns: scaled value</p>
-</div><p><p>Scale value from one range to another</p>
- 
-  Linear interpolation from [FromMin, FromMax] to [ToMin, ToMax].
- </p>
+      </div>
 
-<h3 class="function"><a name="sgn-1">sgn/1</a></h3>
-<div class="spec">
-<p><code>sgn(Val::number()) -&gt; -1 | 0 | 1</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: -1, 0, or 1</p>
-</div><p><p>Sign function</p>
- 
-  Returns the sign of the input value.
- </p>
+        <div class="summary-synopsis"><p>Absolute value activation function</p></div>
 
-<h3 class="function"><a name="sigmoid-1">sigmoid/1</a></h3>
-<div class="spec">
-<p><code>sigmoid(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output in range (0, 1)</p>
-</div><p><p>Sigmoid (logistic) activation function</p>
- 
-  <p>S-shaped curve mapping to range [0, 1].  
-Mathematical definition: 1 / (1 + e^-x)</p>
- 
-  <p>Input is clamped to [-10, 10] to prevent overflow.</p>
- 
-  Properties:
-  - Output range: (0, 1)
-  - sigmoid(0) = 0.5
-  - Derivative: y * (1 - y)
- </p>
+    </div>
 
-<h3 class="function"><a name="sigmoid1-1">sigmoid1/1</a></h3>
-<div class="spec">
-<p><code>sigmoid1(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output in range (-1, 1)</p>
-</div><p><p>Alternative sigmoid activation function</p>
- 
-  <p>Maps to range [-1, 1] using: x / (1 + |x|)</p>
- 
-  Properties:
-  - Output range: (-1, 1)
-  - sigmoid1(0) = 0
-  - Faster to compute than standard sigmoid
-  - Derivative: 1 / (1 + |x|)^2
- </p>
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#avg/1" data-no-tooltip="" translate="no">avg(List)</a>
 
-<h3 class="function"><a name="sin-1">sin/1</a></h3>
-<div class="spec">
-<p><code>sin(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output in range [-1, 1]</p>
-</div><p><p>Sine activation function</p>
- 
-  Periodic function with range [-1, 1].
-  Useful for oscillatory patterns and fourier-like representations.
- </p>
+      </div>
 
-<h3 class="function"><a name="sqrt-1">sqrt/1</a></h3>
-<div class="spec">
-<p><code>sqrt(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: signed square root</p>
-</div><p><p>Square root activation function</p>
- 
-  Signed square root: sgn(x) * sqrt(|x|)
-  Compresses magnitude while preserving sign.
- </p>
+        <div class="summary-synopsis"><p>Calculate average of a list</p></div>
 
-<h3 class="function"><a name="std-1">std/1</a></h3>
-<div class="spec">
-<p><code>std(List::[number()]) -&gt; float()</code><br></p>
-<p><code>List</code>: list of numbers<br>
-</p>
-<p>returns: standard deviation</p>
-</div><p>Calculate standard deviation of a list
- </p>
+    </div>
 
-<h3 class="function"><a name="tanh-1">tanh/1</a></h3>
-<div class="spec">
-<p><code>tanh(Val::float()) -&gt; float()</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: output in range [-1, 1]</p>
-</div><p><p>Hyperbolic tangent activation function</p>
- 
-  <p>Maps input to range [-1, 1] with smooth gradient.  
-Mathematical definition: tanh(x) = (e^x - e^-x) / (e^x + e^-x)</p>
- 
-  Properties:
-  - Output range: [-1, 1]
-  - tanh(0) = 0
-  - Smooth derivative (good for learning)
-  - Most commonly used activation in neuroevolution
- </p>
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#bin/1" data-no-tooltip="" translate="no">bin(Val)</a>
 
-<h3 class="function"><a name="trinary-1">trinary/1</a></h3>
-<div class="spec">
-<p><code>trinary(Val::float()) -&gt; -1 | 0 | 1</code><br></p>
-<p><code>Val</code>: the input signal value<br>
-</p>
-<p>returns: -1, 0, or 1</p>
-</div><p><p>Trinary threshold function</p>
- 
-  Returns -1, 0, or 1 based on threshold of 0.33.
- </p>
-<hr>
+      </div>
 
-<div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc</i></p>
-</body>
+        <div class="summary-synopsis"><p>Binary threshold function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#cos/1" data-no-tooltip="" translate="no">cos(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Cosine activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#cubic/1" data-no-tooltip="" translate="no">cubic(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Cubic activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#gaussian/1" data-no-tooltip="" translate="no">gaussian(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Gaussian (radial basis) activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#gaussian/2" data-no-tooltip="" translate="no">gaussian(Base, Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Gaussian with custom base</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#linear/1" data-no-tooltip="" translate="no">linear(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Linear (identity) activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#log/1" data-no-tooltip="" translate="no">log(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Logarithm activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#multiquadric/1" data-no-tooltip="" translate="no">multiquadric(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Multiquadric activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#quadratic/1" data-no-tooltip="" translate="no">quadratic(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Quadratic activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#relu/1" data-no-tooltip="" translate="no">relu(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Rectified Linear Unit (ReLU) activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sat/3" data-no-tooltip="" translate="no">sat(Val, Max, Min)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Clamp value to range [Min, Max]</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sat_dzone/5" data-no-tooltip="" translate="no">sat_dzone(Val, Max, Min, DZMax, DZMin)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Clamp value with dead zone</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#saturation/1" data-no-tooltip="" translate="no">saturation(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Clamp value to default range [-1000, 1000]</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#saturation/2" data-no-tooltip="" translate="no">saturation(Val, Spread)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Clamp value to symmetric range [-Spread, Spread]</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#scale/3" data-no-tooltip="" translate="no">scale(T, Max, Min)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Scale list or value from one range to [-1, 1]</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#scale/5" data-no-tooltip="" translate="no">scale(Val, FromMin, FromMax, ToMin, ToMax)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Scale value from one range to another</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sgn/1" data-no-tooltip="" translate="no">sgn(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Sign function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sigmoid1/1" data-no-tooltip="" translate="no">sigmoid1(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Alternative sigmoid activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sigmoid/1" data-no-tooltip="" translate="no">sigmoid(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Sigmoid (logistic) activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sin/1" data-no-tooltip="" translate="no">sin(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Sine activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sqrt/1" data-no-tooltip="" translate="no">sqrt(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Square root activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#std/1" data-no-tooltip="" translate="no">std(List)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Calculate standard deviation of a list</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#tanh/1" data-no-tooltip="" translate="no">tanh(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Hyperbolic tangent activation function</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#trinary/1" data-no-tooltip="" translate="no">trinary(Val)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Trinary threshold function</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="functions" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h1>
+    <div class="functions-list">
+<section class="detail" id="absolute/1">
+
+  <div class="detail-header">
+    <a href="#absolute/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">absolute(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L261" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> absolute(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>().</pre>
+
+      </div>
+
+<p>Absolute value activation function</p>
+  </section>
+</section>
+<section class="detail" id="avg/1">
+
+  <div class="detail-header">
+    <a href="#avg/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">avg(List)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L422" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> avg([<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()]) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Calculate average of a list</p>
+  </section>
+</section>
+<section class="detail" id="bin/1">
+
+  <div class="detail-header">
+    <a href="#bin/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">bin(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L231" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> bin(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> 0 | 1.</pre>
+
+      </div>
+
+<p>Binary threshold function</p><p>Returns 1 for positive input, 0 otherwise.</p>
+  </section>
+</section>
+<section class="detail" id="cos/1">
+
+  <div class="detail-header">
+    <a href="#cos/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">cos(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L146" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> cos(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Cosine activation function</p><p>Periodic function with range [-1, 1]. cos(0) = 1, phase-shifted from sine.</p>
+  </section>
+</section>
+<section class="detail" id="cubic/1">
+
+  <div class="detail-header">
+    <a href="#cubic/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">cubic(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L294" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> cubic(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Cubic activation function</p><p>Signed cube: x^3 Preserves sign while strongly amplifying magnitude.</p>
+  </section>
+</section>
+<section class="detail" id="gaussian/1">
+
+  <div class="detail-header">
+    <a href="#gaussian/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">gaussian(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L164" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> gaussian(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Gaussian (radial basis) activation function</p><p>Bell curve centered at 0, peaks at 1.0, decays towards 0. Mathematical definition: e^(-x^2)</p><p>Input is clamped to [-10, 10] to prevent underflow.</p><p>Properties: - Output range: (0, 1] - gaussian(0) = 1 - Radially symmetric</p>
+  </section>
+</section>
+<section class="detail" id="gaussian/2">
+
+  <div class="detail-header">
+    <a href="#gaussian/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">gaussian(Base, Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L173" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> gaussian(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Gaussian with custom base</p>
+  </section>
+</section>
+<section class="detail" id="linear/1">
+
+  <div class="detail-header">
+    <a href="#linear/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">linear(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L272" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> linear(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Linear (identity) activation function</p><p>No transformation - output equals input. Used for output neurons when raw values are needed.</p>
+  </section>
+</section>
+<section class="detail" id="log/1">
+
+  <div class="detail-header">
+    <a href="#log/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">log(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L316" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> log(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Logarithm activation function</p><p>Signed logarithm: sgn(x) * ln(|x|) Handles zero input specially.</p>
+  </section>
+</section>
+<section class="detail" id="multiquadric/1">
+
+  <div class="detail-header">
+    <a href="#multiquadric/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">multiquadric(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L253" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> multiquadric(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Multiquadric activation function</p><p>Mathematical definition: sqrt(x^2 + 0.01) Always positive, smooth at origin.</p>
+  </section>
+</section>
+<section class="detail" id="quadratic/1">
+
+  <div class="detail-header">
+    <a href="#quadratic/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">quadratic(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L283" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> quadratic(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Quadratic activation function</p><p>Signed square: sgn(x) * x^2 Preserves sign while amplifying magnitude.</p>
+  </section>
+</section>
+<section class="detail" id="relu/1">
+
+  <div class="detail-header">
+    <a href="#relu/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">relu(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L328" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> relu(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Rectified Linear Unit (ReLU) activation function</p><p>Returns max(0, x). Popular in deep learning for its simplicity and effectiveness.</p>
+  </section>
+</section>
+<section class="detail" id="sat/3">
+
+  <div class="detail-header">
+    <a href="#sat/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sat(Val, Max, Min)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L363" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> sat(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>().</pre>
+
+      </div>
+
+<p>Clamp value to range [Min, Max]</p>
+  </section>
+</section>
+<section class="detail" id="sat_dzone/5">
+
+  <div class="detail-header">
+    <a href="#sat_dzone/5" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sat_dzone(Val, Max, Min, DZMax, DZMin)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L379" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> sat_dzone(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>().</pre>
+
+      </div>
+
+<p>Clamp value with dead zone</p><p>Values within the dead zone [DZMin, DZMax] are set to 0. Values outside are clamped to [Min, Max].</p>
+  </section>
+</section>
+<section class="detail" id="saturation/1">
+
+  <div class="detail-header">
+    <a href="#saturation/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">saturation(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L342" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> saturation(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>().</pre>
+
+      </div>
+
+<p>Clamp value to default range [-1000, 1000]</p><p>Prevents numerical overflow in subsequent calculations.</p>
+  </section>
+</section>
+<section class="detail" id="saturation/2">
+
+  <div class="detail-header">
+    <a href="#saturation/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">saturation(Val, Spread)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L352" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> saturation(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>().</pre>
+
+      </div>
+
+<p>Clamp value to symmetric range [-Spread, Spread]</p>
+  </section>
+</section>
+<section class="detail" id="scale/3">
+
+  <div class="detail-header">
+    <a href="#scale/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">scale(T, Max, Min)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L391" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> scale([<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()] | <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> [<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()] | <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Scale list or value from one range to [-1, 1]</p><p>Normalizes values using: (Val*2 - (Max + Min)) / (Max - Min)</p>
+  </section>
+</section>
+<section class="detail" id="scale/5">
+
+  <div class="detail-header">
+    <a href="#scale/5" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">scale(Val, FromMin, FromMax, ToMin, ToMax)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L409" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> scale(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Scale value from one range to another</p><p>Linear interpolation from [FromMin, FromMax] to [ToMin, ToMax].</p>
+  </section>
+</section>
+<section class="detail" id="sgn/1">
+
+  <div class="detail-header">
+    <a href="#sgn/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sgn(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L219" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> sgn(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()) -> -1 | 0 | 1.</pre>
+
+      </div>
+
+<p>Sign function</p><p>Returns the sign of the input value.</p>
+  </section>
+</section>
+<section class="detail" id="sigmoid1/1">
+
+  <div class="detail-header">
+    <a href="#sigmoid1/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sigmoid1(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L209" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> sigmoid1(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Alternative sigmoid activation function</p><p>Maps to range [-1, 1] using: x / (1 + |x|)</p><p>Properties: - Output range: (-1, 1) - sigmoid1(0) = 0 - Faster to compute than standard sigmoid - Derivative: 1 / (1 + |x|)^2</p>
+  </section>
+</section>
+<section class="detail" id="sigmoid/1">
+
+  <div class="detail-header">
+    <a href="#sigmoid/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sigmoid(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L192" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> sigmoid(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Sigmoid (logistic) activation function</p><p>S-shaped curve mapping to range [0, 1]. Mathematical definition: 1 / (1 + e^-x)</p><p>Input is clamped to [-10, 10] to prevent overflow.</p><p>Properties: - Output range: (0, 1) - sigmoid(0) = 0.5 - Derivative: y * (1 - y)</p>
+  </section>
+</section>
+<section class="detail" id="sin/1">
+
+  <div class="detail-header">
+    <a href="#sin/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sin(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L135" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> sin(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Sine activation function</p><p>Periodic function with range [-1, 1]. Useful for oscillatory patterns and fourier-like representations.</p>
+  </section>
+</section>
+<section class="detail" id="sqrt/1">
+
+  <div class="detail-header">
+    <a href="#sqrt/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sqrt(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L305" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> sqrt(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Square root activation function</p><p>Signed square root: sgn(x) * sqrt(|x|) Compresses magnitude while preserving sign.</p>
+  </section>
+</section>
+<section class="detail" id="std/1">
+
+  <div class="detail-header">
+    <a href="#std/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">std(List)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L430" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> std([<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:number/0">number</a>()]) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Calculate standard deviation of a list</p>
+  </section>
+</section>
+<section class="detail" id="tanh/1">
+
+  <div class="detail-header">
+    <a href="#tanh/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">tanh(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L124" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> tanh(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>().</pre>
+
+      </div>
+
+<p>Hyperbolic tangent activation function</p><p>Maps input to range [-1, 1] with smooth gradient. Mathematical definition: tanh(x) = (e^x - e^-x) / (e^x + e^-x)</p><p>Properties: - Output range: [-1, 1] - tanh(0) = 0 - Smooth derivative (good for learning) - Most commonly used activation in neuroevolution</p>
+  </section>
+</section>
+<section class="detail" id="trinary/1">
+
+  <div class="detail-header">
+    <a href="#trinary/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">trinary(Val)</h1>
+
+
+        <a href="https://github.com/macula-io/macula-tweann/blob/0.18.0/src/functions.erl#L241" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> trinary(<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:float/0">float</a>()) -> -1 | 0 | 1.</pre>
+
+      </div>
+
+<p>Trinary threshold function</p><p>Returns -1, 0, or 1 based on threshold of 0.33.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+      <p>
+
+          <span class="line">
+            <a href="https://hex.pm/packages/macula_tweann/0.18.0" class="footer-hex-package">Hex Package</a>
+
+            <a href="https://preview.hex.pm/preview/macula_tweann/0.18.0">Hex Preview</a>
+
+          </span>
+
+        <span class="line">
+          <button class="a-main footer-button display-quick-switch" title="Search HexDocs packages">
+            Search HexDocs
+          </button>
+
+            <a href="macula_tweann.epub" title="ePub version">
+              Download ePub version
+            </a>
+
+        </span>
+      </p>
+
+      <p class="built-using">
+        Built using
+        <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.38.2) for the
+
+          <a href="https://erlang.org" title="Erlang" target="_blank" translate="no">Erlang programming language</a>
+
+      </p>
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
 </html>

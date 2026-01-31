@@ -83,3 +83,12 @@ Some functions have dialyzer suppressions for:
 - No-match warnings (unreachable patterns in guards)
 
 These are intentional and documented in the source files.
+
+---
+
+## Support
+
+If you find this project valuable, consider supporting its development:
+
+**☕ Buy Me a Coffee:** https://buymeacoffee.com/rlefever
+
